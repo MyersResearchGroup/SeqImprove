@@ -1,0 +1,1738 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:ns0="http://purl.obolibrary.org/obo/" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:ns1="https://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sbol:Collection rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Itaconic_Acid_Pathway_Voigt_Lab_collection/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Itaconic_Acid_Pathway_Voigt_Lab_collection"/>
+    <sbol:displayId>Itaconic_Acid_Pathway_Voigt_Lab_collection</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Itaconic Acid Pathway (Voigt Lab)</dcterms:title>
+    <dcterms:description>Itaconic Acid Pathway (Voigt Lab)</dcterms:description>
+    <dc:creator>Jet</dc:creator>
+    <dcterms:created>2021-06-19T10:37:12.497Z</dcterms:created>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Itaconic_Acid_Pathway_Voigt_Lab_collection/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2/1"/>
+  </sbol:Collection>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2"/>
+    <sbol:displayId>Peno2</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Peno2</dcterms:title>
+    <dcterms:description>eno2 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT"/>
+    <sbol:displayId>NAT</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>NAT</dcterms:title>
+    <dcterms:description>AT CDS</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT/1"/>
+    <ns1:designNotes>Does not contain start or stop codons,  BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:1971"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1"/>
+    <sbol:displayId>Phta1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Phta1</dcterms:title>
+    <dcterms:description>hta1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA"/>
+    <sbol:displayId>ACKA</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>ACKA</dcterms:title>
+    <dcterms:description>acetate kinase (ackA)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:162425"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3"/>
+    <sbol:displayId>Trpl3</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Trpl3</dcterms:title>
+    <dcterms:description>rpl3 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1"/>
+    <sbol:displayId>Psmtef1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Psmtef1</dcterms:title>
+    <dcterms:description>smtef1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:114525"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3"/>
+    <sbol:displayId>Prps3</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Prps3</dcterms:title>
+    <dcterms:description>rps3 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a"/>
+    <sbol:displayId>Trpl15a</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Trpl15a</dcterms:title>
+    <dcterms:description>rpl15a terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1"/>
+    <sbol:displayId>Tadh1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Tadh1</dcterms:title>
+    <dcterms:description>adh1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9"/>
+    <sbol:displayId>Tprm9</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Tprm9</dcterms:title>
+    <dcterms:description>prm9 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6"/>
+    <sbol:displayId>Pykt6</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Pykt6</dcterms:title>
+    <dcterms:description>ykt6 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus"/>
+    <sbol:displayId>Venus</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>Venus</dcterms:title>
+    <dcterms:description>Venus yellow fluorescent protein derived from avGFP</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:6100"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1"/>
+    <sbol:displayId>Tnat1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tnat1</dcterms:title>
+    <dcterms:description>nat1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA"/>
+    <sbol:displayId>PTA</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>PTA</dcterms:title>
+    <dcterms:description>phosphotransacetylase (pta)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:1423"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1"/>
+    <sbol:displayId>Tefm1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tefm1</dcterms:title>
+    <dcterms:description>efm1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1"/>
+    <sbol:displayId>Teno1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Teno1</dcterms:title>
+    <dcterms:description>eno1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1"/>
+    <sbol:displayId>Ppfy1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Ppfy1</dcterms:title>
+    <dcterms:description>pfy1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2"/>
+    <sbol:displayId>Tvma2</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tvma2</dcterms:title>
+    <dcterms:description>vma2 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE"/>
+    <sbol:displayId>ITE</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>ITE</dcterms:title>
+    <dcterms:description>itaconic exporter (mfsA)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:33178"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2"/>
+    <sbol:displayId>Tadh2</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tadh2</dcterms:title>
+    <dcterms:description>adh2 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a"/>
+    <sbol:displayId>Trps14a</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Trps14a</dcterms:title>
+    <dcterms:description>rps15a terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9"/>
+    <sbol:displayId>Tyhi9</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tyhi9</dcterms:title>
+    <dcterms:description>yhi9 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3"/>
+    <sbol:displayId>Ppre3</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Ppre3</dcterms:title>
+    <dcterms:description>pre3 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH"/>
+    <sbol:displayId>ACDH</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>ACDH</dcterms:title>
+    <dcterms:description>acylating aldehyde dehydrogenase (EutE)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:1642"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1"/>
+    <sbol:displayId>Taip1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Taip1</dcterms:title>
+    <dcterms:description>aip1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2"/>
+    <sbol:displayId>Phhf2</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Phhf2</dcterms:title>
+    <dcterms:description>hhf2 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1"/>
+    <sbol:displayId>Tpdc1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tpdc1</dcterms:title>
+    <dcterms:description>pdc1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC"/>
+    <sbol:displayId>CSC</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>CSC</dcterms:title>
+    <dcterms:description>cytosolic citrate synthase (gltA)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3"/>
+    <sbol:displayId>Ptdh3</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Ptdh3</dcterms:title>
+    <dcterms:description>tdh3 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1"/>
+    <sbol:displayId>Ttpi1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Ttpi1</dcterms:title>
+    <dcterms:description>tpi1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1"/>
+    <sbol:displayId>Pact1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Pact1</dcterms:title>
+    <dcterms:description>act1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1"/>
+    <sbol:displayId>Tgpm1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tgpm1</dcterms:title>
+    <dcterms:description>gpm1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28"/>
+    <sbol:displayId>Prpl28</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Prpl28</dcterms:title>
+    <dcterms:description>rpl28 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1"/>
+    <sbol:displayId>Pfba1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Pfba1</dcterms:title>
+    <dcterms:description>fba1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w"/>
+    <sbol:displayId>Tyol036w</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tyol036w</dcterms:title>
+    <dcterms:description>yol036w terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC"/>
+    <sbol:displayId>OAC</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>OAC</dcterms:title>
+    <dcterms:description>mitochondrial oxaloacetate transporter OAC1 (YKL120W)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10"/>
+    <sbol:displayId>Tecm10</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tecm10</dcterms:title>
+    <dcterms:description>ecm10 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO"/>
+    <sbol:displayId>ACO</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>ACO</dcterms:title>
+    <dcterms:description>aconitase gene ACO1 (YLR304C)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3"/>
+    <sbol:displayId>Psptdh3</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Psptdh3</dcterms:title>
+    <dcterms:description>sptdh3 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:27291"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1"/>
+    <sbol:displayId>Ttdh1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Ttdh1</dcterms:title>
+    <dcterms:description>tdh1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1"/>
+    <sbol:displayId>Tdpp1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tdpp1</dcterms:title>
+    <dcterms:description>dpp1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16"/>
+    <sbol:displayId>Tvma16</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Tvma16</dcterms:title>
+    <dcterms:description>vma16 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int"/>
+    <sbol:displayId>_3int</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>3int</dcterms:title>
+    <dcterms:description>int </dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000342"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1"/>
+    <sbol:displayId>Tcyc1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Tcyc1</dcterms:title>
+    <dcterms:description>cyc1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3"/>
+    <sbol:displayId>Tklura3</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Tklura3</dcterms:title>
+    <dcterms:description>klura3 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:28985"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1"/>
+    <sbol:displayId>Pzuo1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Pzuo1</dcterms:title>
+    <dcterms:description>zuo1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1"/>
+    <sbol:displayId>Ttal1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Ttal1</dcterms:title>
+    <dcterms:description>tal1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2"/>
+    <sbol:displayId>Peft2</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Peft2</dcterms:title>
+    <dcterms:description>eft2 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP"/>
+    <sbol:displayId>CTP</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>CTP</dcterms:title>
+    <dcterms:description>mitochondrial citrate transporter gene CTP1 (YBR291C)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6"/>
+    <sbol:displayId>Pvma6</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Pvma6</dcterms:title>
+    <dcterms:description>vma6 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1"/>
+    <sbol:displayId>Ppgk1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Ppgk1</dcterms:title>
+    <dcterms:description>pgk1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1"/>
+    <sbol:displayId>Ppxr1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>Ppxr1</dcterms:title>
+    <dcterms:description>pxr1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3"/>
+    <sbol:displayId>Psbtdh3</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Psbtdh3</dcterms:title>
+    <dcterms:description>sbtdh3 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4931"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1"/>
+    <sbol:displayId>Tagtef1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Tagtef1</dcterms:title>
+    <dcterms:description>agtef1 terminator</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:33169"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK"/>
+    <sbol:displayId>XPK</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>XPK</dcterms:title>
+    <dcterms:description>phosphoketolase (phk)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:162425"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int"/>
+    <sbol:displayId>_5int</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>5int</dcterms:title>
+    <dcterms:description>int </dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000342"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD"/>
+    <sbol:displayId>CAD</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>CAD</dcterms:title>
+    <dcterms:description>cis-aconitate decarboxylase (cadA)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:33178"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1"/>
+    <sbol:displayId>Ptef1</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <dcterms:title>Ptef1</dcterms:title>
+    <dcterms:description>tef1 promoter</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1/1"/>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC"/>
+    <sbol:displayId>PYC</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="https://pubmed.ncbi.nlm.nih.gov/29753070"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <dcterms:title>PYC</dcterms:title>
+    <dcterms:description>pyruvate carboxylase gene PYC2 (YBR218C)</dcterms:description>
+    <ns0:OBI_0001617>29753070</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC/1"/>
+    <ns1:designNotes>Does not contain start or stop codons, codon optimized for S.cerevisiae, BsaI/BbsI sites eliminated</ns1:designNotes>
+    <ns1:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <ns1:targetOrganism rdf:resource="https://identifiers.org/taxonomy:4932"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000316"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA_sequence"/>
+    <sbol:displayId>ACKA_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>ACKA Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACKA_sequence/1"/>
+    <sbol:elements>aaagatgtggaagatattcatcgcccgatgctgaacagcctgcagagcaccagcgcgaaaatgaaaaaaattgtgctgagcgtgaacgcgggcagcagcagcgtgaaaattagcgcgtatagcgcgctgtttggccaggcgccgattcagctggcggaagcgcagattagcggcctgaccgcgccgccgccgaccctgcgctatacccgccatggcgaaaaagtgattaacgatgaagaagtgaaagatcagaaagtgagcacccaggcggatgcgtttgatattctggtgaaagcgctgattgatgataacggcgtgccggaaattagcagcaaagaagatattgcgtatatttgccatcgcattgtgcatggcggcgattttgtgcgcccgaaactgattagcgatgaaacctatcataacctggaaaaactgaacgatctggcgccgctgcataacagcaccagcctggtgattgtgcatcgctgcatgagcgatatgccgaaaaccacctttaacattgcgtgctttgatagccagtttcatcataccattccggaacatattcgcacctatccgattaaccaggatattgcgcgcaacaaccatctgcgcaaatatggctttcatggcattagctatgcgtttattacccgcgcgaccgcggaatttctgggcaaaaaagtggaagatgtgaacattattgcgctgcatctgggcagcggcgcgagcgcgtgcgcgattaaaggcggcaaaagcctggataacagcatgggcctgaccccgctggcgggcctgccgggcgcgacccgcagcggcagcgtggatccgagcctggtgtttcattatgcgagcgatgtgggcaaactgagcccggcgagcaccaaagatctgcatattagccgcgcggaagaaattctgaacaaacagagcggctggaaagcgctgaccggcaccaccaactttggcaccattaccgcggcgctggatccgagcagcagcgataccaccagccatctgagcccggaagaagtggcgaaaatgcgcctggcgtttgatatttttgtggaacgcatttgcgcgtatattggcagctattatgtgagcctgcagggccaggtggatgcgctggtgtttgcgggcggcattggcgaaaaaagcgatcgcctgcgcgcggcggtgattgaacaggtgagctgcctgggctttggcccggtggataaagaagcgaacgaaacccgcgtgaaagaagaactggatgatagccatgatgtgattgaaattgcgccgccgaacagcaaaaaaggcggcaaagatggccgcgaacatcgcgtgctggtgtgcaaaaccgatgaacagtttgaaatggcgcgcgcgtgcgcggaagatggcgaattttggcgc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1_sequence"/>
+    <sbol:displayId>Ttal1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ttal1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttal1_sequence/1"/>
+    <sbol:elements>ggaagtatctcggaaatattaatttaggccatgtccttatgcacgtttcttttgatacttacgggtacatgtacacaagtatatctatatatataaattaatgaaaatcccctatttatatatatgactttaacgagacagaacagttttttattttttatcctatttgatgaatgatacagtttcttattcacgtgttatacccacaccaaatccaatagcaataccggccatcacaatcactgtttcggcagcccctaagatcagacaaaacatccggaaccaccttaaatcaacgtc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1_sequence"/>
+    <sbol:displayId>Tagtef1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tagtef1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tagtef1_sequence/1"/>
+    <sbol:elements>cagtactgacaataaaaagattcttgttttcaagaacttgtcatttgtatagtttttttatattgtagttgttctattttaatcaaatgttagcgtgatttatattttttttcgcctcgacatcatctgcccagatgcgaagttaagtgcgcagaaagtaatatcatgcgtcaatcgtatgtgaatgctggtcgctatactgctgtcgattcgatactaacgccgccatccagtgtcga</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3_sequence"/>
+    <sbol:displayId>Trpl3_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Trpl3 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl3_sequence/1"/>
+    <sbol:elements>aagttttgttagaaaataaatcattttttaattgagcattcttattcctattttatttaaatagttttatgtattgttagctacatacaacagtttaaatcaaattttctttttcccaagtccaaaatggaggtttattttgatgacccgcatgcgattatgttttgaaagtataagactacatacatgtacatatatttaaacatgtaaacccgtccattatattgc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1_sequence"/>
+    <sbol:displayId>Ppxr1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ppxr1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppxr1_sequence/1"/>
+    <sbol:elements>taaaaacgcagcaactaaagaaggcgactaataaaaattgagtatgcctctccttagcgtaaacagtaactgcgtgctataaggtggcactaaacttccttcttcccctttctatcggatttgtgcagccaggagggataccagtgacggctatagcgggagaaagacgggccctctcacaaccctttgccccttgcggttagtcatatagattttgcttgtgaagagaactggtcggttcaaagatgctttcttcaaagtactatagccttgcccactctctttctcccttctgatctcttgtatgctgattttactttaataagtgaaggtgatcaatcagtcaactaacaaattagccgccactgcaaggatattttctctgtcgttgttgttttcctacaaatataaacaaccgggtaacagtcaaagaaaaaaaaaaaaagaaaaggaaaaaaaaaaaatatgaaaaattttgttctgaaagaagcgatgagatgagtactcaatagtaacatataggcagcttacaccattaaacaaagaagcag</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6_sequence"/>
+    <sbol:displayId>Pykt6_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Pykt6 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pykt6_sequence/1"/>
+    <sbol:elements>tttactgataatatacactctttggatcgagcccacttccagttggtaattggtgttccacaatttcagcattacatgtttttaaaccaaaattcggctccttttccctttttttcttattgggtggcgtgccgtacagaacgattggcttggtgtgaaatcaagagcaagcacaatagatatcaacatgaacaatatacaaaagtctctggcacagtttgactgcgttagaccaggctagggcatttctgaagctttacgtatcactagagaagttattttggc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1_sequence"/>
+    <sbol:displayId>Ptef1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ptef1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptef1_sequence/1"/>
+    <sbol:elements>atagcttcaaaatgtttctactccttttttactcttccagattttctcggacaccgcgcatcgccgtaccacttcaaaacacccaagcacagcatactaaatttcccctctttcttcctctagggtgtcgttaattacccgtactaaaggtttggaaaagaaaaaagtgaccgcctcgtttctttttcttcgtcgaaaaaggcaataaaaatttttatcacgtttctttttcttgaaaatttttttttttgatttttttctctttcgatgacctcccattgatatttaagttaataaacggtgttcaatttctcaagtttcagtttcatttttcttgttctattacaactttttttacttcttgctcattagaaagaaagcatagcaatctaatctaagttttaattacaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1_sequence"/>
+    <sbol:displayId>Psmtef1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Psmtef1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psmtef1_sequence/1"/>
+    <sbol:elements>atgcttcaaaaacgcactgtactcctttttactcttccggattttctcgcactctccgcatcgccgcacgagccaagccacacccacacacctcataccatgtttcccctctttgtctctttcgtgcggctccattacccgcatgaaactgtataaaagtaacaaaagactatttcgtttctttttctttgtcggaaaaggcaaaaaaaaaaatttttatcacatttctttttcttgaaaattttttttgggattttttctctttcgatgacctcccattgatatttaagttaataaaagcactcccgttttccaagttttaatttgttcctcttgtttagtcattcttcttctcagcattggtcaattagaaagagagcatagcaaactgatctaagttttaattacaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28_sequence"/>
+    <sbol:displayId>Prpl28_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Prpl28 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prpl28_sequence/1"/>
+    <sbol:elements>ttaatcatcgtttactgccgcctatgagcgtaagctaatgttataaagaaacaagctataatattgttaaatatagttgatcaacagcattgtaatgattacaagagacgaggtggaatgaaccttatgaaatgcgttttatatataaactgtaataagagctaagttgaattgaaatctacgatacttgatgttgacattatagcactagttcccaggaaaccctttcgaaaaacacagcaaaaacaagagtactgtaaccaatgtaacatctgtacaccagggacccacacattaccaaaatcaaaattatttttctaatgcctgttatttttcctatttttcctctggcgcgtgaatagcccgcagagacgcaaacaattttcctcgcagtttttcgcttgtttaatgcgtattttcccagataggttcaaacctttcatctgtatcccgtatatttaagatggcgtttgctttctccgttgatttttttccttcttagtgatttttttgcattaaatcccagaacaatcatccaactaatcaag</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC_sequence"/>
+    <sbol:displayId>OAC_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>OAC Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/OAC_sequence/1"/>
+    <sbol:elements>tcatctgacaactctaaacaagataaacaaattgaaaaaacagccgcccagaagatatcgaagtttggttcgtttgtggctggtgggctagcagcatgtatagctgttacagttactaatccgatcgaattgattaaaatcagaatgcagcttcaaggtgaaatgtcagcatcagctgcaaaagtttataaaaatccaatccaaggtatggcggtaattttcaaaaacgaaggtataaaaggtctgcaaaaagggttaaatgctgcttatatctatcaaattgggctaaatggttccagattagggttttatgagccaatcagatcatcattaaatcagcttttcttcccagatcaagagccacataaggtacagagcgtcggagttaacgtcttttctggtgccgcatctggtataattggtgcagtcattggctctccattattcttggtgaaaacaagacttcaatcatattccgagtttataaaaattggtgaacaaacgcactacaccggtgtttggaacgggttagtaaccatttttaaaaccgaaggtgttaagggtctattcagaggtattgatgcggcaattttaaggacaggtgctggttcctctgttcaactacctatctacaacacagcaaagaacattttggtcaaaaatgatctgatgaaagatggcccagcattacatttaactgctagtactatctctgggttaggtgttgccgtcgttatgaacccatgggatgtcattttgacaagaatctataatcaaaaaggtgacttgtacaagggacctatagattgtttggtcaaaactgttagaatcgaaggtgtaaccgctttgtataagggttttgcagctcaagtgttcagaatcgcacctcatacaatcatgtgtttgaccttcatggaacagacaatgaaactagtttattcgatagagtcgagagttttaggccataat</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1_sequence"/>
+    <sbol:displayId>Tefm1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tefm1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tefm1_sequence/1"/>
+    <sbol:elements>tttgatctgtagcctaagtataaaattctacgtatgtatatatttacatgcaattttttctttttccaattcatg</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int_sequence"/>
+    <sbol:displayId>_3int_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>3int Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_3int_sequence/1"/>
+    <sbol:elements>attttattttactttttttagaatgacctgttcccgacactatgtaagatctagcttttaacatattatggaaacctgaaatgtaaaatctgaatttttgtatatgtgtttatatttgggtagttcttttgaggaaagcatgcatagacttgctgtacgaactttatgtgacttgtagtgacgctgtttcatgagactttagccctttgaacatattatcatatctcagcttgaaatactatagatttacttttgcagccatttcttggtgctccaaggttgtgcgtatctattacttaatttctgtccttgccaagttttgcagcagggcggtcacaagacacctctgccgtcattccttagtccttcgggaacacacttatttatgtatttgtattctacaattctacggtgcacaagggttgggcactgttgagctcagcacgcaactattgctggcatgaagataagattgatttttggaagaataagcttgtga</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC_sequence"/>
+    <sbol:displayId>PYC_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>PYC Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PYC_sequence/1"/>
+    <sbol:elements>tcctcttccaagatcttggctggtttgagagacaacttttctttgttgggtgaaaagaacaagattttggtcgccaacagaggtgaaatcccaatcagaattttcagatctgctcacgaattgtctatgagaactatcgccatctactctcacgaagatagattatccatgcacagattgaaggctgatgaagcctacgttatcggtgaagaaggtcaatacaccccagtcggtgcttacttggccatggacgaaatcatcgaaattgccaagaagcacaaggtcgatttcatccacccaggttacggtttcttgtctgaaaactctgaatttgctgacaaggttgttaaggctggtattacctggattggtccaccagctgaagtcattgaatctgttggtgacaaggtttctgccagacatttggctgctcgtgccaacgttccaactgtcccaggtactccaggtcctatcgaaaccgttcaagaagctctagatttcgtcaatgaatacggttacccagttatcatcaaggctgctttcggtggtggtggtcgtggtatgagagttgtcagagaaggtgacgatgtcgctgatgctttccaaagagccacttctgaagctagaactgctttcggtaacggtacttgtttcgtcgaaagattcttggacaagccaaagcacattgaagttcaattattagctgacaaccacggtaacgttgtccacttgttcgaaagagactgttccgtccaaagacgtcaccaaaaggttgtcgaagttgctccagctaagactttaccaagagaagttagagatgctatcttgaccgatgccgttaagttggctaaggtttgtggttacagaaacgctggtactgctgaattcttggttgacaaccaaaacagacattacttcattgaaatcaacccaagaattcaagtcgaacacaccatcactgaagaaatcactggtattgacattgtctccgctcaaatccaaatcgccgctggtgctactttgactcaattaggtctattacaagacaaaatcaccaccagaggtttctctatccaatgtcgtatcaccactgaagatccatccaagaacttccaaccagacactggtcgtttggaagtctacagatccgctggtggtaacggtgtcagattggacggtggtaacgcctacgctggtgctaccatctctccacactacgactccatgttggttaagtgttcctgttctggttctacctacgaaattgtcagaagaaagatgatcagagctttgattgaattcagaatcagaggtgtcaagaccaacatcccattcttgttgactttgttgaccaacccagttttcattgaaggtacctactggaccactttcatcgatgacactccacaattgttccaaatggtttcctctcaaaacagagctcaaaaattgttgcactacttggctgacttggccgtcaacggttcctctatcaagggtcaaatcggtttaccaaagttgaagtccaacccttccgttccacatttgcacgatgctcaaggtaatgtcatcaacgttaccaaatctgccccaccatccggttggagacaagtcttgttggaaaagggtccatccgaatttgccaagcaagtcagacaattcaacggtactttgttgatggacaccacctggagagatgctcaccaatctttgctagctaccagagtcagaactcacgatttggccaccattgctccaaccactgctcacgctttggctggtgcctttgctttggaatgttggggtggtgctactttcgatgtcgccatgagattcttgcatgaggacccatgggaaagattgagaaaattgagatctttggtcccaaacattccattccaaatgttgttgagaggtgctaacggtgttgcttactcctctttgccagacaacgccattgaccatttcgttaagcaagccaaggacaatggtgttgacattttcagagtctttgacgctttgaacgacttggaacaattgaaggttggtgttaatgctgtcaagaaggctggtggtgttgtcgaagctaccgtttgttactctggtgacatgttgcaaccaggtaagaaatacaacttggactactacttagaagttgtcgaaaagatcgttcaaatgggtactcacatcttgggtatcaaggacatggctggtaccatgaagccagctgctgccaaattgttgattggttctttacgtaccagatacccagacttgccaatccacgttcactctcatgactccgctggtactgctgttgcttccatgactgcttgtgctttggccggtgctgatgttgttgacgttgccattaactccatgtccggtttgacctctcaaccatctattaacgctttgttggcctccttggaaggtaacattgacactggtatcaacgtcgaacacgttagagaattggacgcttactgggctgaaatgagattattatactcttgtttcgaagctgacttgaagggtccagaccctgaagtttaccaacacgaaattccaggtggtcaattgaccaacttgttgttccaagctcaacaattaggtctaggtgaacaatgggctgaaaccaagagagcttacagagaagctaactacttgttgggtgacattgttaaggtcaccccaacttctaaggtcgttggtgatttggctcaattcatggtttctaacaaattgacttctgatgacatcagaagattagctaactctttggacttcccagactccgttatggacttcttcgaaggtttgatcggtcaaccatacggtggtttcccagaaccattgagatccgatgttttgagaaacaagcgtcgtaaattgacttgtagaccaggtttagaattggaaccattcgatttggaaaagatcagagaagatttgcaaaacagattcggtgatatcgatgaatgtgatgttgcctcctacaacatgtatcctcgtgtctacgaagatttccaaaagattagagaaacttacggtgacttgtctgtcttaccaaccaagaacttcttggctccagctgaaccagacgaagaaatcgaagtcaccattgaacaaggtaagactttgattatcaaattacaagctgttggtgatttgaacaagaaaaccggtcaaagagaagtctacttcgaattgaacggtgaattgagaaagatcagagttgctgacaaatctcaaaacattcaatctgttgccaagccaaaggctgatgtccacgacacccaccaaatcggtgctccaatggctggtgtcatcattgaagtcaaggttcacaagggttctttggtcaagaagggtgaatctatcgccgttttgtctgctatgaagatggaaatggttgtttcctctccagctgatggtcaagtcaaagatgtctttatccgtgacggtgaatccgtcgatgcttctgacttgttggttgttttggaagaagaaactctaccaccttctcaaaagaaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1_sequence"/>
+    <sbol:displayId>Ppfy1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ppfy1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppfy1_sequence/1"/>
+    <sbol:elements>aggagacgttactttgtttatatatattagtatgtacaatcgcaaagaaatggagtgatgacatgttgtagtatttagtatgaggttactgtgtgggaggttttaccatgatttttggcgagaacacgccatgaaatgtctttgtacgaaactcattacccgcattaatattttttttctttttaaagctcagttgaccctttctcattcccttcttaaaacaactgtgtgatccttgagaaaagataaattacatacacaacataaacccaactacgatcgcaaat</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1_sequence"/>
+    <sbol:displayId>Ppgk1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ppgk1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppgk1_sequence/1"/>
+    <sbol:elements>tccctccttcttgaattgatgttaccctcataaagcacgtggcctcttatcgagaaagaaattaccgtcgctcgtgatttgtttgcaaaaagaacaaaactgaaaaaacccagacacgctcgacttcctgtgttcctattgattgcagcttccaatttcgtcacacaacaaggtcctagcgacggctcacaggttttgtaacaagcaatcgaaggttctggaatggcgggaaagggtttagtaccacatgctatgatgcccactgtgatctccagagcaaagttcgttcgatcgtactgttactctctctctttcaaacagaattgtccgaatcgtgtgacaacaacagcctgttctcacacactcttttcttctaaccaagggggtggtttagtttagtagaacctcgtgaaacttacatttacatatatataaacttgcataaattggtcaatgcaagaaatacatatttggtcttttctaattcgtagtttttcaagttcttagatgctttctttttctcttttttacagatcatcaaggaagtaattatctactttttacaacaaatataaaac</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1_sequence"/>
+    <sbol:displayId>Ttdh1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ttdh1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttdh1_sequence/1"/>
+    <sbol:elements>gcaatcttgatgaggataatgatttttttttgaatatacataaatactaccgtttttctgctagattttgtgaagacgtaaataagtacatattactttttaagccaagacaagattaagcattaactttacccttttctcttctaagtttcaatactagttatcactgtttaaaagttatggcgagaacgtcggcggttaaaatatattaccctgaacgtggtgaattgaagttctaggatggtttaaagatttttcctttttgggaaataagtaaacaatatattgctgcctt</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus_sequence"/>
+    <sbol:displayId>Venus_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Venus Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Venus_sequence/1"/>
+    <sbol:elements>tctaaaggtgaagaattattcactggtgttgtcccaattttggttgaattagatggtgatgttaatggtcacaaattttctgtctccggtgaaggtgaaggtgatgctacttacggtaaattgaccttaaaattgatttgtactactggtaaattgccagttccatggccaaccttagtcactactttaggttatggtttgcaatgttttgctagatacccagatcatatgaaacaacatgactttttcaagtctgccatgccagaaggttatgttcaagaaagaactatttttttcaaagatgacggtaactacaagaccagagctgaagtcaagtttgaaggtgataccttagttaatagaatcgaattaaaaggtattgattttaaagaagatggtaacattttaggtcacaaattggaatacaactataactctcacaatgtttacatcactgctgacaaacaaaagaatggtatcaaagctaacttcaaaattagacacaacattgaagatggtggtgttcaattagctgaccattatcaacaaaatactccaattggtgatggtccagtcttgttaccagacaaccattacttatcctatcaatctgccttatccaaagatccaaacgaaaagagagatcacatggtcttgttagaatttgttactgctgctggtattacccatggtatggatgaattgtacaaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3_sequence"/>
+    <sbol:displayId>Tklura3_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tklura3 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tklura3_sequence/1"/>
+    <sbol:elements>tatacaggaaacttaatagaacaaatcacatatttaatctaatagccacctgcattggcacggtgcaacactacttcaacttcatcttacaaaaagatcacgtgatctgttgtattg</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1_sequence"/>
+    <sbol:displayId>Pact1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Pact1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pact1_sequence/1"/>
+    <sbol:elements>aaaatgtgtggggaagcgggtaagctgccacagcaattaatgcacaacatttaacctacattcttccttatcggatcctcaaaacccttaaaaacatatgcctcaccctaacatattttccaattaaccctcaatatttctctgtcacccggcctctattttccattttcttctttacccgccacgcgtttttttctttcaaatttttttcttctttcttctttttcttccacgtcctcttgcataaataaataaaccgttttgaaaccaaactcgcctctctctctcctttttgaaatatttttgggtttgtttgatcctttccttcccaatctctcttgtttaatatatattcatttatatcacgctctctttttatcttcctttttttcctctctcttgtattcttccttcccctttctactcaaaccaagaagaaaaagaaaaggtcaatctttgttaaagaataggatcttctactacatcagcttttagatttttcacgcttactgcttttttcttcccaagatcgaaaatttactgaattaac</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2_sequence"/>
+    <sbol:displayId>Tvma2_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tvma2 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma2_sequence/1"/>
+    <sbol:elements>aggacggttgctgaagaaaaaggctttttttattttgtccgttttttttttgtaaaacccaaagatctgaatctaaagcttttttaaacgtatatagatgtctacatgtgtgtttttgtttttttacgtacgtatacccacctatatatgcataatccgtaattgaaaaaaaaaaaagaaaaagatcaaggaacaca</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10_sequence"/>
+    <sbol:displayId>Tecm10_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tecm10 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tecm10_sequence/1"/>
+    <sbol:elements>acaagataataaaaaagataatattttcgtttaaaatttcagaaatattgcttacatcaaacgaaatagtaagcgtaaaccatatatcctttcaacgatatgtatcatttttatagtcttttggcggtataaaaagaatagccaaaggtggaagtcaggttaaaccaaaagaaactacccgcaagggatgtatgcatttgaacataaaaaact</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3_sequence"/>
+    <sbol:displayId>Ppre3_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ppre3 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ppre3_sequence/1"/>
+    <sbol:elements>caaacattaatttgttctgcatactttgaacctttcagaaaataaaaaacattacgcgcatacttaccctgctcgcgaagaagagtaacactaacgcattctatgggcaattgatgacagtattcagtacaagacatagtccgtttccttgattcaattcctatagcattatgaactagccgcctttaagagtgccaagctgttcaacaccgatcatttttgatgatttggcgtttttgttatattgatagatttcttttgaattttgtcattttcacttttccactcgcaacggaatccggtggcaaaaaagggaaaagcattgaaatgcaatctttaacagtattttaaacaagttgcgagacggtgtacaattacgataagaattgctacttcaaagtacacacagaaagttaacatgaatggaattcaagtggacatcaatcgtttgaaaaagggcgaagtcagtttaggtacctcaatgtatgtatataagaatttttcctcccactttattgtttctaaaagttcaatgaagtaaagtctcaattggccttattactaactaataggtatcttataatcacctaataaaatag</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3_sequence"/>
+    <sbol:displayId>Psbtdh3_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Psbtdh3 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psbtdh3_sequence/1"/>
+    <sbol:elements>cattcatctttcacctgccattagtaacccgacttctcattgagcgggttacggcagccacaggccacattccgaatgtctgggtgagcggtcccttttccagcatccactaaatatctcggatcccgctttttaatctggcttcctgaaaaaaatcaatggagtgatgcaaactgactggagcaaaaagctgacacaaggcaatcgacctacgtgtctgtctattttctcacaccttctattaccttctaactctctgggttggaaaaaactgaaaaaaaggttgtctccagtttccacaaatcatccccctgtttgattaataaatatataaagacgacaactatcgatcataaactcataaaactataactcctttacacttcttattttatagttattctattttaattcttattgattttaaaaccccaagaacttagtttcgaaaacacacacacacaaacaattaaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP_sequence"/>
+    <sbol:displayId>CTP_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>CTP Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CTP_sequence/1"/>
+    <sbol:elements>tccagtaaagctaccaaaagtgacgtagatccattgcactcgtttctggcagggtccctagccggtgctgctgaagcatgtataacatatccttttgagtttgccaaaacaaggctgcagctgattgataaggcctccaaggcatcaagaaatcctctggtattgatatataaaactgcaaaaactcagggcattggttccatttatgtcggatgtcccgcatttattattggaaacaccgctaaggcgggtattagatttcttggctttgataccattaaagacatgctaagagatagtgaaactggagaactaagtggtacaagaggggtgatagctgggttaggtgcgggactattagaaagtgttgccgcagtgactccttttgaagcaatcaaaactgctttgatcgatgataaacaatctgctacaccaaaataccataataatgggcgcggtgtagtacgaaactattcatcattagtccgtgataaaggattttctggtctttatcgtggtgttttgccagtttccatgagacaggccgcaaaccaagccgttagattgggttgttacaataagattaagaccttgatccaagattatacggattcgccaaaagacaaacctttatcatccgggttaaccttcttagtgggtgcatttagtggtattgtgacggtctattccaccatgccccttgatactgtgaaaacaagaatgcaaagtttggattccaccaaatactcctctacaatgaattgttttgcaaccattttcaaagaagaagggttaaagacgttttggaaaggtgctacgcctagacttgggagattggtcttgagtggtggtattgttttcactatctatgaaaaggtcttagttatgctagcc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2_sequence"/>
+    <sbol:displayId>Tadh2_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tadh2 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh2_sequence/1"/>
+    <sbol:elements>gcggatctcttatgtctttacgatttatagttttcattatcaagtatgcctatattagtatatagcatctttagatgacagtgttcgaagtttcacgaataaaagataatattctactttttgctcccaccgcgtttgctagcacgagtgaacaccatccctcgcctgtgagttgtacccattcctctaaactgtagacatggtagcttcagcagtgttcgttatgtacggcatcctccaacaaacagtcggttatagtttgtcctgctcctctgaatcgtctc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1_sequence"/>
+    <sbol:displayId>Pfba1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Pfba1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pfba1_sequence/1"/>
+    <sbol:elements>atgacagcaggattatcgtaatacgtaatagttgaaaatctcaaaaatgtgtgggtcattacgtaaataatgataggaatgggattcttctatttttcctttttccattctagcagccgtcgggaaaacgtggcatcctctctttcgggctcaattggtgtcacgctgccgtgagcatcctctctttccatatctaacaactgagcacgtaaccaatggaaaagcatgagcttagcgttgctccaaaaaagtattggatggttaataccatttgtctgttctcttctgactttgtctcctcaaaaaaaaaaaatctacaatcaacagatcgcttcaattacgccctcacaaaaacttttttccttcttcttcgcccacgttaaattttatccctcatgttgtctaacggatttctgcacttgatttattataaaaagacaaagacataatacttctctatcaatttcagttattgttcttccttgcgttattcttctgttcttctttttcttttgtcatatataaccataaccaagtaatacatattcaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16_sequence"/>
+    <sbol:displayId>Tvma16_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tvma16 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tvma16_sequence/1"/>
+    <sbol:elements>cgctcaaaccaggcttttcttttccgtttttacgagctagataagcgcatccatatttactaatagatataatgagatatctgagatacatgtgtatgtatatatgcacgttttcttttattatctaaaaatcatattatattaagtaagagaaaaaaatgtacaactatataaatatatatttatttaaaatggttttgaatttttcctattctggttgatattgcccaaaagctattcagt</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1_sequence"/>
+    <sbol:displayId>Tgpm1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tgpm1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tgpm1_sequence/1"/>
+    <sbol:elements>gtctgaagaatgaatgatttgatgatttctttttccctccatttttcttactgaatatatcaatgatatagacttgtatagtttattatttcaaattaagtagctatatatagtcaagataacgtttgtttgacacgattacattattcgtcgacatcttttttcagcctgtcgtggtagcaatttgaggagtattattaattgaataggttcattttgcgctcgcataaacagttttcgtcagggacagtatgttggaatgagtggtaattaatggtgacatgacatgttatagcaata</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9_sequence"/>
+    <sbol:displayId>Tprm9_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tprm9 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tprm9_sequence/1"/>
+    <sbol:elements>cagatgacgggagacactagcacacaactttaccaggcaaggtatttgacgctagcatgtgtccaattcagtgtcatttatgattttttgtagtaggatataaatatatacagcgctccaaatagtgcggttgccccaaaaacaccacggaacctcatctgttctcgtactttgttgtgacaaagtagctcactgccttattatcacattttcattatgcaacgcttcggaaaatacgatgttgaaaat</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int_sequence"/>
+    <sbol:displayId>_5int_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>5int Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/_5int_sequence/1"/>
+    <sbol:elements>gacatattcttaccaatcctttcataagctaattatgccatccatatagcaagagaatccggtgggggcgccatgcctatccggcggcaacattattactctggtatacgggcgtaactccataatatgccaccacttacctttaacatgttcatggtaggtaccccacccagccataaggaaattttcaaaggcgttggatcaaaaaataggcctttatttcatcgcgtgattgaggagcataacatgtttagtgaaggtttcttttggaaaacttcagtcgctcattattagaaccagggaggtccaggctttgctggtgggagagaaagcttatgaagctggggttgcagatttgtcgattggtcgccagtacacagttttaaaaagtcagagaatgtagagaagtatggatctttgaaaccct</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2_sequence"/>
+    <sbol:displayId>Peft2_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Peft2 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peft2_sequence/1"/>
+    <sbol:elements>ttccttttttttcttttttttttaccagaagaattacgtacaaaagtacctactatttcaaagcaagaaatgagatgcctattgtggttatatacagaatagatgataaatgggttttccgtgcaaaacgatatggagaattcaaaatgggtgcgaaatacctggaacgtaagcgttctgagaaatacacagacgcattaacctgacaaaaacacaactagtttgggaaagggatttggtctttcctctcgggcttctcgtgtggttcctttctttctcagatctccctgcacactgggctgttgtcctccaggttatggtttgttctcttcaggtattacaatgcagtaggcttttggagtgagcaaaacgaagagagaaaaaaattttttcttaaaagttttttttcattttgtgagcttattcttcttttctatatattcttgatatcttagattatacatattattctcttacatttcacgattgcccttttggtgtttagcattcagtctcaaagaccacaaacacaaactataacataattgcaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1_sequence"/>
+    <sbol:displayId>Phta1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Phta1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phta1_sequence/1"/>
+    <sbol:elements>aaagggtgcaacgcgcgaaaaagtgagaacagccttccctttcgggcgacattgagcgtctaaccatagttaacgacccaaccgcgttttcttcaaatttgaactcgccgagctcacaaataattcattagcgctgttccaaaattttcgcctcactgtgcgaagctattggaatggagtgtatttggtggctcaaaaaaagagcacaatagttaactcgtcgttgttgaagaaacgcccgtagagatatgtggtttctcatgctgttatttgttattgcccactttgttgatttcaaaatcttttctcacccccttccccgttcacgaagccagccagtggatcgtaaatactagcaataagtcttgacctaaaaaatatataaataagtctcctaatcagcttgtagattttctggtcttgttgaaccatcatctatttacttccaatctgtacttctcttcttgatactacatcatcatacggatttggttatttctcagtgaataaacaacttcaaaacaaacaaatttcatacatataaaatataa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE_sequence"/>
+    <sbol:displayId>ITE_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>ITE Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ITE_sequence/1"/>
+    <sbol:elements>ggtcacggtgacactgaatctccaaacccaaccaccaccactgaaggttctggtcaaaacgaacctgaaaagaagggtcgtgacattccattatggagaaagtgtgttatcactttcgttgtttcctggatgactttggttgtcactttctcctccacctgtttgttgccagctgctccagaaattgctaacgaattcgatatgaccgtcgaaaccattaacatttccaacgctggtgttttggttgccatgggttactcttctttgatctggggtccaatgaacaaattggttggtagaagaacctcttacaacttggccatctccatgttgtgtgcctgttctgctggtactgctgctgccatcaacgaagaaatgttcattgctttccgtgtcttgtctggcttgaccggtacttctttcatggtttccggtcaaaccgtcttggctgatatctttgaaccagtttacagaggtactgctgtcggtttcttcatggctggtactctatccggtccagccattggtccatgtgtcggtggtgtcattgtcactttcacctcctggagagttatcttctggttacaattgggtatgtctggtttaggtttggttttgtctctattattcttcccaaagatcgaaggtaactctgaaaaggtttctactgctttcaagccaaccactttggtcaccatcatctccaagttctctccaaccgatgtcttgaagcaatgggtttacccaaatgtctttttggctgatttgtgttgtggtttgttggccatcactcaatactccatcttgacttctgccagagctatcttcaactccagattccatttgaccaccgctttggtttccggtttattctacttggctccaggtgctggtttcttgattggttctttggttggtggtaaattgtctgacagaaccgtcagaagatacattgtcaagagaggtttcagattacctcaagacagattgcactctggtttgatcactttgtttgctgtcttgccagctggtactttgatctacggttggactttgcaagaggacaagggtgacatggttgttccaatcattgctgctttctttgctggttggggtttgatgggttctttcaactgtttgaacacctacgttgctggtttattccacactttgatctacttgttcccattgtgtacctgtccacaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1_sequence"/>
+    <sbol:displayId>Tdpp1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tdpp1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tdpp1_sequence/1"/>
+    <sbol:elements>aataaaaaagaatatatactccacatgacatacgaaatatacgtatttattgttctgtatggaataacagcgattacataaagatgacatgttacttctttattcaaattaatcttgacgtgcaagggcctgcttgttatttcatcggacaatcccaacatcactttacacg</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC_sequence"/>
+    <sbol:displayId>CSC_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>CSC Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CSC_sequence/1"/>
+    <sbol:elements>gctgacaccaaggccaagttgaccttgaacggtgacactgctgtcgaattggatgttttgaaaggtactttgggtcaagatgtcattgatatcagaactttgggttccaagggtgttttcaccttcgacccaggtttcacctctactgcttcttgtgaatccaagatcactttcatcgatggtgacgaaggtatcctattacacagaggtttcccaattgaccaattagctactgactccaactacttggaagtttgttacatcttgttgaatggtgaaaagccaactcaagaacaatacgacgaatttaaaaccaccgttaccagacacaccatgattcacgaacaaatcaccagattattccacgctttccgtcgtgactcccacccaatggctgtcatgtgtggtatcactggtgctttggctgctttctaccatgactctttggatgtcaacaacccaagacacagagaaattgccgctttcttgttgttgtccaagatgccaaccatggctgctatgtgttacaagtactccatcggtcaacctttcgtttacccaagaaacgatttgtcttacgccggtaacttcttgaacatgatgttctccactccatgtgaaccttacgaagttaacccaattttggaaagagccatggacagaatcttgatcttgcacgctgaccatgaacaaaacgcttctacttctactgttagaactgccggttcttctggtgctaacccatttgcttgtatcgctgctggtattgcttctttatggggtccagctcatggtggtgccaacgaagctgctttgaagatgttggaagaaatttcttctgtcaagcacattccagaatttgtcagaagagctaaggacaagaacgactctttcagattgatgggtttcggtcaccgtgtctacaagaactacgacccaagagctaccgtcatgagagaaacctgtcacgaagttttgaaggaattgggtaccaaggatgacttgttggaagttgccatggaattggaaaacattgctttgaacgacccatacttcatcgaaaagaaattgtacccaaacgtcgatttctactccggtatcatcttaaaggctatgggtattccatcttccatgttcaccgttatctttgctatggccagaactgttggttggatcgctcactggtccgaaatgcactctgatggtatgaagattgccagaccaagacaattatacactggttacgaaaagagagatttcaaatctgatatcaagaga</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a_sequence"/>
+    <sbol:displayId>Trpl15a_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Trpl15a Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trpl15a_sequence/1"/>
+    <sbol:elements>ctggttgatggaaaatataattttattgggcaaacttttgtttatctgatgtgttttatactattatctttttaattaatgattctatatacaaacctgtatattttttctttaaccaatttttttttttatagacctagagctgtact</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3_sequence"/>
+    <sbol:displayId>Prps3_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Prps3 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Prps3_sequence/1"/>
+    <sbol:elements>aatccaagtaaaaggatggatatcgttatactaaaagcaacacagaaaaggtccacgtcagttccacacaataacatttacgtagtgttcacgcgaagcagttacatctcaactaacataattgctggtgagcctacaacactgcatgcgtaaacgtcaacgggattacgttagtatttttggccgccggtaaattctcttgtttttttttcttgatttcacttcttttcatgttcctttggaataatctaattcctcatgattaaatgagactgttttttgtttccgtaacatccatacctttcctgtataatattcttgctgtaaagtttgttttttttatgaaaaaaacattttcttttcttgagatgaggcgccgcgagcctttctcccatgggcagtggtaaattttccaaatcaatgcagctctttgaaatacaacagcatttttcatacattttaagcaatttctagtttgtagatattgttagattagtttttgaacattgttttgataactgaaaataaaacagcaaacaaactacaaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3_sequence"/>
+    <sbol:displayId>Ptdh3_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ptdh3 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ptdh3_sequence/1"/>
+    <sbol:elements>ttagtcaaaaaattagccttttaattctgctgtaacccgtacatgcccaaaatagggggcgggttacacagaatatataacatcgtaggtgtctgggtgaacagtttattcctggcatccactaaatataatggagcccgctttttaagctggcatccagaaaaaaaaagaatcccagcaccaaaatattgttttcttcaccaaccatcagttcataggtccattctcttagcgcaactacagagaacaggggcacaaacaggcaaaaaacgggcacaacctcaatggagtgatgcaacctgcctggagtaaatgatgacacaaggcaattgacccacgcatgtatctatctcattttcttacaccttctattaccttctgctctctctgatttggaaaaagctgaaaaaaaaggttgaaaccagttccctgaaattattcccctacttgactaataagtatataaagacggtaggtattgattgtaattctgtaaatctatttcttaaacttcttaaattctacttttatagttagtcttttttttagttttaaaacaccaagaacttagtttcgaataaacacacataaacaaacaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK_sequence"/>
+    <sbol:displayId>XPK_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>XPK Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/XPK_sequence/1"/>
+    <sbol:elements>ccaggagaagtcatcgagcgaccaaacccggcgccaaagccgtcgcatgtccccgatttagtagaaaaactcataattcccgcgcagaaaacgaagctggagaaaagcgattgtgatgcgttgcacaagtatcgtcgcgcggcggcgtatattgctgctggacactggggaacatgtcctgggttgatcctcgtttactctcacctgaactacctgatcaagaagcagaacctcgatatgctgtatgttgttgggccagggcatggagcaccgggcttgctagcatcgttgtggcttgagggctcgctggggaagttttatccgcagtataccaaggacaaggagggtctgcacaacctcatctcgacgttcagtaccagtgccggactgcctagccacatcaatgctgaaacacccggcgctatccacgaaggaggagagctgggctatgcgctgtctgtctccttcggcgcagtcatggataaccccgatttgattgtaacatgtgtagttggagacggagaggcggaaactggtccaacagccacatcatggcatgcgatcaagtacatcgatccagctgagtcaggagccgtgcttccaatcctgcatgtgaatggcttcaagatcagtgagcgcactatttttgggtgcatggataacagggagatagtctgcctgttcacagggtacgggtatcaggtgcgcattgtcgaggacctcgaggacatcgacaacgaccttcacagcgctatgtcctgggcggttgaggaaatccgtaatattcagaaagcagcgcgctccggaaagcctatcatgaagcctcaatggcccatgattgtcttgcgaacgcccaagggttggtcagggccgaaagagctgcatggccagttcatcgaaggatcgttccactcccaccaggttcccctccctaatgctaagaaagacgatgaggagctccaggctctgcagaaatggctttcctcttacaaacccgatgagctgtttaccgagtctggcgacgttatcgacgaaatcctatccattattccttcggatgataagaaactcggcatgaggcccgaggcctacaagactcatctaccgccggacctccctgactggagacagttctgcgtgaaaaaaggggatcagttcagcgcaatgaaggccattggtagcttcatcgaccaggttttcgtcaagaacccgcataccgtccggttattctcacccgacgagctggaaagcaacaagttgagcgctgccctatcacatacgggaaggaatttccagtgggatgagttctcgaatgcaaaaggtgggcgggtgatcgaggtcctgagtgagcatttgtgtcagggcttcatgcaggggtatacattgaccggccggacgggcatcttcccatcatatgagagtttcttgggtattatacataccatgatggtccagtatgccaagttcgcaaagatggctaaagaaacggcatggcaccatgacgtgagtagtatcaactacatcgagactagcacctgggcccgacaggagcacaatggcttctctcaccaaaatccatccttcatcggcgcggttctcaaactgaagccgtacgccgcccgcgtctacctgcctcccgacgccaacacatttcttaccactttgcaccactgcctgaaatcaaagaattatatcaacctcatggtcggctcaaagcaacccaccccagtctacctgagccccgaggaagcggaaagccactgccgagccggagcctcgatcttcaagttctgcagtaccgacggtgggctccgcccggatgtcgtactcgttggaatcggtgttgaggtcatgttcgaagttatcaaggcggcagccatactgcgagaacgatgccctgagctgcgtgttcgtgtagtcaacgtgacggatttattcattctcgagaacgagggtgcccacccccacgccttgaagcacgaggccttcgacaacctcttcaccgaggatcgctccatccatttcaactatcatggatatgtgaacgaactccagggcctgctctttggccgccctaggctcgaccgggcaaccatcaagggatataaggaagagggaagcaccacaactccatttgacatgatgcttgtgaatgaagtatcgcggtaccacgtcgcgaaggcagccgtcacgggaggagcgaggttcaatgagaaagtcaagctgcggcaccaggagctttgctctgaattcgatcataacattgctgagacgcgcaagtacatcatgaacaatcatcaagatcccgaggacacatacaatatgccctcatttaac</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD_sequence"/>
+    <sbol:displayId>CAD_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>CAD Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/CAD_sequence/1"/>
+    <sbol:elements>accaagcaatctgctgactccaatgccaagtctggtgtcacttccgaaatctgtcactgggcttccaacttggctactgacgacattccatctgatgtcttggaaagagccaagtacttgattttggacggtattgcctgtgcttgggttggtgctcgtgttccatggtctgaaaagtacgttcaagctaccatgtccttcgaacctccaggtgcttgtcgtgtcatcggttacggtcaaaaattgggtccagttgctgctgccatgaccaactctgcctttattcaagccactgaattggatgactaccactctgaagctccattgcactctgcttccattgttctaccagctgttttcgctgcttctgaagtcttggctgaacaaggtaagaccatctctggtatcgatgttatcttagctgccattgtcggtttcgaatctggtccaagaatcggtaaggccatctacggttctgacttgttgaacaacggttggcattgtggtgccgtttacggtgctccagctggtgctttggctaccggtaagttgttgggtttgactccagactccatggaagatgctttgggtatcgcttgtacccaagcttgtggtttgatgtctgctcaatacggtggtatggttaagagagttcaacatggtttcgctgccagaaacggtctattaggtggtttgttggctcacggtggttacgaagctatgaagggtgtcttggaaagatcttacggtggtttcttgaagatgttcaccaagggtaacggtagagaacctccatacaaggaagaagaagttgttgccggtttaggttctttctggcacactttcaccatcagaatcaaattgtacgcttgttgtggtttagtccacggtccagttgaagccattgaaaacttacaaggtcgttacccagaattgttgaacagagctaacttgtccaacatcagacacgttcacgttcaattatccactgcttccaactctcactgtggttggattccagaagaaagaccaatctcctccattgctggtcaaatgtctgttgcttacattttggctgtccaattggttgaccaacaatgtttgttgtctcaattctccgaattcgatgacaacttggaaagaccagaagtctgggatttggctagaaaggtcacctcttctcaatctgaagaatttgaccaagatggtaactgtttgtctgctggtagagtcagaattgaattcaacgacggttcttccatcactgaatccgttgaaaagccattaggtgtcaaggaaccaatgccaaacgaaagaatcttgcacaaatacagaactttggctggttccgtcactgacgaatccagagtcaaggaaatcgaagatttggttttgggtttggacagattgaccgatatctctccattattggaattgttgaactgtccagtcaaatctccattgggtatcaag</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1_sequence"/>
+    <sbol:displayId>Teno1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Teno1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Teno1_sequence/1"/>
+    <sbol:elements>agcttttgattaagccttctagtccaaaaaacacgtttttttgtcatttatttcattttcttagaatagtttagtttattcattttatagtcacgaatgttttatgattctatatagggttgcaaacaagcatttttcattttatgttaaaacaatttcaggtttaccttttattctgcttgtggtgacgcgtgtatccgcccgctcttttggtcacccatgtatttaattgcataaataattcttaaaagtggagctagtctatttctatttacatacctctcatttctcattt</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2_sequence"/>
+    <sbol:displayId>Phhf2_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Phhf2 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Phhf2_sequence/1"/>
+    <sbol:elements>acaagaagcaacgcgagagagcacaacacgctgttatcacgcaaactatgttttgacaccgagccatagccgtgattgtgcgtcacattgggcgataatgaacgctaaatgaccaactcccatccgtaggagccccttagggcgtgccaatagtttcacgcgcttaatgcgaagtgctcggaacggacaactgtggtcgtttggcaccgggaaagtggtactagaccgagagtttcgcatttgtatggcaggacgttctgggagcttcgcgtctcaagctttttcgggcgcgaaatgcagaccagaccagaacaaaacaactgacaagaaggcgtttaatttaatatgttgttcactcgcgcctgggctgttgttattcggctagatacatacgtgtttgtgcgtatgtagttatatcatatataagtatattaggatgaggcggtgaaagagattttttttttttcgcttaatttattcttttctctatcttttttcctacatcttgttcaaaagagtagcaaaaacaacaatcaatacaataaaat</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT_sequence"/>
+    <sbol:displayId>NAT_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>NAT Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/NAT_sequence/1"/>
+    <sbol:elements>ggtaaggaaaagacacacgtttcgaggccgcgattaaattccaacatggatgctgatttatatgggtataaatgggctcgcgataatgtcgggcaatcaggtgcgacaatctatcgattgtatgggaagcccgatgcgccagagttgtttctgaaacatggcaaaggtagcgttgccaatgatgttacagatgagatggtcagactaaactggctgacggaatttatgcctcttccgaccatcaagcattttatccgtactcctgatgatgcatggttactcaccactgcgatccccggcaaaacagcattccaggtattagaagaatatcctgattcaggtgaaaatattgttgatgcgctggcagtgttcctgcgccggttgcattcgattcctgtttgtaattgtccttttaacagcgatcgcgtatttcgtctcgctcaggcgcaatcacgaatgaataacggtttggttgatgcgagtgattttgatgacgagcgtaatggctggcctgttgaacaagtctggaaagaaatgcataagcttttgccattctcaccggattcagtcgtcactcatggtgatttctcacttgataaccttatttttgacgaggggaaattaataggttgtattgatgttggacgtgtcggaatcgcagaccgataccaggatcttgccatcctatggaactgcctcggtgagttttctccttcattacagaaacggctttttcaaaaatatggtattgataatcctgatatgaataaattgcagtttcatttgatgctcgatgagtttttc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2_sequence"/>
+    <sbol:displayId>Peno2_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Peno2 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Peno2_sequence/1"/>
+    <sbol:elements>gtgtcgacgctgcgggtatagaaagggttctttactctatagtacctcctcgctcagcatctgcttcttcccaaagatgaacgcggcgttatgtcactaacgacgtgcaccaacttgcggaaagtggaatcccgttccaaaactggcatccactaattgatacatctacacaccgcacgccttttttctgaagcccactttcgtggactttgccatatgcaaaattcatgaagtgtgataccaagtcagcatacacctcactagggtagtttctttggttgtattgatcatttggttcatcgtggttcattaattttttttctccattgctttctggctttgatcttactatcatttggatttttgtcgaaggttgtagaattgtatgtgacaagtggcaccaagcatatataaaaaaaaaaagcattatcttcctaccagagttgattgttaaaaacgtatttatagcaaacgcaattgtaattaattcttattttgtatcttttcttcccttgtctcaatcttttatttttattttatttttcttttcttagtttctttcataacaccaagcaactaatactataacatacaataat</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1_sequence"/>
+    <sbol:displayId>Tnat1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tnat1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tnat1_sequence/1"/>
+    <sbol:elements>ctgcaactcctcaatgtgtcaattaactcttacttaatttatgtatatattttttatgtatatgcttatatgcatgcgcatatgctcataaaagatacattgttataggtcatttcttttccaagctacatctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA_sequence"/>
+    <sbol:displayId>PTA_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>PTA Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/PTA_sequence/1"/>
+    <sbol:elements>gcggatctgtttagcaccgtgcaggaaaaagtggcgggcaaagatgtgaaaattgtgtttccggaaggcctggatgaacgcattctggaagcggtgagcaaactggcgggcaacaaagtgctgaacccgattgtgattggcaacgaaaacgaaattcaggcgaaagcgaaagaactgaacctgaccctgggcggcgtgaaaatttatgatccgcatacctatgaaggcatggaagatctggtgcaggcgtttgtggaacgccgcaaaggcaaagcgaccgaagaacaggcgcgcaaagcgctgctggatgaaaactattttggcaccatgctggtgtataaaggcctggcggatggcctggtgagcggcgcggcgcatagcaccgcggataccgtgcgcccggcgctgcagattattaaaaccaaagaaggcgtgaaaaaaaccagcggcgtgtttattatggcgcgcggcgaagaacagtatgtgtttgcggattgcgcgattaacattgcgccggatagccaggatctggcggaaattgcgattgaaagcgcgaacaccgcgaaaatgtttgatattgaaccgcgcgtggcgatgctgagctttagcaccaaaggcagcgcgaaaagcgatgaaaccgaaaaagtggcggatgcggtgaaaattgcgaaagaaaaagcgccggaactgaccctggatggcgaatttcagtttgatgcggcgtttgtgccgagcgtggcggaaaaaaaagcgccggatagcgaaattaaaggcgatgcgaacgtgtttgtgtttccgagcctggaagcgggcaacattggctataaaattgcgcagcgcctgggcaactttgaagcggtgggcccgattctgcagggcctgaacatgccggtgaacgatctgagccgcggctgcaacgcggaagatgtgtataacctggcgctgattaccgcggcgcaggcgctg</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1_sequence"/>
+    <sbol:displayId>Tadh1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tadh1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tadh1_sequence/1"/>
+    <sbol:elements>cgaatttcttatgatttatgatttttattattaaataagttataaaaaaaataagtgtatacaaattttaaagtgacacttaggttttaaaacgaaaattc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1_sequence"/>
+    <sbol:displayId>Taip1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Taip1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Taip1_sequence/1"/>
+    <sbol:elements>ataagaatataaagtaaacaattacgtaaccttagaaaaacagatataaaaaagttttacactgtttttaccacagtccatataaacttgtaattattacccgaat</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w_sequence"/>
+    <sbol:displayId>Tyol036w_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tyol036w Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyol036w_sequence/1"/>
+    <sbol:elements>ggaaaaaggtcttggctatatataacggcagacaaaatataagtatacacgtatatatggtggtaaacacgcatatactgtatgccatgtatttaccattacatagttatttacgcactctataaaaagttaacattgcattttaataaattccttaaattactctaattaggatggtagccctaccttt</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6_sequence"/>
+    <sbol:displayId>Pvma6_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Pvma6 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pvma6_sequence/1"/>
+    <sbol:elements>aaggcaagaaaaaaaattatgacccatacattttggtgcatgggtgatattttgtctttattattattagtaactttcagattaagacaaggaagaaagaaggaaaaaaggtaggacatgaagcatgagagataatcaaatttgctgaatgctgtgatactggtatacaaatagaagtgctgaagttcaagttatttggtaacatgcaagtttcattaatattttgttattatgtatttcaaggacaaaatgaattgtaggaagatgaaaaagtgatttcatcccccaacgattcatactctgggccgtacccttcttatcttacagacgcaaagtcagcagattcttgtattatggaactaagtaatttccgcgcacctattgttacgctgatatctgcgtacaaagtgacgtatttttaaaatatcttcgatatactgcaaaaacaaaagaacaattgacctcttaaccctttaaggtatggcataaagaacgctaagagctagcaaaagagtataccattcggatcgtgttgctaaagtcttgcgaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH_sequence"/>
+    <sbol:displayId>ACDH_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>ACDH Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACDH_sequence/1"/>
+    <sbol:elements>gaatctttggaattggaacaattagtcaagaaggttttgttggaaaaattggctgaacaaaaggaagttccaaccaagaccaccacccaaggtgccaagtccggtgttttcgacaccgtcgatgaagctgtccaagctgctgtcattgctcaaaactgttacaaggaaaaatctttggaagaaagaagaaacgttgtcaaggccatcagagaagctttgtacccagaaatcgaaaccattgccaccagagctgttgctgaaaccggtatgggtaatgtcactgacaagatcttgaagaacactttggccatcgaaaagaccccaggtgttgaagatttgtacactgaagttgccactggtgacaacggtatgactttgtacgaattgtctccatacggtgtcatcggtgctgttgccccatctaccaacccaactgaaactttgatctgtaactccattggtatgttggctgctggtaatgctgttttctactctcctcacccaggtgccaagaacatctctttatggttaatcgaaaaattgaacaccattgtccgtgactcttgtggtatcgacaacttgattgtcactgttgccaagccttccatccaagctgctcaagaaatgatgaaccatccaaaggtcccattgttggttatcactggtggtccaggtgttgtcttgcaagctatgcaatctggtaagaaggtcattggtgctggtgctggtaacccaccatctatcgtcgatgaaactgctaacattgaaaaggctgccgctgatatcgttgacggtgcttctttcgaccacaacatcctatgtattgctgaaaaatccgttgttgccgttgactccattgctgatttcttattattccaaatggaaaagaacggtgctttgcacgttaccaacccatctgatatccaaaaattggaaaaggttgctgtcactgacaagggtgtcaccaacaagaaattggttggtaagtctgctactgaaatcttgaaggaagctggtattgcttgtgacttcactccaagattaatcattgtcgaaactgaaaagtcccacccatttgccaccgttgaattgttgatgccaattgtcccagttgtcagagttccagacttcgatgaagctttggaagttgccatcgaattggaacaaggtttgcaccacactgctaccatgcactctcaaaacatctccagattgaacaaggctgctagagacatgcaaacttccatctttgtcaagaacggtccatctttcgctggtttaggtttcagaggtgaaggttccactactttcaccattgctaccccaactggtgaaggtaccaccaccgctagacatttcgctagaagaagaagatgtgttttgactgatggtttctccatacgt</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3_sequence"/>
+    <sbol:displayId>Psptdh3_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Psptdh3 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Psptdh3_sequence/1"/>
+    <sbol:elements>gttttatttctgctgccatccgtaaatgccaggatttgagcgggttacacaatatatctcatattttcggtgtctgggtcattactttactcttggcatccactaaatatattggatcctgctttttaaactggcttccagaaaaaaatcaatggagtgatgcaaactgcctggagtaaaagatgacacaaggcgattgacctacgcatgtatctatctcattttcttacaccttctatttcattctaactctttgatttggaaaacacctaagaaaaaaaaggttgaaatcagttccctgaaattgtccccctacttgactaataaatatataaagacggtaggtattgactgtaattcgtaaatctatacttcttaaacttcttcaaatttacttttttggatagtcttatttttggtttcaataccccaagaacttagtttcaaataaatacacatacaaacaa</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1_sequence"/>
+    <sbol:displayId>Tcyc1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tcyc1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tcyc1_sequence/1"/>
+    <sbol:elements>caggccccttttcctttgtcgatatcatgtaattagttatgtcacgcttacattcacgccctccccccacatccgctctaaccgaaaaggaaggagttagacaacctgaagtctaggtccctatttatttttttatagttatgttagtattaagaacgttatttatatttcaaatttttcttttttttctgtacaaacgcgtgtacgcatgtaaca</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a_sequence"/>
+    <sbol:displayId>Trps14a_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Trps14a Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Trps14a_sequence/1"/>
+    <sbol:elements>ttatgcatgtattgtacttgtattgccgtattattttttacagttaaaaaatgtgtacatataattatatagcgcccataatcaaatcagctcatacgtcaatttagtaataaaaaaaagcccttataaccttttagttaagaagattcaagattgcgatttgattaacgtcattacggaaatgtaaggacacaattaccaagagttacaaaatcg</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9_sequence"/>
+    <sbol:displayId>Tyhi9_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tyhi9 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tyhi9_sequence/1"/>
+    <sbol:elements>attctaaacgcatagttgtaaggttgatgtatatatatatatatatatgtatatattaattacaataatatgctcccgcccaaatttttctccttcaataccgccggaggcggtattgaaggaaatagacggagaattccttatcaagaaagcttccatcaaagtgtacataagaagtgccgaaattcgaagtattctttcagagagtatttttgcaacataccaataagccaaattactc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO_sequence"/>
+    <sbol:displayId>ACO_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>ACO Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/ACO_sequence/1"/>
+    <sbol:elements>actgtttccaacttgaccagagactccaaggttaaccaaaacttgttggaagatcattctttcatcaactacaagcaaaatgtcgaaactttggatatcgtcagaaagagattgaacagaccattcacctacgctgaaaagattttgtacggtcacttggatgacccacacggtcaagatatccaaagaggtgtctcctacttgaaactaagaccagatcgtgttgcttgtcaagatgctactgctcaaatggctatcttacaattcatgtccgctggtttgcctcaagttgccaagccagtcaccgtccactgtgaccatttgatccaagctcaagtcggtggtgaaaaggacttgaagagagccattgacttgaacaaggaagtctacgacttcttggcttctgccactgctaaatacaacatgggtttctggaagccaggttccggtatcatccaccaaatcgttttggaaaactatgccttcccaggtgctttgatcatcggtactgactcccacactccaaatgccggtggtctaggtcaattggccatcggtgttggtggtgctgatgctgttgacgtcatggctggtagaccatgggaattgaaggctccaaagattttgggtgttaagttgaccggtaagatgaacggttggacttctccaaaggacatcatcttgaaattggctggtatcactactgttaagggtggtactggtaagattgtcgaatactttggtgacggtgtcgacactttctctgctaccggtatgggtaccatctgtaacatgggtgctgaaattggtgccaccacttctgttttcccattcaacaaatccatgattgaatacttggaagctaccggtagaggtaagattgctgatttcgctaagttataccacaaggacttgttgtctgccgacaaggacgctgaatacgatgaagttgtcgaaattgacttgaacactttggaaccatacatcaacggtccattcaccccagatttggctaccccagtttctaagatgaaggaagttgccgttgctaacaactggccattagatgttagagttggtttgattggttcttgtaccaactcctcttacgaagatatgtccagatctgcttccattgtcaaggatgctgctgctcacggtttgaaatctaagaccatcttcactgttaccccaggttctgaacaaatcagagccaccatcgaacgtgacggtcaattggaaactttcaaggaatttggtggtattgtcttggctaacgcttgtggtccatgtattggtcaatgggacagaagagatatcaagaagggtgacaagaacaccatcgtttcctcttacaacagaaacttcacttctagaaacgatggtaacccacaaacccacgcctttgttgcttctccagaattagtcactgctttcgctattgctggtgacttgagattcaacccattaaccgacaaattgaaggacaaggacggtaacgaatttatgttgaagcctcctcatggtgatggtttaccacaaagaggttacgatgctggtgaaaacacctaccaagctccaccagccgacagatccaccgtcgaagtcaaggtttctccaacttctgacagattacaattgttgaaacctttcaagccatgggatggtaaggacgctaaggacatgccaatcttaatcaaggctgttggtaagactaccaccgaccacatttccatggctggtccatggttgaaatacagaggtcacttggaaaacatctccaacaactacatgattggtgccattaatgccgaaaacaagaaggctaactgtgtcaagaacgtttacactggtgaatacaagggtgttccagacactgccagagactacagagatcaaggtatcaaatgggttgtcatcggtgacgaaaacttcggtgaaggttcttctcgtgaacacgctgctttggaaccaagattcttgggtggtttcgctattattaccaaatctttcgctcgtattcacgaaaccaacttgaagaagcaaggtctattgccattgaacttcaagaacccagccgactacgacaagatcaacccagatgacagaattgacatcttaggtttggctgaattggctccaggtaagccagtcaccatgagagttcacccaaagaacggtaagccatgggatgctgtcttgactcacactttcaacgatgaacaaatcgaatggttcaaatacggttctgctttgaacaagatcaaggctgatgaaaagaag</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1_sequence"/>
+    <sbol:displayId>Ttpi1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Ttpi1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Ttpi1_sequence/1"/>
+    <sbol:elements>gattaatataattatataaaaatattatcttcttttctttatatctagtgttatgtaaaataaattgatgactacggaaagcttttttatattgtttctttttcattctgagccacttaaatttcgtgaatgttcttgtaagggacggtagatttacaagtgatacaacaaaaagcaaggcgctttttctaataaaaagaagaaaagcatttaacaattgaacacctctatatcaacgaagaatattactttgtctctaaatccttgtaaaatgtgtacgatctctatatgggttactca</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1_sequence"/>
+    <sbol:displayId>Pzuo1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Pzuo1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Pzuo1_sequence/1"/>
+    <sbol:elements>ctggcgttttatcttttatgcatccaatatctaatattacttccgatcacgcatttagttctgattacagcagaaatcgtagcgcgatgagacatttcatcaaatggccttttttttttgggcaatttttttatatcttgaaatgatagttgccttgtactttcaaccgttcatttcattaagaacttgactaaatatgaacatttcttaaaaaaaaggttgacatataaaaataatcgaatataaacgatggaatttttataaaattaaacacatatatatatatatattaactataaatatgtcaaagaaaccatacaatcatagatttataactatcttttggatgacattaatgaacataacgctcctaatacaaatgtccaaaaaatattacccgcaaatacgaatcttttttttttctcgatgaaattttgcaaagagttcgaaatttttatttcaagagctggtagagaaaatttcataaggttttcctaccgatgcttttataaaatcttcgttttgtctcacatataccaacaagagtaac</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1_sequence"/>
+    <sbol:displayId>Tpdc1_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Tpdc1 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Itaconic_Acid_Pathway_Voigt_Lab/Tpdc1_sequence/1"/>
+    <sbol:elements>gcgatttaatctctaattattagttaaagttttataagcatttttatgtaacgaaaaataaattggttcatattattactgcactgtcacttaccatggaaagaccagacaagaagttgccgacagtctgttgaattggcctggttaggcttaagtctgggtccgcttctttacaaatttggagaatttctcttaaacgatatgtatattcttttcgttggaaaagatgtcttccaaaaaaaaaaccgatgaattagtggaaccaaggaaaaaaaaagaggtatccttgattaaggaaca</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+</rdf:RDF>

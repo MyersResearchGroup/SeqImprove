@@ -1,0 +1,574 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:ns0="https://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sbol:Collection rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/Anderson_Promoters_Anderson_Lab_collection/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/Anderson_Promoters_Anderson_Lab_collection"/>
+    <sbol:displayId>Anderson_Promoters_Anderson_Lab_collection</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Anderson Promoters (Anderson Lab)</dcterms:title>
+    <dcterms:description>Anderson Promoters (Anderson Lab)</dcterms:description>
+    <dc:creator>Jet</dc:creator>
+    <dcterms:created>2021-06-19T10:36:35.851Z</dcterms:created>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/Anderson_Promoters_Anderson_Lab_collection/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101_sequence/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111/1"/>
+    <sbol:member rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105/1"/>
+  </sbol:Collection>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118"/>
+    <sbol:displayId>J23118</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23118"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23118</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104"/>
+    <sbol:displayId>J23104</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23104"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23104</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100"/>
+    <sbol:displayId>J23100</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23100"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23100</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116"/>
+    <sbol:displayId>J23116</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23116"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23116</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102"/>
+    <sbol:displayId>J23102</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23102"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23102</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110"/>
+    <sbol:displayId>J23110</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23110"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23110</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108"/>
+    <sbol:displayId>J23108</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23108"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23108</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114"/>
+    <sbol:displayId>J23114</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23114"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23114</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112"/>
+    <sbol:displayId>J23112</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23112"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23112</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119"/>
+    <sbol:displayId>J23119</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23119"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23119</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103"/>
+    <sbol:displayId>J23103</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23103"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23103</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117"/>
+    <sbol:displayId>J23117</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23117"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23117</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101"/>
+    <sbol:displayId>J23101</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23101"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23101</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107"/>
+    <sbol:displayId>J23107</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23107"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23107</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109"/>
+    <sbol:displayId>J23109</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23109"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23109</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115"/>
+    <sbol:displayId>J23115</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23115"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23115</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113"/>
+    <sbol:displayId>J23113</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23113"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23113</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105"/>
+    <sbol:displayId>J23105</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23105"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23105</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111"/>
+    <sbol:displayId>J23111</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23111"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23111</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106"/>
+    <sbol:displayId>J23106</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasDerivedFrom rdf:resource="http://parts.igem.org/Part:BBa_J23106"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <dcterms:title>J23106</dcterms:title>
+    <dcterms:description>Constitutive promoter, part of Anderson series</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106/1"/>
+    <ns0:sourceOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <ns0:targetOrganism rdf:resource="https://identifiers.org/taxonomy:562"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <sbol:sequence rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106_sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108_sequence"/>
+    <sbol:displayId>J23108_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23108 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23108_sequence/1"/>
+    <sbol:elements>ctgacagctagctcagtcctaggtataatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110_sequence"/>
+    <sbol:displayId>J23110_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23110 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23110_sequence/1"/>
+    <sbol:elements>tttacggctagctcagtcctaggtacaatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115_sequence"/>
+    <sbol:displayId>J23115_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23115 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23115_sequence/1"/>
+    <sbol:elements>tttatagctagctcagcccttggtacaatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105_sequence"/>
+    <sbol:displayId>J23105_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23105 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23105_sequence/1"/>
+    <sbol:elements>tttacggctagctcagtcctaggtactatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102_sequence"/>
+    <sbol:displayId>J23102_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23102 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23102_sequence/1"/>
+    <sbol:elements>ttgacagctagctcagtcctaggtactgtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106_sequence"/>
+    <sbol:displayId>J23106_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23106 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23106_sequence/1"/>
+    <sbol:elements>tttacggctagctcagtcctaggtatagtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118_sequence"/>
+    <sbol:displayId>J23118_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23118 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23118_sequence/1"/>
+    <sbol:elements>ttgacggctagctcagtcctaggtattgtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104_sequence"/>
+    <sbol:displayId>J23104_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23104 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23104_sequence/1"/>
+    <sbol:elements>ttgacagctagctcagtcctaggtattgtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103_sequence"/>
+    <sbol:displayId>J23103_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23103 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23103_sequence/1"/>
+    <sbol:elements>ctgatagctagctcagtcctagggattatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114_sequence"/>
+    <sbol:displayId>J23114_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23114 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23114_sequence/1"/>
+    <sbol:elements>tttatggctagctcagtcctaggtacaatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107_sequence"/>
+    <sbol:displayId>J23107_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23107 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23107_sequence/1"/>
+    <sbol:elements>tttacggctagctcagccctaggtattatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117_sequence"/>
+    <sbol:displayId>J23117_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23117 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23117_sequence/1"/>
+    <sbol:elements>ttgacagctagctcagtcctagggattgtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101_sequence"/>
+    <sbol:displayId>J23101_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23101 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23101_sequence/1"/>
+    <sbol:elements>tttacagctagctcagtcctaggtattatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116_sequence"/>
+    <sbol:displayId>J23116_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23116 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23116_sequence/1"/>
+    <sbol:elements>ttgacagctagctcagtcctagggactatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112_sequence"/>
+    <sbol:displayId>J23112_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23112 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23112_sequence/1"/>
+    <sbol:elements>ctgatagctagctcagtcctagggattatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109_sequence"/>
+    <sbol:displayId>J23109_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23109 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23109_sequence/1"/>
+    <sbol:elements>tttacagctagctcagtcctagggactgtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100_sequence"/>
+    <sbol:displayId>J23100_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23100 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23100_sequence/1"/>
+    <sbol:elements>ttgacggctagctcagtcctaggtacagtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111_sequence"/>
+    <sbol:displayId>J23111_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23111 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23111_sequence/1"/>
+    <sbol:elements>ttgacggctagctcagtcctaggtatagtgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119_sequence"/>
+    <sbol:displayId>J23119_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23119 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23119_sequence/1"/>
+    <sbol:elements>ttgacagctagctcagtcctaggtataatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113_sequence"/>
+    <sbol:displayId>J23113_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>J23113 Sequence</dcterms:title>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/Anderson_Promoters_Anderson_Lab/J23113_sequence/1"/>
+    <sbol:elements>ctgatggctagctcagtcctagggattatgctagc</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+</rdf:RDF>

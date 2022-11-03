@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:ns0="http://purl.obolibrary.org/obo/" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sbol:Collection rdf:about="https://synbioks.org/public/EcoFlex_MoClo_Toolkit_Freemont_Lab/EcoFlex_MoClo_Toolkit_Freemont_Lab_collection/1">
+    <sbol:persistentIdentity rdf:resource="https://synbioks.org/public/EcoFlex_MoClo_Toolkit_Freemont_Lab/EcoFlex_MoClo_Toolkit_Freemont_Lab_collection"/>
+    <sbol:displayId>EcoFlex_MoClo_Toolkit_Freemont_Lab_collection</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>EcoFlex MoClo Toolkit (Freemont Lab)</dcterms:title>
+    <dcterms:description>EcoFlex MoClo Toolkit (Freemont Lab)</dcterms:description>
+    <ns0:OBI_0001617>[]</ns0:OBI_0001617>
+    <dc:creator>Jet</dc:creator>
+    <dcterms:created>2021-06-19T10:35:27.187Z</dcterms:created>
+    <sbh:ownedBy rdf:resource="https://synbioks.org/user/jet"/>
+    <sbh:topLevel rdf:resource="https://synbioks.org/public/EcoFlex_MoClo_Toolkit_Freemont_Lab/EcoFlex_MoClo_Toolkit_Freemont_Lab_collection/1"/>
+  </sbol:Collection>
+</rdf:RDF>
