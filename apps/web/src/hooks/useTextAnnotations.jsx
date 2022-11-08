@@ -6,7 +6,7 @@ import FormSection from "../components/FormSection"
 import TextAnnotationCheckbox from "../components/TextAnnotationCheckbox"
 import TextHighlighter from "../components/TextHighlighter"
 import { useStore } from "../modules/store"
-import { useCyclicalColors } from "./hooks"
+import { useCyclicalColors } from "./misc"
 
 
 export default function useTextAnnotations() {

@@ -1,12 +1,10 @@
 import { Box, ScrollArea } from '@mantine/core'
-import React from 'react'
-import { useRequest } from '../modules/requestContext'
 import FormSection from './FormSection'
 import TextLink from './TextLink'
 
 export default function SimilarParts() {
 
-    const { similarParts } = useRequest()
+    const similarParts = []
 
     return (
         <FormSection title="Similar Parts">

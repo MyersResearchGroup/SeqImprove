@@ -1,7 +1,7 @@
 import { Group, Select, Text } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import { forwardRef, useEffect, useState } from 'react'
-import { useSequenceOntology } from '../ontologies/so'
+import { useSequenceOntology } from '../modules/ontologies/so'
 import { useStore } from '../modules/store'
 import shallow from 'zustand/shallow'
 

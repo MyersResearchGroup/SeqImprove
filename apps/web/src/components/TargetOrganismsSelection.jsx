@@ -1,6 +1,6 @@
 import { ActionIcon, Checkbox, Group, Text, Tooltip } from '@mantine/core'
 import { forwardRef } from 'react'
-import { useUniprot } from '../ontologies/uniprot'
+import { useUniprot } from '../modules/ontologies/uniprot'
 import FormSection from './FormSection'
 import { FaTimes } from "react-icons/fa"
 import { useStore } from '../modules/store'

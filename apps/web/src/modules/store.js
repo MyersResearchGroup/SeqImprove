@@ -1,5 +1,10 @@
 import create from "zustand"
 import produce from "immer"
+import { getSearchParams } from "./util"
+import { Graph, SBOL2GraphView } from "sbolgraph"
+import _ from "lodash"
+import { addSequenceAnnotation, removeSequenceAnnotation } from "./sbol"
+
 
 export let useStore = () => ({})
 
@@ -39,34 +44,138 @@ const annotationActions = (set, get, selector) => {
     Create store. Need an initialization function for this so context
     gets passed correctly both on server and client.
 */
-export default function createStore() {
+export default async function createStore() {
 
+    // grab URL search params to see if we have any initial data
+    const params = getSearchParams()
+
+    // create the store
     useStore = create((set, get) => ({
-        name: null,
 
-        // description
-        ...createValueAdapter(set, "description", "setDescription"),
+        uri: params.complete_sbol,
+        sbolContent: null,
+        document: null,
 
-        textAnnotations: [],
-        textAnnotationActions: annotationActions(set, get, state => state.textAnnotations),
+        // load SBOL into document model
+        loadSBOL: async sbol => {
+            set({ loadingSBOL: true })
+            const document = new SBOL2GraphView(new Graph())
+            await document.loadString(sbol)
+            set({
+                document,
+                sbolContent: sbol,
+                loadingSBOL: false,
+            })
+        },
+        loadingSBOL: false,
 
-        sequence: null,
+        // need to use nested object for getters to work properly
+        model: {
+
+            // get root object -- either ComponentDefinition or ModuleDefinition
+            get root() {
+                const doc = get().document
+                // return doc?.rootModuleDefinitions[0] ?? doc?.rootComponentDefinitions[0]
+                return doc?.rootComponentDefinitions[0]
+            },
+
+            // name
+            get displayId() { return get().model.root?.displayId },
+            setDisplayId: createRootSetter(set, "displayId"),
+
+            // description
+            get description() { return get().model.root?.description },
+            setDescription: createRootSetter(set, "description"),
+
+            // sequence
+            get sequence() { return get().model.root?.sequences[0]?.elements },
+        },
+
         sequenceAnnotations: [],
-        sequenceAnnotationActions: annotationActions(set, get, state => state.sequenceAnnotations),
+        loadSequenceAnnotations: async () => {
+            set({ sequenceAnnotationsLoading: true })
 
-        // role
-        ...createValueAdapter(set, "role", "setRole"),
+            // fetch sequence annotations from API
+            const response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/annotateSequence`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    completeSbolContent: get().sbolContent,
+                }),
+            })
 
-        proteins: createListAdapter(set, state => state.proteins),
-        targetOrganisms: createListAdapter(set, state => state.targetOrganisms),
+            // parse body and setup store objects
+            try {
+                const result = await response.json()
+                const sequenceAnnotations = result?.annotations.map(anno => ({
+                    ...anno,
+
+                    // getter to read model for SequenceAnnotations
+                    get active() {
+                        return !!get().model.root.sequenceAnnotations
+                            .find(sa => sa.persistentIdentity == anno.id)
+                    },
+
+                    // setter to mutate model for adding/removing SequenceAnnotations
+                    set active(value) {
+                        mutateDocument(set, state => {
+                            value ?
+                                addSequenceAnnotation(state.model.root, anno) :
+                                removeSequenceAnnotation(state.model.root, anno.id)
+                        })
+                    }
+                }))
+
+                // set state
+                set({
+                    sequenceAnnotations,
+                    sequenceAnnotationsLoading: false,
+                })
+            }
+            catch (err) {
+                console.error("Couldn't parse JSON.")
+            }
+        },
+        sequenceAnnotationsLoading: false,
+
+        // textAnnotations: [],
+        // textAnnotationActions: annotationActions(set, get, state => state.textAnnotations),
+
+        // sequenceAnnotations: [],
+        // sequenceAnnotationActions: annotationActions(set, get, state => state.sequenceAnnotations),
+
+        // // role
+        // ...createRootValueAdapter(set, get, "role", "setRole", "role"),
+
+        // proteins: createListAdapter(set, state => state.proteins),
+        // targetOrganisms: createListAdapter(set, state => state.targetOrganisms),
     }))
+
+    // fetch document from URI if we have it
+    if (params.complete_sbol) {
+        try {
+            const sbol = await (await fetch(params.complete_sbol)).text()
+            useStore.getState().loadSBOL(sbol)
+        }
+        catch (err) {
+            console.error(`Failed to fetch SBOL content from ${params.complete_sbol}. Running in standalone mode.`)
+        }
+    }
 }
 
-function createValueAdapter(set, key, setterKey, initial = null) {
-    return {
-        [key]: initial,
-        [setterKey]: newValue => set(() => ({ [key]: newValue })),
-    }
+function createRootSetter(set, path) {
+    return newValue => mutateDocument(set, state => {
+        _.set(state.model.root, path, newValue)
+    })
+}
+
+function mutateDocument(set, mutator) {
+    set(state => {
+        mutator?.(state)
+        return { document: state.document }
+    })
 }
 
 function createListAdapter(set, selector) {
