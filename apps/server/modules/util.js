@@ -38,7 +38,7 @@ export async function findNewAnnotations(originalContent, annotatedContent) {
         .map(sa => ({
             name: sa.displayName,
             id: sa.persistentIdentity,
-            location: [sa.rangeMin, sa.rangeMax]
+            location: [sa.rangeMin, sa.rangeMax],
         }))
 }
 

@@ -2,6 +2,7 @@ import express from "express"
 import morgan from "morgan"
 import chalk from 'chalk'
 import "dotenv"
+import cors from "cors"
 
 import evaluate from "./routes/evaluate.js"
 import run from "./routes/run.js"
@@ -17,6 +18,7 @@ const PORT = 5000
 const app = express()
 
 // setup middleware
+app.use(cors())
 app.use(morgan('tiny'))
 app.use(express.json())
 app.use(express.text())

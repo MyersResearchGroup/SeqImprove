@@ -7,6 +7,10 @@ SHELL ["/bin/bash", "--login", "-c"]
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 RUN nvm install 16
 
+# clone SYNBICT at root & install deps
+RUN git clone https://github.com/SD2E/SYNBICT
+RUN python SYNBICT/setup.py install
+
 # move into work dir
 WORKDIR /SeqImprove
 
@@ -15,11 +19,5 @@ COPY . .
 
 # install Node deps
 RUN npm install
-
-# clone in SYNBICT
-RUN git clone https://github.com/SD2E/SYNBICT
-
-# install deps for SYNBICT
-RUN python SYNBICT/setup.py install
 
 ENTRYPOINT npm start

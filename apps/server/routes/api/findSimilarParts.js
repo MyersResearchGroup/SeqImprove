@@ -1,3 +1,4 @@
+import chalk from "chalk"
 import { findSimilarParts } from "../../modules/similar.js"
 
 

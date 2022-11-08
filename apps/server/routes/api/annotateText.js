@@ -1,3 +1,4 @@
+import chalk from "chalk"
 import { runBiobert } from "../../modules/biobert.js"
 import { pullFreeText } from "../../modules/util.js"
 

@@ -11,7 +11,7 @@ import { runSynbict } from "../../modules/synbict/index.js"
 process.env.ComSpec = "powershell"
 
 export default function synbict(app) {
-    app.post("/api/synbict", async (req, res) => {
+    app.post("/api/annotateSequence", async (req, res) => {
 
         const { completeSbolContent } = req.body
 
@@ -27,7 +27,7 @@ export default function synbict(app) {
 
         // read in all feature libraries -- SYNBICT says they support
         // directories, but they actually don't; only lists of files
-        const featureLibrariesDir = "./feature-libraries"
+        const featureLibrariesDir = "./modules/synbict/feature-libraries"
         const featureLibraries = (await fs.readdir(featureLibrariesDir))
             .map(libraryFileName => path.join(featureLibrariesDir, libraryFileName))
 
@@ -44,6 +44,10 @@ export default function synbict(app) {
         }
 
         console.log(chalk.gray("SYNBICT has completed."))
+
+        // might just send back whole document
+        // res.send(await fs.readFile(annotatedFile, "utf8"))
+        // return
 
         // find new annotations from synbict annotated doc
         const synbictAnnotations = await findNewAnnotations(
