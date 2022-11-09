@@ -54,7 +54,7 @@ export const useStore = create((set, get) => ({
     ...createAsyncAdapter(set, "SequenceAnnotations", async () => {
 
         // fetch sequence annotations from API
-        const sequenceAnnotations = await fetchAnnotateSequence(get().sbolContent)
+        const sequenceAnnotations = await fetchAnnotateSequence(get().sbolContent) ?? []
 
         // hydrate with getters & setters
         sequenceAnnotations.forEach(anno =>
@@ -75,7 +75,7 @@ export const useStore = create((set, get) => ({
     ...createAsyncAdapter(set, "TextAnnotations", async () => {
 
         // fetch sequence annotations from API
-        const textAnnotations = await fetchAnnotateText(get().sbolContent)
+        const textAnnotations = await fetchAnnotateText(get().sbolContent) ?? []
 
         // hydrate with getters & setters
         textAnnotations.forEach(anno =>
