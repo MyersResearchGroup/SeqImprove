@@ -1,24 +1,19 @@
-import { ActionIcon, Box, Group, Textarea } from "@mantine/core"
+import { ActionIcon, Button, Center, Group, Loader, Textarea } from "@mantine/core"
 import { useState } from "react"
 import { FaCheck, FaPencilAlt, FaTimes } from "react-icons/fa"
-import AddTextAnnotation from "../components/AddTextAnnotation"
-import FormSection from "../components/FormSection"
-import TextAnnotationCheckbox from "../components/TextAnnotationCheckbox"
-import TextHighlighter from "../components/TextHighlighter"
-import { useStore } from "../modules/store"
-import { useCyclicalColors } from "./misc"
+import { useAsyncLoader, useStore } from "../modules/store"
+import AddTextAnnotation from "./AddTextAnnotation"
+import FormSection from "./FormSection"
+import TextAnnotationCheckbox from "./TextAnnotationCheckbox"
+import TextHighlighter from "./TextHighlighter"
 
 
-export default function useTextAnnotations() {
+function Description({ colors }) {
 
-    // pull out what we need from the store
-    const description = useStore(s => s.description)
-    const setDescription = useStore(s => s.setDescription)
     const annotations = useStore(s => s.textAnnotations)
-    const { isAnnotationActive, selectAnnotation, deselectAnnotation } = useStore(s => s.textAnnotationActions)
 
-    // create a set of contrasty colors
-    const colors = useCyclicalColors(annotations.length)
+    const description = useStore(s => s.model.description)
+    const setDescription = useStore(s => s.model.setDescription)
 
     // description editing state
     const [workingDescription, setWorkingDescription] = useState(false)
@@ -27,7 +22,7 @@ export default function useTextAnnotations() {
         setWorkingDescription(false)
     }
 
-    return [
+    return (
         <FormSection title="Description" rightSection={
             workingDescription ?
                 <Group spacing={6}>
@@ -53,7 +48,7 @@ export default function useTextAnnotations() {
                                 foundMentions.push({
                                     id: anno.id,
                                     color: colors[i],
-                                    active: isAnnotationActive(anno.id) ?? false,
+                                    active: anno.active,
                                     start: occurence.index,
                                     end: occurence.index + termText.length,
                                 })
@@ -61,19 +56,38 @@ export default function useTextAnnotations() {
                             return foundMentions
                         }).flat()
                     ).flat()}
-                    onChange={(id, val) => val ? selectAnnotation(id) : deselectAnnotation(id)}
+                    onChange={(id, val) => annotations.find(anno => anno.id == id).active = val}
                     h={200}
                 >
                     {description}
                 </TextHighlighter>}
-        </FormSection>,
+        </FormSection>
+    )
+}
 
+function Annotations({ colors }) {
+
+    const annotations = useStore(s => s.textAnnotations)
+    const [load, loading] = useAsyncLoader("TextAnnotations")
+
+    return (
         <FormSection title="Recognized Terms" w={350}>
-            {annotations.map((anno, i) =>
-                <TextAnnotationCheckbox id={anno.id} color={colors[i]} key={anno.id} />
-            )}
+            {annotations.length ?
+                annotations.map((anno, i) =>
+                    <TextAnnotationCheckbox id={anno.id} color={colors[i]} key={anno.id} />
+                )
+                :
+                <Center>
+                    {loading ?
+                        <Loader my={30} size="sm" variant="dots" /> :
+                        <Button my={10} onClick={load}>Load Text Annotations</Button>}
+                </Center>}
 
             <AddTextAnnotation />
         </FormSection>
-    ]
+    )
+}
+
+export default {
+    Description, Annotations
 }

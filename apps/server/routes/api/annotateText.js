@@ -12,7 +12,9 @@ export default function annotateText(app) {
         
         // do biobert annotation on free text
         const freeText = (await pullFreeText(completeSbolContent)).join(" ")
+        console.log("here")
         const biobertResult = await runBiobert(freeText)
+        console.log("here 2")
         
         console.log(chalk.gray("BioBert BERN2 has completed."))
         console.log(chalk.gray("Found ") + chalk.green(biobertResult.length) + chalk.gray(" potential annotations:"))

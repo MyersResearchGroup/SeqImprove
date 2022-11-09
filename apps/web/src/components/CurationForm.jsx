@@ -1,15 +1,14 @@
 import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button } from '@mantine/core'
-import useSequenceAnnotations from '../hooks/useSequenceAnnotations'
-import useTextAnnotations from '../hooks/useTextAnnotations'
+import { useStore } from '../modules/store'
+import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
 import ProteinSelection from './ProteinSelection'
 import SplitPanel from "./SplitPanel"
-import { useStore } from '../modules/store'
 import TargetOrganismsSelection from './TargetOrganismsSelection'
 import SuggestedProteins from './SuggestedProteins'
-import { useTimeout } from '@mantine/hooks'
-import { useEffect } from 'react'
+import SequenceSection from './SequenceSection'
+import TextSection from './TextSection'
 
 
 export default function CurationForm({ }) {
@@ -19,8 +18,9 @@ export default function CurationForm({ }) {
     const displayId = useStore(s => s.model.displayId)
     const description = useStore(s => s.model.description)
 
-    const [sequenceComponent, sequenceAnnotationsComponent] = useSequenceAnnotations()
-    // const [textComponent, textAnnotationsComponent] = useTextAnnotations()
+    // colors for annotations
+    const sequenceColors = useCyclicalColors(useStore(s => s.sequenceAnnotations.length))
+    const textColors = useCyclicalColors(useStore(s => s.textAnnotations.length))
 
     return (
         <>
@@ -51,16 +51,16 @@ export default function CurationForm({ }) {
 
                     <Tabs.Panel value="sequence" pt={20}>
                         <SplitPanel
-                            left={sequenceComponent}
-                            right={sequenceAnnotationsComponent}
+                            left={<SequenceSection.Sequence colors={sequenceColors} />}
+                            right={<SequenceSection.Annotations colors={sequenceColors} />}
                         />
                     </Tabs.Panel>
 
                     <Tabs.Panel value="text" pt={20}>
-                        {/* <SplitPanel
-                        left={textComponent}
-                        right={textAnnotationsComponent}
-                    /> */}
+                        <SplitPanel
+                            left={<TextSection.Description colors={textColors} />}
+                            right={<TextSection.Annotations colors={textColors} />}
+                        />
                     </Tabs.Panel>
 
                     <Tabs.Panel value="proteins" pt={20}>

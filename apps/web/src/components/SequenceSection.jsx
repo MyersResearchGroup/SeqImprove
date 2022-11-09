@@ -1,23 +1,17 @@
 import { Button, Center, Loader } from "@mantine/core"
-import AnnotationCheckbox from "../components/AnnotationCheckbox"
-import FormSection from "../components/FormSection"
-import TextHighlighter from "../components/TextHighlighter"
-import { useStore } from "../modules/store"
-import { useCyclicalColors } from "./misc"
+import { useAsyncLoader, useStore } from "../modules/store"
+import AnnotationCheckbox from "./AnnotationCheckbox"
+import FormSection from "./FormSection"
+import TextHighlighter from "./TextHighlighter"
 
-export default function useSequenceAnnotations() {
 
-    // pull out what we need from the store
+function Sequence({ colors }) {
+    
     const sequence = useStore(s => s.model.sequence)
     const annotations = useStore(s => s.sequenceAnnotations)
-    const load = useStore(s => s.loadSequenceAnnotations)
-    const loading = useStore(s => s.sequenceAnnotationsLoading)
     useStore(s => s.model.root?.sequenceAnnotations)    // force rerender from document change
 
-    // create a set of contrasty colors
-    const colors = useCyclicalColors(annotations.length)
-
-    return [
+    return (
         <FormSection title="Sequence">
             {sequence && <TextHighlighter
                 terms={annotations.map((anno, i) => ({
@@ -39,8 +33,18 @@ export default function useSequenceAnnotations() {
             >
                 {sequence?.toLowerCase()}
             </TextHighlighter>}
-        </FormSection>,
+        </FormSection>
+    )
+}
 
+
+function Annotations({ colors }) {
+
+    const annotations = useStore(s => s.sequenceAnnotations)
+    const [load, loading] = useAsyncLoader("SequenceAnnotations")
+    useStore(s => s.model.root?.sequenceAnnotations)    // force rerender from document change
+
+    return (
         <FormSection title="Sequence Annotations" w={350}>
             {annotations?.length ?
                 annotations.map((anno, i) =>
@@ -59,5 +63,10 @@ export default function useSequenceAnnotations() {
                         <Button my={10} onClick={load}>Load Sequence Annotations</Button>}
                 </Center>}
         </FormSection>
-    ]
+    )
+}
+
+
+export default {
+    Sequence, Annotations
 }
