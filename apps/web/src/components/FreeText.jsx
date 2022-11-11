@@ -27,8 +27,6 @@ export default function FreeText({ children, terms, onChange }) {
         term && onChange(term.id, !term.active)
     }
 
-    console.log(terms)
-
     return (
         <Highlight
             highlight={[]}

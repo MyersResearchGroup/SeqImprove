@@ -19,6 +19,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.6.0",
+    "react-markdown": "^8.0.3",
     "sbolgraph": "^0.51.0",
     "zustand": "^4.1.4"
   },

@@ -26,28 +26,6 @@ export const useStore = create((set, get) => ({
         }
     }),
 
-    // A couple convenience properties for interacting with the document
-    // need to use nested object for getters to work properly
-    model: {
-
-        // get root object -- either ComponentDefinition or ModuleDefinition
-        get root() {
-            const doc = get().document
-            // return doc?.rootModuleDefinitions[0] ?? doc?.rootComponentDefinitions[0]
-            return doc?.rootComponentDefinitions[0]
-        },
-
-        // name
-        get displayId() { return get().model.root?.displayId },
-        setDisplayId: val => setRootProperty(set, "displayId", val),
-
-        // description
-        get description() { return get().model.root?.description },
-        setDescription: val => setRootProperty(set, "description", val),
-
-        // sequence
-        get sequence() { return get().model.root?.sequences[0]?.elements },
-    },
 
     // Sequence Annotations
     sequenceAnnotations: [],
@@ -112,7 +90,7 @@ params.complete_sbol &&
  */
 function setRootProperty(set, path, value) {
     mutateDocument(set, state => {
-        _.set(state.model.root, path, value)
+        _.set(state.document.root, path, value)
     })
 }
 
@@ -246,12 +224,12 @@ function createAnnotationActions(set, get, selector, { test, add, remove } = {})
 function hydrateAnnotation(set, get, anno, test, add, remove) {
     Object.defineProperties(anno, {
         active: {
-            get: () => test(get().model.root, anno.id),
+            get: () => test(get().document.root, anno.id),
             set: value => {
                 mutateDocument(set, state => {
                     value ?
-                        add(state.model.root, anno) :
-                        remove(state.model.root, anno.id)
+                        add(state.document.root, anno) :
+                        remove(state.document.root, anno.id)
                 })
             }
         }

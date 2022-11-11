@@ -21,8 +21,8 @@ export async function runBiobert(text) {
         jsonRes.annotations.reduce((accum, current) => {
             current.id.forEach(id => {
                 accum[id] = {
-                    id,
-                    idLink: findOntologyLink(id),
+                    id: findOntologyLink(id),
+                    displayId: id,
                     mentions: [
                         ...(accum[id]?.mentions || []),
                         {
@@ -30,6 +30,8 @@ export async function runBiobert(text) {
                             confidence: current.prob,
                             start: current.span.begin,
                             end: current.span.end,
+                            startWord: wordIndexFromIndex(text, current.span.begin),
+                            length: countWords(current.mention),
                         }
                     ]
                 }
@@ -39,10 +41,10 @@ export async function runBiobert(text) {
     )
 
     // filter out annotations that are "CUI-less" (ungrounded)
-    const cuilessTerms = annotations.filter(anno => anno.id == "CUI-less")
+    const cuilessTerms = annotations.filter(anno => anno.displayId == "CUI-less")
         .map(anno => anno.mentions)
         .flat()
-    annotations = annotations.filter(anno => anno.id != "CUI-less")
+    annotations = annotations.filter(anno => anno.displayId != "CUI-less")
 
     // do fuzzy matching
     const searchIndex = {}
@@ -56,17 +58,28 @@ export async function runBiobert(text) {
 
     // grab all the terms we should search with
     const wordsToSearch = [...cuilessTerms]
-    const wordReg = /\w+/g
-    let wordMatch
-    while (wordMatch = wordReg.exec(text)) {
-        if (searchCollection.every(term => !term.includes(wordMatch[0])) &&
-            cuilessTerms.every(term => !term.text.includes(wordMatch[0])))
+    // used to use this so we could store the character-wise index; instead, see below 
+    // const wordReg = /\w+/g
+    // let wordMatch
+    // while (wordMatch = wordReg.exec(text)) {
+    //     if (searchCollection.every(term => !term.includes(wordMatch[0])) &&
+    //         cuilessTerms.every(term => !term.text.includes(wordMatch[0])))
+    //         wordsToSearch.push({
+    //             text: wordMatch[0],
+    //             start: wordMatch.index,
+    //             end: wordMatch.index + wordMatch[0].length
+    //         })
+    // }
+    // simpler method, just getting word-wise index
+    splitIntoWords(text).forEach((word, i) => {
+        if (searchCollection.every(term => !term.includes(word)) && cuilessTerms.every(term => !term.text.includes(word)))
             wordsToSearch.push({
-                text: wordMatch[0],
-                start: wordMatch.index,
-                end: wordMatch.index + wordMatch[0].length
+                text: word,
+                startWord: i,
+                length: 1,
+                fuzzyMatched: true,
             })
-    }
+    })
 
     // do the search on the words we found + the cui-less words
     wordsToSearch.forEach(word => {
@@ -78,8 +91,15 @@ export async function runBiobert(text) {
 
         // add in annotation
         word.confidence = topResult.score
-        annotations.find(anno => anno.id == searchIndex[topResult.item]).mentions.push(word)
+        const anno = annotations.find(anno => anno.id == searchIndex[topResult.item])
+        
+        // Disabling fuzzy matching for now
+
+        // but make sure we're not referring to the same word
+        // if (anno.mentions.every(mention => mention.startWord != word.startWord))
+        //     anno.mentions.push(word)
     })
+
 
     // for the sake of simplicity, we're gonna cut out the start and end
     // properties of each mention and calculate them dynamically
@@ -99,3 +119,17 @@ function findOntologyLink(id) {
 //     NCBITaxon: id => `https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=${id}`,
 //     mesh: id => `https://id.nlm.nih.gov/mesh/${id}.html`,
 // }
+
+function splitIntoWords(str) {
+    return str.split(/\s+/)
+}
+
+function countWords(str) {
+    return splitIntoWords(str).length
+}
+
+function wordIndexFromIndex(text, index) {
+    const sentinel = "$%^&"
+    return splitIntoWords(text.slice(0, index) + sentinel + text.slice(index))
+        .findIndex(word => word.includes(sentinel))
+}

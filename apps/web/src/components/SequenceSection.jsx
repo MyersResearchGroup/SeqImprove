@@ -7,9 +7,12 @@ import TextHighlighter from "./TextHighlighter"
 
 function Sequence({ colors }) {
     
-    const sequence = useStore(s => s.model.sequence)
+    const sequence = useStore(s => s.document?.root.sequence)
+
+    // console.log(useStore(s => s.document?.root))
+
     const annotations = useStore(s => s.sequenceAnnotations)
-    useStore(s => s.model.root?.sequenceAnnotations)    // force rerender from document change
+    useStore(s => s.document?.root.sequenceAnnotations)    // force rerender from document change
 
     return (
         <FormSection title="Sequence">
@@ -42,7 +45,7 @@ function Annotations({ colors }) {
 
     const annotations = useStore(s => s.sequenceAnnotations)
     const [load, loading] = useAsyncLoader("SequenceAnnotations")
-    useStore(s => s.model.root?.sequenceAnnotations)    // force rerender from document change
+    useStore(s => s.document?.root?.sequenceAnnotations)    // force rerender from document change
 
     return (
         <FormSection title="Sequence Annotations" w={350}>

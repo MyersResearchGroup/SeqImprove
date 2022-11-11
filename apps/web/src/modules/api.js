@@ -73,6 +73,5 @@ export async function fetchAnnotateText(sbolContent) {
     }
     
     console.log("Successfully annotated.")
-    console.log(result)
     return result.annotations
 }

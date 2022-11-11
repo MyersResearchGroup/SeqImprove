@@ -12,8 +12,7 @@ export default function TextAnnotationCheckbox({ id, color }) {
 
     // grab state from store
     const annotation = useStore(s => s.textAnnotationActions.getAnnotation(id))
-    const { isAnnotationActive, selectAnnotation, deselectAnnotation,
-        editAnnotation, removeAnnotation } = useStore(s => s.textAnnotationActions)
+    const { editAnnotation, removeAnnotation } = useStore(s => s.textAnnotationActions)
 
     // editing state and handlers
     const [editing, editingHandlers] = useDisclosure(false)
@@ -34,9 +33,9 @@ export default function TextAnnotationCheckbox({ id, color }) {
                 title={annotation.terms[0]}
                 subtitle={
                     <Group spacing="xs" position="apart" sx={{ flexGrow: 1, }}>
-                        <Tooltip label={annotation.idLink} position="bottom" withArrow>
+                        <Tooltip label={id} position="bottom" withArrow>
                             <Box>
-                                <TextLink color="gray" href={annotation.idLink}>{id}</TextLink>
+                                <TextLink color="gray" href={id}>{annotation.displayId}</TextLink>
                             </Box>
                         </Tooltip>
                         <Group spacing={6}>
@@ -51,8 +50,8 @@ export default function TextAnnotationCheckbox({ id, color }) {
                     </Group>
                 }
                 color={color}
-                active={isAnnotationActive(id) ?? false}
-                onChange={val => val ? selectAnnotation(id) : deselectAnnotation(id)}
+                active={annotation.active}
+                onChange={val => annotation.active = val}
             />
             <TextAnnotationModal opened={editing} onClose={editingHandlers.close} onSubmit={handleEdit} values={annotation} />
         </>

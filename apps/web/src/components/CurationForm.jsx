@@ -15,8 +15,8 @@ export default function CurationForm({ }) {
 
     const docLoading = useStore(s => s.loadingSBOL)
 
-    const displayId = useStore(s => s.model.displayId)
-    const description = useStore(s => s.model.description)
+    const displayId = useStore(s => s.document?.root.displayId)
+    const description = useStore(s => s.document?.root.description)
 
     // colors for annotations
     const sequenceColors = useCyclicalColors(useStore(s => s.sequenceAnnotations.length))
