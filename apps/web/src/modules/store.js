@@ -7,19 +7,25 @@ import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
 import { S2ComponentDefinition } from "sbolgraph"
 
 
-// grab URL search params to see if we have any initial data
-const params = getSearchParams()
-
 // create store
 export const useStore = create((set, get) => ({
 
-    uri: params.complete_sbol,
+    uri: getSearchParams().complete_sbol,
 
     // SBOL content & parsed document
     sbolContent: null,
     document: null,
-    ...createAsyncAdapter(set, "SBOL", async sbolUrl => {
-        const sbolContent = await fetchSBOL(sbolUrl)
+    ...createAsyncAdapter(set, "SBOL", async sbol => {
+        // try to form a URL out of the input argument
+        try {
+            var sbolUrl = new URL(sbol)
+            set({ uri: sbolUrl.href })
+        }
+        catch(err) {}
+
+        // if it's a URL, fetch it; otherwise, just use it as the content
+        const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
+
         return {
             sbolContent,
             document: await createSBOLDocument(sbolContent),
@@ -76,9 +82,6 @@ export const useStore = create((set, get) => ({
 }))
 
 
-// fetch document from URI if we have it
-params.complete_sbol &&
-    useStore.getState().loadSBOL(params.complete_sbol)
 
 
 /**
