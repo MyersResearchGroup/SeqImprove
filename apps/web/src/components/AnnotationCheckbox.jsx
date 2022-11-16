@@ -17,7 +17,7 @@ export default function AnnotationCheckbox({ title, subtitle, active, onChange, 
             mb={10}
             styles={theme => ({
                 input: { backgroundColor: theme.colors[color]?.[1] ?? "transparent" },
-                label: { flexGrow: 1 },
+                label: { display: "flex" }
             })}
         />
     )
