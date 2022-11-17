@@ -21,7 +21,7 @@ export const useStore = create((set, get) => ({
             var sbolUrl = new URL(sbol)
             set({ uri: sbolUrl.href })
         }
-        catch(err) {}
+        catch (err) { }
 
         // if it's a URL, fetch it; otherwise, just use it as the content
         const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
@@ -35,18 +35,12 @@ export const useStore = create((set, get) => ({
 
     // Sequence Annotations
     sequenceAnnotations: [],
-    ...createAsyncAdapter(set, "SequenceAnnotations", async () => {
 
+    ...createAsyncAdapter(set, "SequenceAnnotations", async () => ({
         // fetch sequence annotations from API
-        const sequenceAnnotations = await fetchAnnotateSequence(get().sbolContent) ?? []
+        sequenceAnnotations: await fetchAnnotateSequence(get().sbolContent) ?? [],
+    })),
 
-        // hydrate with getters & setters
-        sequenceAnnotations.forEach(anno =>
-            hydrateAnnotation(set, get, anno, hasSequenceAnnotation, addSequenceAnnotation, removeSequenceAnnotation)
-        )
-
-        return { sequenceAnnotations }
-    }),
     sequenceAnnotationActions: createAnnotationActions(set, get, state => state.sequenceAnnotations, {
         test: hasSequenceAnnotation,
         add: addSequenceAnnotation,
@@ -56,18 +50,12 @@ export const useStore = create((set, get) => ({
 
     // Text Annotations
     textAnnotations: [],
-    ...createAsyncAdapter(set, "TextAnnotations", async () => {
 
+    ...createAsyncAdapter(set, "TextAnnotations", async () => ({
         // fetch sequence annotations from API
-        const textAnnotations = await fetchAnnotateText(get().sbolContent) ?? []
+        textAnnotations: await fetchAnnotateText(get().sbolContent) ?? [],
+    })),
 
-        // hydrate with getters & setters
-        textAnnotations.forEach(anno =>
-            hydrateAnnotation(set, get, anno, hasTextAnnotation, addTextAnnotation, removeTextAnnotation)
-        )
-
-        return { textAnnotations }
-    }),
     textAnnotationActions: createAnnotationActions(set, get, state => state.textAnnotations, {
         test: hasTextAnnotation,
         add: addTextAnnotation,
@@ -184,57 +172,37 @@ export function useAsyncLoader(propertySuffix) {
  *      editAnnotation: (id: string, changes) => void,
  *      addAnnotation: (newAnnotation) => void,
  *      removeAnnotation: (id: string) => void,
+ *      isActive: (id: string) => boolean,
+ *      setActive: (id: string, value, boolean) => void,
  * }}  An object containing annotation actions intended to be kept in the store
  */
 function createAnnotationActions(set, get, selector, { test, add, remove } = {}) {
 
     const getAnnotation = id => selector(get()).find(anno => anno.id == id)
-    // const setAnnotationProp = (id, propKey, value) => set(produce(draft => {
-    //     selector(draft).find(anno => anno.id == id)[propKey] = value
-    // }))
 
     return {
         getAnnotation,
         editAnnotation: (id, changes) => set(produce(draft => {
-            const annoArr = selector(draft)
-            const item = annoArr.find(anno => anno.id == id)
-            const itemIndex = annoArr.indexOf(item)
-            annoArr[itemIndex] = { ...item, ...changes }
+            const item = selector(draft).find(anno => anno.id == id)
+
+            Object.keys(changes).forEach(key => {
+                item[key] = changes[key]
+            })
         })),
         addAnnotation: newAnno => set(produce(draft => {
-            hydrateAnnotation(set, get, newAnno, test, add, remove)
             selector(draft).push(newAnno)
         })),
         removeAnnotation: id => set(produce(draft => {
             const annoArr = selector(draft)
             annoArr.splice(annoArr.findIndex(anno => anno.id == id), 1)
         })),
+        isActive: id => test(get().document.root, id),
+        setActive: (id, value) => {
+            mutateDocument(set, state => {
+                value ?
+                    add(state.document.root, getAnnotation(id)) :
+                    remove(state.document.root, id)
+            })
+        },
     }
-}
-
-
-/**
- * Adds getters and setters to an annotation object to allow it to interact
- * with the SBOL document model.
- *
- * @param {Function} set  Zustand setState
- * @param {Function} get  Zustand getState
- * @param {Object} anno  Annotation object
- * @param {(rootObject: S2ComponentDefinition, annotationId: string) => boolean} test  Tests if root object contains the annotation
- * @param {(rootObject: S2ComponentDefinition, annotation: Object) => void} add  Adds the annotation to the root object
- * @param {(rootObject: S2ComponentDefinition, annotationId: string) => void} remove  Removes the annotation from the root object
- */
-function hydrateAnnotation(set, get, anno, test, add, remove) {
-    Object.defineProperties(anno, {
-        active: {
-            get: () => test(get().document.root, anno.id),
-            set: value => {
-                mutateDocument(set, state => {
-                    value ?
-                        add(state.document.root, anno) :
-                        remove(state.document.root, anno.id)
-                })
-            }
-        }
-    })
 }

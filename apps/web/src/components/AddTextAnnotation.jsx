@@ -28,7 +28,7 @@ export default function AddTextAnnotation() {
                 onClick={modal.open}
                 sx={{ borderRadius: 6 }}
             />
-            <TextAnnotationModal opened={modalOpened} onClose={modal.close} onSubmit={handleAdd} />
+            {/* <TextAnnotationModal opened={modalOpened} onClose={modal.close} onSubmit={handleAdd} /> */}
         </>
     )
 }

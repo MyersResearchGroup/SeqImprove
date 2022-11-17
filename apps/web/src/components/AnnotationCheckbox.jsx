@@ -6,9 +6,9 @@ export default function AnnotationCheckbox({ title, subtitle, active, onChange, 
         <Checkbox
             size="md"
             label={
-                <Group spacing="xs">
+                <Group spacing="xs" sx={{ flexGrow: 1, }}>
                     <Text color={color} weight={600}>{title}</Text>
-                    <Box sx={{ flexGrow: 1 }} >{subtitle}</Box>
+                    <Box sx={{ flexGrow: "1 !important" }} >{subtitle}</Box>
                 </Group>
             }
             color={color}
@@ -16,8 +16,10 @@ export default function AnnotationCheckbox({ title, subtitle, active, onChange, 
             onChange={event => onChange(event.currentTarget.checked)}
             mb={10}
             styles={theme => ({
+                body: { display: "flex" },
                 input: { backgroundColor: theme.colors[color]?.[1] ?? "transparent" },
-                label: { display: "flex" }
+                label: { display: "flex", flexGrow: 1, },
+                labelWrapper: { flexGrow: 1, },
             })}
         />
     )

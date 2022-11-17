@@ -101,12 +101,17 @@ export async function runBiobert(text) {
     })
 
 
-    // for the sake of simplicity, we're gonna cut out the start and end
-    // properties of each mention and calculate them dynamically
-    return annotations.map(anno => ({
-        ...anno,
-        terms: [...new Set(anno.mentions.map(mention => mention.text))]
-    }))
+    // make a list of all the unique terms
+    annotations = annotations.map(anno => {
+        const terms = [...new Set(anno.mentions.map(mention => mention.text))]
+        return {
+            ...anno,
+            terms,
+            label: terms[0],
+        }
+    })
+
+    return annotations
 }
 
 function findOntologyLink(id) {

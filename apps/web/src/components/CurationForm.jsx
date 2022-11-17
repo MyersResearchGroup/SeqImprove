@@ -9,6 +9,8 @@ import TargetOrganismsSelection from './TargetOrganismsSelection'
 import SuggestedProteins from './SuggestedProteins'
 import SequenceSection from './SequenceSection'
 import TextSection from './TextSection'
+import { ModalsProvider } from '@mantine/modals'
+import TextAnnotationModal from './TextAnnotationModal'
 
 
 export default function CurationForm({ }) {
@@ -57,10 +59,12 @@ export default function CurationForm({ }) {
                     </Tabs.Panel>
 
                     <Tabs.Panel value="text" pt={20}>
-                        <SplitPanel
-                            left={<TextSection.Description colors={textColors} />}
-                            right={<TextSection.Annotations colors={textColors} />}
-                        />
+                        <ModalsProvider modals={{ addAndEdit: TextAnnotationModal }}>
+                            <SplitPanel
+                                left={<TextSection.Description colors={textColors} />}
+                                right={<TextSection.Annotations colors={textColors} />}
+                            />
+                        </ModalsProvider>
                     </Tabs.Panel>
 
                     <Tabs.Panel value="proteins" pt={20}>

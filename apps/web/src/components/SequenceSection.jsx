@@ -6,13 +6,13 @@ import TextHighlighter from "./TextHighlighter"
 
 
 function Sequence({ colors }) {
-    
-    const sequence = useStore(s => s.document?.root.sequence)
 
-    // console.log(useStore(s => s.document?.root))
+    const sequence = useStore(s => s.document?.root.sequence)
 
     const annotations = useStore(s => s.sequenceAnnotations)
     useStore(s => s.document?.root.sequenceAnnotations)    // force rerender from document change
+
+    const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
 
     return (
         <FormSection title="Sequence">
@@ -22,9 +22,9 @@ function Sequence({ colors }) {
                     start: anno.location[0],
                     end: anno.location[1],
                     color: colors[i],
-                    active: anno.active ?? false,
+                    active: isActive(anno.id) ?? false,
                 }))}
-                onChange={(id, val) => annotations.find(anno => anno.id == id).active = val}
+                onChange={setActive}
                 h={400}
                 offsetStart={-1}
                 wordMode={8}
@@ -47,6 +47,8 @@ function Annotations({ colors }) {
     const [load, loading] = useAsyncLoader("SequenceAnnotations")
     useStore(s => s.document?.root?.sequenceAnnotations)    // force rerender from document change
 
+    const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
+
     return (
         <FormSection title="Sequence Annotations" w={350}>
             {annotations?.length ?
@@ -54,8 +56,8 @@ function Annotations({ colors }) {
                     <AnnotationCheckbox
                         title={anno.name}
                         color={colors[i]}
-                        active={anno.active ?? false}
-                        onChange={val => anno.active = val}
+                        active={isActive(anno.id) ?? false}
+                        onChange={val => setActive(anno.id, val)}
                         key={anno.name}
                     />
                 )

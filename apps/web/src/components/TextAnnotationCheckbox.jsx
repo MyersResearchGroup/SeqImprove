@@ -1,24 +1,18 @@
 import { useState } from 'react'
 import { useStore } from '../modules/store'
 import { ActionIcon, Box, Group, Tooltip } from '@mantine/core'
-import { useClickOutside, useDisclosure } from '@mantine/hooks'
+import { useClickOutside } from '@mantine/hooks'
 import AnnotationCheckbox from './AnnotationCheckbox'
-import TextAnnotationModal from './TextAnnotationModal'
 import TextLink from "./TextLink"
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
+import { openContextModal } from '@mantine/modals'
 
 
 export default function TextAnnotationCheckbox({ id, color }) {
 
     // grab state from store
     const annotation = useStore(s => s.textAnnotationActions.getAnnotation(id))
-    const { editAnnotation, removeAnnotation } = useStore(s => s.textAnnotationActions)
-
-    // editing state and handlers
-    const [editing, editingHandlers] = useDisclosure(false)
-    const handleEdit = formValues => {
-        editAnnotation(id, formValues)
-    }
+    const { isActive, setActive, removeAnnotation } = useStore(s => s.textAnnotationActions)
 
     // state for confirming deletion
     const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -27,33 +21,42 @@ export default function TextAnnotationCheckbox({ id, color }) {
     }
     const deleteRef = useClickOutside(() => setConfirmingDelete(false))
 
+
     return (
         <>
             <AnnotationCheckbox
-                title={annotation.terms[0]}
+                title={annotation.label}
                 subtitle={
-                    <Group spacing="xs" position="apart" sx={{ flexGrow: 1, }}>
+                    <Group spacing="xs" position="apart">
                         <Tooltip label={id} position="bottom" withArrow>
                             <Box>
                                 <TextLink color="gray" href={id}>{annotation.displayId}</TextLink>
                             </Box>
                         </Tooltip>
                         <Group spacing={6}>
-                            {annotation.deletable &&
-                                <ActionIcon color={confirmingDelete ? "red" : "gray"} onClick={handleDeleteClick} ref={deleteRef}>
-                                    <FaTrashAlt />
-                                </ActionIcon>}
-                            <ActionIcon onClick={editingHandlers.open}>
+                            <ActionIcon onClick={() => openContextModal({
+                                modal: "addAndEdit",
+                                title: "Edit Annotation",
+                                innerProps: {
+                                    editing: true,
+                                    label: annotation.label,
+                                    identifier: annotation.displayId,
+                                    uri: annotation.id,
+                                }
+                            })}>
                                 <FaPencilAlt />
+                            </ActionIcon>
+
+                            <ActionIcon color={confirmingDelete ? "red" : "gray"} onClick={handleDeleteClick} ref={deleteRef}>
+                                <FaTrashAlt />
                             </ActionIcon>
                         </Group>
                     </Group>
                 }
                 color={color}
-                active={annotation.active}
-                onChange={val => annotation.active = val}
+                active={isActive(id)}
+                onChange={val => setActive(id, val)}
             />
-            <TextAnnotationModal opened={editing} onClose={editingHandlers.close} onSubmit={handleEdit} values={annotation} />
         </>
     )
 }
