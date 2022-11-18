@@ -57,7 +57,7 @@ export function addSequenceAnnotation(componentDefinition, annoInfo) {
 }
 
 export function removeSequenceAnnotation(componentDefinition, annotationId) {
-    if (hasSequenceAnnotation(componentDefinition, annotationId))
+    if (!hasSequenceAnnotation(componentDefinition, annotationId))
         return
 
     const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == annotationId)
