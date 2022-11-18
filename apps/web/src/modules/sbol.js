@@ -49,11 +49,17 @@ export function hasSequenceAnnotation(componentDefinition, annotationId) {
 }
 
 export function addSequenceAnnotation(componentDefinition, annoInfo) {
+    if (hasSequenceAnnotation(componentDefinition, annoInfo.id))
+        return
+
     const sa = componentDefinition.annotateRange(annoInfo.location[0], annoInfo.location[1], annoInfo.name)
     sa.persistentIdentity = annoInfo.id
 }
 
 export function removeSequenceAnnotation(componentDefinition, annotationId) {
+    if (hasSequenceAnnotation(componentDefinition, annotationId))
+        return
+
     const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == annotationId)
     componentDefinition.graph.removeMatches(
         componentDefinition.subject,
@@ -67,11 +73,13 @@ export function createAnnotationRegex(id, flags = "g") {
 }
 
 export function hasTextAnnotation(componentDefinition, annotationId) {
-    // console.log(componentDefinition.richDescription)
     return createAnnotationRegex(annotationId).test(componentDefinition.richDescription)
 }
 
 export function addTextAnnotation(componentDefinition, annoInfo) {
+    if (hasTextAnnotation(componentDefinition, annoInfo.id))
+        return
+
     const words = splitIntoWords(componentDefinition.richDescription)
     annoInfo.mentions.forEach(mention => {
         // remove annotation phrase
@@ -83,6 +91,9 @@ export function addTextAnnotation(componentDefinition, annoInfo) {
 }
 
 export function removeTextAnnotation(componentDefinition, annotationId) {
+    if (!hasTextAnnotation(componentDefinition, annotationId))
+        return
+
     componentDefinition.richDescription = componentDefinition.richDescription.replaceAll(
         createAnnotationRegex(annotationId),
         "$1"

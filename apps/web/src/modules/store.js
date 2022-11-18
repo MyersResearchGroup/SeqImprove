@@ -180,15 +180,33 @@ function createAnnotationActions(set, get, selector, { test, add, remove } = {})
 
     const getAnnotation = id => selector(get()).find(anno => anno.id == id)
 
+    const isActive = id => test(get().document.root, id)
+    const setActive = (id, value) => {
+        mutateDocument(set, state => {
+            value ?
+                add(state.document.root, getAnnotation(id)) :
+                remove(state.document.root, id)
+        })
+    }
+
     return {
         getAnnotation,
-        editAnnotation: (id, changes) => set(produce(draft => {
-            const item = selector(draft).find(anno => anno.id == id)
+        editAnnotation: (id, changes) => {
+            // if it's active, we'll temporarily disable it
+            const active = isActive(id)
+            active && setActive(id, false)
 
-            Object.keys(changes).forEach(key => {
-                item[key] = changes[key]
-            })
-        })),
+            set(produce(draft => {
+                const item = selector(draft).find(anno => anno.id == id)
+    
+                Object.keys(changes).forEach(key => {
+                    item[key] = changes[key]
+                })
+            }))
+            
+            // then set it back as active after
+            active && setActive(changes.id ?? id, true)
+        },
         addAnnotation: newAnno => set(produce(draft => {
             selector(draft).push(newAnno)
         })),
@@ -196,13 +214,7 @@ function createAnnotationActions(set, get, selector, { test, add, remove } = {})
             const annoArr = selector(draft)
             annoArr.splice(annoArr.findIndex(anno => anno.id == id), 1)
         })),
-        isActive: id => test(get().document.root, id),
-        setActive: (id, value) => {
-            mutateDocument(set, state => {
-                value ?
-                    add(state.document.root, getAnnotation(id)) :
-                    remove(state.document.root, id)
-            })
-        },
+        isActive,
+        setActive,
     }
 }

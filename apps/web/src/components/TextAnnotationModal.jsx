@@ -5,26 +5,27 @@ import { useStore } from '../modules/store'
 
 export default function TextAnnotationModal({ id, context, innerProps: { editing = false, label, identifier, uri } }) {
 
-    const { editAnnotation, addAnnotation } = useStore(s => s.textAnnotationActions)
+    const { getAnnotation, editAnnotation, addAnnotation } = useStore(s => s.textAnnotationActions)
 
     // form hook
     const form = useForm({
         initialValues: {
-            label,
-            identifier,
-            uri,
+            label: label ?? "",
+            identifier: identifier ?? "",
+            uri: uri ?? "",
         },
         validate: {
             label: value => !value,
             identifier: value => !value,
-            uri: value => !value,
+            uri: value => !value ||
+                (value != uri && !!getAnnotation(value) && "An annotation with this URI already exists"),
         }
     })
 
     // submit -- propagate event then treat like a cancel
     const handleSubmit = formValues => {
 
-        if(editing) {
+        if (editing) {
             editAnnotation(uri, {
                 id: formValues.uri,
                 label: formValues.label,
@@ -32,7 +33,12 @@ export default function TextAnnotationModal({ id, context, innerProps: { editing
             })
         }
         else {
-            console.log("TO DO: implement adding")
+            addAnnotation({
+                id: formValues.uri,
+                label: formValues.label,
+                displayId: formValues.identifier,
+                mentions: [],
+            })
         }
 
         context.closeModal(id)

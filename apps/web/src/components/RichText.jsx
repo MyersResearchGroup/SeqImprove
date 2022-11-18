@@ -1,14 +1,16 @@
-import { Box, Text, useMantineTheme } from '@mantine/core'
-import { useClickOutside, useHover } from '@mantine/hooks'
-import React, { useMemo, useState } from 'react'
-import { useEffect } from 'react'
-import { useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { Box, Button, ColorSwatch, Group, Menu, Popover, Text, useMantineTheme } from '@mantine/core'
+import { FaMinus } from "react-icons/fa"
 import { createAnnotationRegex } from '../modules/sbol'
+import { useStore } from '../modules/store'
+import TextLink from './TextLink'
 
-export default function RichText({ children, colorMap, onSelectionChange }) {
+
+export default function RichText({ children, colorMap, onRemoveMention, onSelectionChange }) {
 
     // break description into words
     const words = useMemo(() => {
+        let wordOffset = 0
         // separate out annotations
         return children.split(/(\[.*?\))/g)
             // separate words
@@ -16,26 +18,36 @@ export default function RichText({ children, colorMap, onSelectionChange }) {
             // filter out empties
             .filter(str => !!str)
             // map to objects with more info
-            .map(str => {
+            .map((str, index) => {
                 const match = str.match(createAnnotationRegex(".+?", ""))
-                return match ? {
+                const length = str.split(/\s+/g).length
+
+                const result = match ? {
                     text: match[1],
                     id: match[2],
-                    length: str.split(/\s+/g).length,
                     isAnnotation: true,
                     rawText: str,
                     color: colorMap[match[2]],
+                    length,
+                    index: index + wordOffset,
                 } : {
                     text: str,
                     isAnnotation: false,
+                    index: index + wordOffset,
                 }
+
+                // need this so the indexes don't get messed up when there are multi-word
+                // annotations in the mix
+                wordOffset += length - 1
+
+                return result
             })
     }, [children])
 
     // watch for word selections
     const [selectedWords, selectionHandlers] = useWordSelection(words)
-    // const wordBoxRef = useClickOutside(selectionHandlers.clear)
 
+    // propagate selection changes to parent
     useEffect(() => {
         onSelectionChange?.(selectedWords && {
             selectedWords,
@@ -44,59 +56,86 @@ export default function RichText({ children, colorMap, onSelectionChange }) {
     }, [selectedWords])
 
     return (
-        <Box
-            sx={{ flexWrap: 'wrap' }}
-            // ref={wordBoxRef}
-        >
+        <Box sx={{ flexWrap: 'wrap' }}>
             {words.map((word, i) =>
                 <Word
+                    word={word}
+                    selected={selectedWords?.includes(word)}
+                    key={i}
+
                     {...(word.isAnnotation ? {
-                        onClick: () => {
-                            selectionHandlers.clear()
-                        }
+                        onClick: () => selectionHandlers.clear(),
+                        onRemoveMention,
                     } : {
                         onMouseDown: event => selectionHandlers.mouseDown(word, event),
                         onMouseUp: event => selectionHandlers.mouseUp(word, event),
                         onMouseMove: event => selectionHandlers.mouseMove(word, event),
                     })}
-
-                    highlight={word.color ?? (selectedWords?.includes(word) && "blue")}
-                    key={i}
-                >
-                    {word.text}
-                </Word>
+                />
             )}
         </Box>
     )
 }
 
-function Word({ children, highlight, ...props }) {
+
+function Word({ word, selected, onRemoveMention, ...props }) {
 
     const theme = useMantineTheme()
-    const { hovered, ref } = useHover()
 
-    return (
-        <Text
-            px={3}
-            color={hovered ? theme.colors.blue[6] : "black"}
-            ref={ref}
+    // find the annotation and mention this word refers to
+    const { getAnnotation } = useStore(s => s.textAnnotationActions)
+    const annotation = useMemo(() => word.id && getAnnotation(word.id), [word.id])
+    const mention = useMemo(() => annotation?.mentions.find(m => m.startWord == word.index), [annotation, word.index])
 
-            sx={theme => ({
-                display: "inline-block",
-                // borderRadius: 6,
-                cursor: "pointer",
-                userSelect: "none",
+    const highlight = word.color ?? (selected && "blue")
 
-                ...(highlight && {
-                    backgroundColor: theme.colors[highlight][1],
-                    color: theme.colors[highlight][9],
-                })
-            })}
-            {...props}
-        >
-            {children}
-        </Text>
-    )
+    const textComponent = <Text
+        px={3}
+        sx={theme => ({
+            display: "inline-block",
+            cursor: "pointer",
+            userSelect: "none",
+
+            ...(word.isAnnotation ? {
+                borderRadius: 6,
+                "&:hover": {
+                    outline: "2px solid " + theme.colors[highlight][3],
+                }
+            } : {
+                "&:hover": {
+                    color: theme.colors.blue[6],
+                },
+            }),
+
+            ...(highlight && {
+                backgroundColor: theme.colors[highlight][1],
+                color: theme.colors[highlight][9],
+            }),
+        })}
+        {...props}
+    >
+        {word.text}
+    </Text>
+
+    return word.isAnnotation ?
+        <Popover width={200} shadow="md" withArrow closeOnClickOutside>
+            <Popover.Target>{textComponent}</Popover.Target>
+            <Popover.Dropdown>
+                <ColorSwatch size={8} sx={{ width: 60 }} color={theme.colors[word.color][5]} />
+                <Text my={10}>{mention?.text ?? word.text}</Text>
+                <Group position="apart">
+                    <Text size="sm">{annotation.label}</Text>
+                    <TextLink size="sm" color="dimmed" href={annotation.id}>{annotation.displayId}</TextLink>
+                </Group>
+                <Group position="center" mt={20}>
+                    <Button color="red" size="xs" variant="subtle" leftIcon={<FaMinus />} onClick={() => onRemoveMention?.(word)}>
+                        Remove Mention
+                    </Button>
+                </Group>
+            </Popover.Dropdown>
+        </Popover>
+        :
+        textComponent
 }
 
 function useWordSelection(words) {

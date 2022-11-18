@@ -1,9 +1,9 @@
-import { Text } from '@mantine/core'
 import { useEffect } from 'react'
+import { NotificationsProvider } from '@mantine/notifications'
+import { useStore } from './modules/store'
 import CurationForm from './components/CurationForm'
 import UploadForm from './components/UploadForm'
-import { useSearchParams } from './hooks/misc'
-import { useStore } from './modules/store'
+
 
 export default function App() {
 
@@ -18,10 +18,12 @@ export default function App() {
     }, [sbolUri])
 
     return (
-        sbolUri || hasSbolContent ?
-            <CurationForm />
-            :
-            <UploadForm />
+        <NotificationsProvider>
+            {sbolUri || hasSbolContent ?
+                <CurationForm />
+                :
+                <UploadForm />}
+        </NotificationsProvider>
     )
 }
 
