@@ -27,15 +27,17 @@ export default function CurationForm({ }) {
     return (
         <>
             <Container mb={100}>
-                <Title order={2} mb={20}>{displayId}</Title>
 
                 <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
-                    <Tabs.List>
-                        <Tabs.Tab value="overview">Overview</Tabs.Tab>
-                        <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
-                        <Tabs.Tab value="text">Text</Tabs.Tab>
-                        <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
-                    </Tabs.List>
+                    <Group mt="md" mx="xl" spacing="xl" sx={{ flexWrap: "wrap" }}>
+                        <Title order={2}>{displayId}</Title>
+                        <Tabs.List mt={10}>
+                            <Tabs.Tab value="overview">Overview</Tabs.Tab>
+                            <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
+                            <Tabs.Tab value="text">Text</Tabs.Tab>
+                            <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
+                        </Tabs.List>
+                    </Group>
 
                     <Tabs.Panel value="overview" pt={20}>
                         <SplitPanel
@@ -95,7 +97,7 @@ const tabStyles = theme => ({
         // color: theme.colors.dark[3],
     },
     tabsList: {
-        paddingBottom: 8,
-        borderBottom: "1px solid " + theme.colors.gray[4]
+        // paddingBottom: 8,
+        // borderBottom: "1px solid " + theme.colors.gray[4]
     },
 })
