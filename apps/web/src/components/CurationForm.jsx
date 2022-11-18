@@ -1,4 +1,4 @@
-import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group } from '@mantine/core'
+import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header } from '@mantine/core'
 import { useStore } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
@@ -11,6 +11,7 @@ import SequenceSection from './SequenceSection'
 import TextSection from './TextSection'
 import { ModalsProvider } from '@mantine/modals'
 import TextAnnotationModal from './TextAnnotationModal'
+import { TbDownload } from "react-icons/tb"
 
 
 export default function CurationForm({ }) {
@@ -24,21 +25,37 @@ export default function CurationForm({ }) {
     const sequenceColors = useCyclicalColors(useStore(s => s.sequenceAnnotations.length))
     const textColors = useCyclicalColors(useStore(s => s.textAnnotations.length))
 
+    // exporting
+    const exportDocument = useStore(s => s.exportDocument)
+
     return (
         <>
-            <Container mb={100}>
 
-                <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
-                    <Group mt="md" mx="xl" spacing="xl" sx={{ flexWrap: "wrap" }}>
-                        <Title order={2}>{displayId}</Title>
-                        <Tabs.List mt={10}>
-                            <Tabs.Tab value="overview">Overview</Tabs.Tab>
-                            <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
-                            <Tabs.Tab value="text">Text</Tabs.Tab>
-                            <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
-                        </Tabs.List>
-                    </Group>
+            <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
+                <Header p="lg">
+                    <Container>
+                        <Group position="apart" align="flex-end">
+                            <Group spacing={40}>
+                                <Title order={3}>{displayId}</Title>
+                                <Tabs.List>
+                                    <Tabs.Tab value="overview">Overview</Tabs.Tab>
+                                    <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
+                                    <Tabs.Tab value="text">Text</Tabs.Tab>
+                                    <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
+                                </Tabs.List>
+                            </Group>
+                            <Button
+                                onClick={exportDocument}
+                                variant="light"
+                                rightIcon={<TbDownload />}
+                            >
+                                Save SBOL
+                            </Button>
+                        </Group>
+                    </Container>
+                </Header>
 
+                <Container>
                     <Tabs.Panel value="overview" pt={20}>
                         <SplitPanel
                             left={<>
@@ -76,8 +93,8 @@ export default function CurationForm({ }) {
                         right={<SuggestedProteins />}
                     /> */}
                     </Tabs.Panel>
-                </Tabs>
-            </Container>
+                </Container>
+            </Tabs>
             <LoadingOverlay visible={docLoading} />
         </>
     )

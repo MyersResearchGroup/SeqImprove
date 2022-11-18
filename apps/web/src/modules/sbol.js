@@ -40,7 +40,7 @@ export async function createSBOLDocument(sbolContent) {
     // initialize rich description as regular description if one doesn't exist
     if (!document.root.richDescription)
         document.root.richDescription = document.root.description
-
+    
     return document
 }
 

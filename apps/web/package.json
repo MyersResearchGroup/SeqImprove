@@ -16,6 +16,7 @@
     "@mantine/notifications": "^5.8.0",
     "bioterms": "^0.30.0",
     "immer": "^9.0.16",
+    "js-file-download": "^0.4.12",
     "lodash": "^4.17.21",
     "lunr": "^2.3.9",
     "react": "^18.2.0",

@@ -4,16 +4,26 @@ import produce from "immer"
 import { getSearchParams } from "./util"
 import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, hasSequenceAnnotation, hasTextAnnotation, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
-import { S2ComponentDefinition } from "sbolgraph"
+import { S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
+import fileDownload from "js-file-download"
 
 
 // create store
 export const useStore = create((set, get) => ({
-
+    
+    /** 
+     * SBOL URI
+     * @type {string | undefined} */
     uri: getSearchParams().complete_sbol,
-
-    // SBOL content & parsed document
+    
+    /** 
+     * Raw SBOL content
+     * @type {string} */
     sbolContent: null,
+    
+    /** 
+     * Parsed SBOL document
+     * @type {SBOL2GraphView} */
     document: null,
     ...createAsyncAdapter(set, "SBOL", async sbol => {
         // try to form a URL out of the input argument
@@ -31,6 +41,10 @@ export const useStore = create((set, get) => ({
             document: await createSBOLDocument(sbolContent),
         }
     }),
+    exportDocument: () => {
+        const xml = get().document.serializeXML()
+        fileDownload(xml, `${get().document.root.displayId}.xml`)
+    },
 
 
     // Sequence Annotations

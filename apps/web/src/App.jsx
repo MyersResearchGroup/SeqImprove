@@ -3,6 +3,7 @@ import { NotificationsProvider } from '@mantine/notifications'
 import { useStore } from './modules/store'
 import CurationForm from './components/CurationForm'
 import UploadForm from './components/UploadForm'
+import { MantineProvider } from '@mantine/core'
 
 
 export default function App() {
@@ -18,12 +19,18 @@ export default function App() {
     }, [sbolUri])
 
     return (
-        <NotificationsProvider>
+        <MantineProvider theme={theme} withNormalizeCSS withGlobalStyles>
+            <NotificationsProvider>
             {sbolUri || hasSbolContent ?
                 <CurationForm />
                 :
                 <UploadForm />}
         </NotificationsProvider>
+        </MantineProvider>
     )
 }
 
+
+const theme = {
+    primaryColor: "teal",
+}
