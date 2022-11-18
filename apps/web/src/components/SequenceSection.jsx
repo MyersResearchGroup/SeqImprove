@@ -50,7 +50,7 @@ function Annotations({ colors }) {
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
 
     return (
-        <FormSection title="Sequence Annotations" w={350}>
+        <FormSection title="Sequence Annotations">
             {annotations?.length ?
                 annotations.map((anno, i) =>
                     <AnnotationCheckbox

@@ -191,7 +191,7 @@ function Annotations({ colors }) {
     useStore(s => s.document?.root.richDescription)    // force rerender from document change
 
     return (
-        <FormSection title="Recognized Terms" w={350}>
+        <FormSection title="Recognized Terms">
             {annotations.length ?
                 annotations.map((anno, i) =>
                     <TextAnnotationCheckbox id={anno.id} color={colors[i]} key={anno.id} />
