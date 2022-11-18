@@ -1,5 +1,5 @@
 import { Predicates as BioTermsPredicates } from "bioterms"
-import { Graph, SBOL2GraphView } from "sbolgraph"
+import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
 import { splitIntoWords } from "./text"
 
 
@@ -8,6 +8,13 @@ const Predicates = {
 }
 
 
+/**
+ * Creates an SBOL document from the passed SBOL content.
+ *
+ * @export
+ * @param {string} sbolContent
+ * @return {SBOL2GraphView} 
+ */
 export async function createSBOLDocument(sbolContent) {
     const document = new SBOL2GraphView(new Graph())
     await document.loadString(sbolContent)
@@ -44,10 +51,31 @@ export async function createSBOLDocument(sbolContent) {
     return document
 }
 
+/**
+ * Checks if the passed ComponentDefinition contains the sequence annotation specified
+ * by the passed annotation ID.
+ *
+ * @export
+ * @param {S2ComponentDefinition} componentDefinition
+ * @param {string} annotationId
+ * @return {boolean} 
+ */
 export function hasSequenceAnnotation(componentDefinition, annotationId) {
     return !!componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == annotationId)
 }
 
+/**
+ * Adds a sequence annotation with the information from the passed annotation object
+ * to the passed ComponentDefinition.
+ *
+ * @export
+ * @param {S2ComponentDefinition} componentDefinition
+ * @param {{
+ *      id: string,
+ *      name: string,
+ *      location: number[],
+ * }} annoInfo
+ */
 export function addSequenceAnnotation(componentDefinition, annoInfo) {
     if (hasSequenceAnnotation(componentDefinition, annoInfo.id))
         return
@@ -56,26 +84,59 @@ export function addSequenceAnnotation(componentDefinition, annoInfo) {
     sa.persistentIdentity = annoInfo.id
 }
 
+/**
+ * Removes the sequence annotation matching the passed annotation ID from the passed
+ * ComponentDefinition.
+ *
+ * @export
+ * @param {S2ComponentDefinition} componentDefinition
+ * @param {string} annotationId
+ */
 export function removeSequenceAnnotation(componentDefinition, annotationId) {
     if (!hasSequenceAnnotation(componentDefinition, annotationId))
         return
 
     const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == annotationId)
-    componentDefinition.graph.removeMatches(
-        componentDefinition.subject,
-        BioTermsPredicates.SBOL2.sequenceAnnotation,
-        annotation.subject
-    )
+    annotation.destroy()
 }
 
+/**
+ * Creates a regular expression that searches for a text annotation with the
+ * passed ID.
+ *
+ * @export
+ * @param {string} id
+ * @param {string} [flags="g"]
+ * @return {RegExp} 
+ */
 export function createAnnotationRegex(id, flags = "g") {
     return new RegExp(`\\[([^\\]]*?)\\]\\((${id})\\)`, flags)
 }
 
+/**
+ * Checks if the passed ComponentDefinition contains the text annotation specified
+ * by the passed annotation ID.
+ *
+ * @export
+ * @param {S2ComponentDefinition} componentDefinition
+ * @param {string} annotationId
+ * @return {boolean} 
+ */
 export function hasTextAnnotation(componentDefinition, annotationId) {
     return createAnnotationRegex(annotationId).test(componentDefinition.richDescription)
 }
 
+/**
+ * Adds a text annotation with the information from the passed annotation object
+ * to the passed ComponentDefinition.
+ *
+ * @export
+ * @param {S2ComponentDefinition} componentDefinition
+ * @param {{
+ *      id: string,
+ *      mentions: any[],
+ * }} annoInfo
+ */
 export function addTextAnnotation(componentDefinition, annoInfo) {
     if (hasTextAnnotation(componentDefinition, annoInfo.id))
         return
@@ -90,6 +151,14 @@ export function addTextAnnotation(componentDefinition, annoInfo) {
     componentDefinition.richDescription = words.join(" ")
 }
 
+/**
+ * Removes the text annotation matching the passed annotation ID from the passed
+ * ComponentDefinition.
+ *
+ * @export
+ * @param {S2ComponentDefinition} componentDefinition
+ * @param {string} annotationId
+ */
 export function removeTextAnnotation(componentDefinition, annotationId) {
     if (!hasTextAnnotation(componentDefinition, annotationId))
         return
