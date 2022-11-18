@@ -1,4 +1,4 @@
-import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button } from '@mantine/core'
+import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group } from '@mantine/core'
 import { useStore } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
@@ -27,6 +27,7 @@ export default function CurationForm({ }) {
     return (
         <>
             <Container mb={100}>
+                <Title order={2} mb={20}>{displayId}</Title>
 
                 <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
                     <Tabs.List>
@@ -39,7 +40,7 @@ export default function CurationForm({ }) {
                     <Tabs.Panel value="overview" pt={20}>
                         <SplitPanel
                             left={<>
-                                <Title order={2} mb={10}>{displayId}</Title>
+                                <Title order={5} mb={10}>Description</Title>
                                 <Text color="dimmed">{description}</Text>
                                 <Space h={20} />
                                 {/* <RoleSelection /> */}
