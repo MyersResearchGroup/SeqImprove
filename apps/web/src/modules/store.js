@@ -6,6 +6,7 @@ import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, hasSequen
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
 import { S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
+import { TextBuffer } from "text-ranger"
 
 
 // create store
@@ -35,10 +36,12 @@ export const useStore = create((set, get) => ({
 
         // if it's a URL, fetch it; otherwise, just use it as the content
         const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
+        const document = await createSBOLDocument(sbolContent)
 
         return {
             sbolContent,
-            document: await createSBOLDocument(sbolContent),
+            document,
+            richDescriptionBuffer: new TextBuffer(document.root.richDescription),
         }
     }),
     exportDocument: () => {
@@ -64,7 +67,7 @@ export const useStore = create((set, get) => ({
 
     // Text Annotations
     textAnnotations: [],
-
+    richDescriptionBuffer: null,
     ...createAsyncAdapter(set, "TextAnnotations", async () => ({
         // fetch sequence annotations from API
         textAnnotations: await fetchAnnotateText(get().sbolContent) ?? [],
@@ -72,8 +75,8 @@ export const useStore = create((set, get) => ({
 
     textAnnotationActions: createAnnotationActions(set, get, state => state.textAnnotations, {
         test: hasTextAnnotation,
-        add: addTextAnnotation,
-        remove: removeTextAnnotation,
+        add: (compDef, annoInfo) => addTextAnnotation(compDef, annoInfo, get().richDescriptionBuffer),
+        remove: (compDef, annoInfo) => removeTextAnnotation(compDef, annoInfo, get().richDescriptionBuffer),
     }),
 
     // // role
@@ -197,9 +200,7 @@ function createAnnotationActions(set, get, selector, { test, add, remove } = {})
     const isActive = id => test(get().document.root, id)
     const setActive = (id, value) => {
         mutateDocument(set, state => {
-            value ?
-                add(state.document.root, getAnnotation(id)) :
-                remove(state.document.root, id)
+            (value ? add : remove)(state.document.root, getAnnotation(id))
         })
     }
 

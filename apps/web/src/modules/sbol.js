@@ -1,5 +1,6 @@
 import { Predicates as BioTermsPredicates } from "bioterms"
 import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
+import { TextBuffer } from "text-ranger"
 import { splitIntoWords } from "./text"
 
 
@@ -47,7 +48,7 @@ export async function createSBOLDocument(sbolContent) {
     // initialize rich description as regular description if one doesn't exist
     if (!document.root.richDescription)
         document.root.richDescription = document.root.description
-    
+
     return document
 }
 
@@ -90,13 +91,13 @@ export function addSequenceAnnotation(componentDefinition, annoInfo) {
  *
  * @export
  * @param {S2ComponentDefinition} componentDefinition
- * @param {string} annotationId
+ * @param {{string}} id
  */
-export function removeSequenceAnnotation(componentDefinition, annotationId) {
-    if (!hasSequenceAnnotation(componentDefinition, annotationId))
+export function removeSequenceAnnotation(componentDefinition, { id }) {
+    if (!hasSequenceAnnotation(componentDefinition, id))
         return
 
-    const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == annotationId)
+    const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
     annotation.destroy()
 }
 
@@ -111,6 +112,17 @@ export function removeSequenceAnnotation(componentDefinition, annotationId) {
  */
 export function createAnnotationRegex(id, flags = "g") {
     return new RegExp(`\\[([^\\]]*?)\\]\\((${id})\\)`, flags)
+}
+
+/**
+ * Tests if a string is or contains a text annotation.
+ *
+ * @export
+ * @param {string} text
+ * @return {boolean} 
+ */
+export function isMention(text) {
+    return createAnnotationRegex(".+?", "").test(text)
 }
 
 /**
@@ -136,19 +148,17 @@ export function hasTextAnnotation(componentDefinition, annotationId) {
  *      id: string,
  *      mentions: any[],
  * }} annoInfo
+ * @param {TextBuffer} buffer
  */
-export function addTextAnnotation(componentDefinition, annoInfo) {
-    if (hasTextAnnotation(componentDefinition, annoInfo.id))
+export function addTextAnnotation(componentDefinition, annoInfo, buffer) {
+    if (hasTextAnnotation(componentDefinition, annoInfo.id) || !buffer)
         return
 
-    const words = splitIntoWords(componentDefinition.richDescription)
-    annoInfo.mentions.forEach(mention => {
-        // remove annotation phrase
-        const removedPhrase = words.splice(mention.startWord, mention.length).join(" ")
-        // insert it as a link with padding to maintain total length
-        words.splice(mention.startWord, 0, `[${removedPhrase}](${annoInfo.id})`, ...Array(mention.length - 1).fill(""))
-    })
-    componentDefinition.richDescription = words.join(" ")
+    annoInfo.mentions.forEach(
+        mention => buffer.modifyRange(mention.start, mention.end, original => `[${original}](${annoInfo.id})`)
+    )
+
+    componentDefinition.richDescription = buffer.getText()
 }
 
 /**
@@ -159,12 +169,19 @@ export function addTextAnnotation(componentDefinition, annoInfo) {
  * @param {S2ComponentDefinition} componentDefinition
  * @param {string} annotationId
  */
-export function removeTextAnnotation(componentDefinition, annotationId) {
-    if (!hasTextAnnotation(componentDefinition, annotationId))
+export function removeTextAnnotation(componentDefinition, annoInfo, buffer) {
+    if (!hasTextAnnotation(componentDefinition, annoInfo.id) || !buffer)
         return
 
-    componentDefinition.richDescription = componentDefinition.richDescription.replaceAll(
-        createAnnotationRegex(annotationId),
-        "$1"
+    // Can't do this because we need to keep the TextBuffer transformations intact
+    // componentDefinition.richDescription = componentDefinition.richDescription.replaceAll(
+    //     createAnnotationRegex(annotationId),
+    //     "$1"
+    // )
+
+    annoInfo.mentions.forEach(
+        mention => buffer.modifyRange(mention.start, mention.end, mention.text)
     )
+
+    componentDefinition.richDescription = buffer.getText()
 }

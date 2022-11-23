@@ -4,6 +4,7 @@ import { FaMinus } from "react-icons/fa"
 import { createAnnotationRegex } from '../modules/sbol'
 import { useStore } from '../modules/store'
 import TextLink from './TextLink'
+import { splitByAnnotations, splitIntoAnnotationsAndWords } from '../modules/text'
 
 
 export default function RichText({ children, colorMap, onRemoveMention, onSelectionChange }) {
@@ -11,12 +12,8 @@ export default function RichText({ children, colorMap, onRemoveMention, onSelect
     // break description into words
     const words = useMemo(() => {
         let wordOffset = 0
-        // separate out annotations
-        return children.split(/(\[.*?\))/g)
-            // separate words
-            .map(str => str.startsWith("[") ? str : str.split(/\s+/g)).flat()
-            // filter out empties
-            .filter(str => !!str)
+        
+        return splitIntoAnnotationsAndWords(children)
             // map to objects with more info
             .map((str, index) => {
                 const match = str.match(createAnnotationRegex(".+?", ""))

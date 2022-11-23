@@ -8,6 +8,7 @@ import RichText from "./RichText"
 import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { showNotification } from "@mantine/notifications"
 import { hasTrailingPunctuation, removeTrailingPunctuation } from "../modules/text"
+import RichDescription from "./RichDescription"
 
 
 function Description({ colors }) {
@@ -25,6 +26,9 @@ function Description({ colors }) {
 
     // description editing state
     const [workingDescription, setWorkingDescription] = useState(false)
+    const startDescriptionEdit = () => {
+
+    }
     const handleDescriptionEdit = () => {
         setDescription(workingDescription)
         setWorkingDescription(false)
@@ -37,12 +41,12 @@ function Description({ colors }) {
     const handleAddMention = annoId => {
         const anno = getAnnotation(annoId)
         const newMention = {
-            text: selection.selectedWords.map(sw => sw.text).join(" "),
-            startWord: Math.min(...selection.selectedWords.map(sw => sw.index)),
-            length: selection.selectedWords.reduce((accum, sw) => accum + (sw.length ?? 1), 0),
+            text: selection.toString(),
+            start: selection.range[0],
+            end: selection.range[1],
         }
 
-        selection.clear()
+        selection.empty()
 
 
         // make sure new mention doesn't overlap existing mentions
@@ -51,8 +55,8 @@ function Description({ colors }) {
         }))).flat()
 
         const overlappingMention = allMentions.find(mention =>
-            !(mention.startWord > newMention.startWord + newMention.length - 1 ||
-                newMention.startWord > mention.startWord + (mention.length ?? 1) - 1)
+            !(mention.start > newMention.end - 1 ||
+                newMention.start > mention.end - 1)
         )
 
         if (!!overlappingMention) {
@@ -66,7 +70,7 @@ function Description({ colors }) {
             return
         }
 
-        
+
         // action to add mention to annotation
         const addMention = () => {
             editAnnotation(annoId, {
@@ -80,46 +84,36 @@ function Description({ colors }) {
             setActive(annoId, true)
         }
 
+        // Disabling this for now because it doesn't adjust start/end indices
         // detect trailing punctuation / special characters
-        if (hasTrailingPunctuation(newMention.text)) {
-            const replacement = removeTrailingPunctuation(newMention.text)
+        // if (hasTrailingPunctuation(newMention.text)) {
+        //     const replacement = removeTrailingPunctuation(newMention.text)
 
-            openConfirmModal({
-                title: "Remove trailing punctuation?",
-                children: <>
-                    <Text size="sm">
-                        There was trailing punctuation detected in your selection. Would you like to exclude
-                        it from the mention?
-                    </Text>
-                    <Group my={10} position="center">
-                        <Text>{newMention.text}</Text>
-                        <Text color="dimmed"><FaArrowRight fontSize={10} /></Text>
-                        <Text weight={600}>{replacement}</Text>
-                    </Group>
-                </>,
-                labels: { confirm: "Remove Punctuation", cancel: "Keep Punctuation" },
-                onConfirm: () => {
-                    newMention.text = replacement
-                    addMention()
-                },
-                onCancel: addMention,
-            })
-            return
-        }
+        //     openConfirmModal({
+        //         title: "Remove trailing punctuation?",
+        //         children: <>
+        //             <Text size="sm">
+        //                 There was trailing punctuation detected in your selection. Would you like to exclude
+        //                 it from the mention?
+        //             </Text>
+        //             <Group my={10} position="center">
+        //                 <Text>{newMention.text}</Text>
+        //                 <Text color="dimmed"><FaArrowRight fontSize={10} /></Text>
+        //                 <Text weight={600}>{replacement}</Text>
+        //             </Group>
+        //         </>,
+        //         labels: { confirm: "Remove Punctuation", cancel: "Keep Punctuation" },
+        //         onConfirm: () => {
+        //             newMention.text = replacement
+        //             addMention()
+        //         },
+        //         onCancel: addMention,
+        //     })
+        //     return
+        // }
 
         // otherwise, just add the mention normally
         addMention()
-    }
-
-    // handle removing mentions
-    const handleRemoveMention = word => {
-        const anno = getAnnotation(word.id)
-        editAnnotation(word.id, {
-            mentions: anno.mentions.filter(mention =>
-                mention.startWord != word.index ||
-                mention.length != word.length
-            )
-        })
     }
 
     return (
@@ -141,18 +135,15 @@ function Description({ colors }) {
                     /> :
 
                     description &&
-                    <RichText
+                    <RichDescription
                         onSelectionChange={setSelection}
-                        onRemoveMention={handleRemoveMention}
                         colorMap={colorMap}
-                    >
-                        {description}
-                    </RichText>
+                    />
                 }
             </FormSection>
 
             {selection &&
-                <Group position="center">
+                <Group position="center" onMouseDown={event => event.preventDefault()}>
                     {/* Create New Annotation Button */}
                     {/* <Button
                         variant="outline"
@@ -177,7 +168,7 @@ function Description({ colors }) {
                     />
 
                     {/* Clear Selection Button */}
-                    <Button variant="subtle" radius="xl" onClick={selection.clear}>Clear Selection</Button>
+                    <Button variant="subtle" radius="xl" onClick={() => selection.empty()}>Clear Selection</Button>
                 </Group>
             }
         </>

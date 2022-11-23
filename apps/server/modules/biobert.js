@@ -30,8 +30,8 @@ export async function runBiobert(text) {
                             confidence: current.prob,
                             start: current.span.begin,
                             end: current.span.end,
-                            startWord: wordIndexFromIndex(text, current.span.begin),
-                            length: countWords(current.mention),
+                            // startWord: wordIndexFromIndex(text, current.span.begin),
+                            // length: countWords(current.mention),
                         }
                     ]
                 }

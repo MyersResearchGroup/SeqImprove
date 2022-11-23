@@ -24,7 +24,8 @@
     "react-icons": "^4.6.0",
     "react-markdown": "^8.0.3",
     "sbolgraph": "^0.51.0",
-    "zustand": "^4.1.4"
+    "zustand": "^4.1.4",
+    "text-ranger": "*"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
