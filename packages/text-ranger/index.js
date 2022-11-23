@@ -24,6 +24,11 @@ export class TextBuffer {
         // Calculate original text length
         const originalLength = end - start
 
+        // If new text is a function, pass the original text to it
+        const originalText = this.text.slice(start, end)
+        if(typeof newText === "function")
+            newText = newText(originalText)
+
         /**
          * Any replacements that result in less characters than the original text
          * will result in a range where the result has been removed.
@@ -39,9 +44,8 @@ export class TextBuffer {
         this.transforms.push(createTransform(end, adjustment))
 
         // Make the replacement
-        const oldText = this.text.slice(start, end)
         this.text = this.text.slice(0, start) + newText + this.text.slice(end)
-        return oldText
+        return originalText
     }
 
     projectIndex(index) {

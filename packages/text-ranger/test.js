@@ -11,7 +11,8 @@ buf.modifyRange(5, 9, "cool part")
 console.log(buf.getText())
 console.log()
 
-buf.modifyRange(19, 22, "[GFP](code)")
+// buf.modifyRange(19, 22, "[GFP](code)")
+buf.modifyRange(19, 22, old => `[${old}](code)`)
 
 console.log(buf.getText())
 console.log()
