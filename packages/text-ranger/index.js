@@ -39,7 +39,9 @@ export class TextBuffer {
         this.transforms.push(createTransform(end, adjustment))
 
         // Make the replacement
+        const oldText = this.text.slice(start, end)
         this.text = this.text.slice(0, start) + newText + this.text.slice(end)
+        return oldText
     }
 
     projectIndex(index) {
