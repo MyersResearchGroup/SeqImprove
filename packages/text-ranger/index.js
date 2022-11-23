@@ -59,7 +59,7 @@ export class TextBuffer {
 
         return start === undefined ? this.text : this.text.slice(
             this.projectIndex(start),
-            this.projectIndex(end ?? start + 1)
+            end == null ? this.text.length : this.projectIndex(end)
         )
     }
 }
