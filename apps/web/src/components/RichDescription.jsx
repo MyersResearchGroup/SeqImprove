@@ -74,7 +74,7 @@ function Mention({ mention }) {
     const theme = useMantineTheme()
 
     const { getAnnotation, editAnnotation } = useStore(s => s.textAnnotationActions)
-    const annotation = useMemo(() => getAnnotation(mention.annotationId), [mention.annotationId])
+    const annotation = getAnnotation(mention.annotationId)
 
     const handleRemoveAnnotation = () => {
         editAnnotation(annotation.id, {
