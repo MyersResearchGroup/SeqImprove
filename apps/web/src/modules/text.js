@@ -1,13 +1,17 @@
 import { createAnnotationRegex } from "./sbol"
 
-const trailingPunctuationRegex = /[\.,\/#!$%\^&\*;:{}=\-_`~()]$/
+const trailingPunctuationRegex = /[ \.,\/#!$%\^&\*;:{}=\-_`~()]+?$/
 
 export function hasTrailingPunctuation(text) {
     return trailingPunctuationRegex.test(text)
 }
 
 export function removeTrailingPunctuation(text) {
-    return text.replace(trailingPunctuationRegex, "")
+    const trailingLength = text.match(trailingPunctuationRegex)?.[0].length ?? 0
+    return {
+        text: text.replace(trailingPunctuationRegex, ""),
+        length: trailingLength,
+    }
 }
 
 

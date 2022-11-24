@@ -113,7 +113,7 @@ function Mention({ mention }) {
                     size={8}
                     sx={{ width: 60 }}
                 />
-                <Text my={10}>{mention.text}</Text>
+                <Text my={10}>"{mention.text}"</Text>
                 <Group position="apart">
                     <Text size="sm">{annotation.label}</Text>
                     <TextLink size="sm" color="dimmed" href={annotation.id}>{annotation.displayId}</TextLink>

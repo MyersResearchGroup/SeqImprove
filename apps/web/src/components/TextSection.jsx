@@ -86,31 +86,32 @@ function Description({ colors }) {
 
         // Disabling this for now because it doesn't adjust start/end indices
         // detect trailing punctuation / special characters
-        // if (hasTrailingPunctuation(newMention.text)) {
-        //     const replacement = removeTrailingPunctuation(newMention.text)
+        if (hasTrailingPunctuation(newMention.text)) {
+            const { text: replacement, length: trailingLength } = removeTrailingPunctuation(newMention.text)
 
-        //     openConfirmModal({
-        //         title: "Remove trailing punctuation?",
-        //         children: <>
-        //             <Text size="sm">
-        //                 There was trailing punctuation detected in your selection. Would you like to exclude
-        //                 it from the mention?
-        //             </Text>
-        //             <Group my={10} position="center">
-        //                 <Text>{newMention.text}</Text>
-        //                 <Text color="dimmed"><FaArrowRight fontSize={10} /></Text>
-        //                 <Text weight={600}>{replacement}</Text>
-        //             </Group>
-        //         </>,
-        //         labels: { confirm: "Remove Punctuation", cancel: "Keep Punctuation" },
-        //         onConfirm: () => {
-        //             newMention.text = replacement
-        //             addMention()
-        //         },
-        //         onCancel: addMention,
-        //     })
-        //     return
-        // }
+            openConfirmModal({
+                title: "Remove trailing whitespace & punctuation?",
+                children: <>
+                    <Text size="sm">
+                        There was trailing whitespace and/or punctuation detected in your selection. Would you like to exclude
+                        it from the mention?
+                    </Text>
+                    <Group my={10} position="center">
+                        <Text>"{newMention.text}"</Text>
+                        <Text color="dimmed"><FaArrowRight fontSize={10} /></Text>
+                        <Text weight={600}>"{replacement}"</Text>
+                    </Group>
+                </>,
+                labels: { confirm: "Remove it", cancel: "Keep it" },
+                onConfirm: () => {
+                    newMention.text = replacement
+                    newMention.end -= trailingLength
+                    addMention()
+                },
+                onCancel: addMention,
+            })
+            return
+        }
 
         // otherwise, just add the mention normally
         addMention()
@@ -144,31 +145,38 @@ function Description({ colors }) {
 
             {selection &&
                 <Group position="center" onMouseDown={event => event.preventDefault()}>
-                    {/* Create New Annotation Button */}
-                    {/* <Button
-                        variant="outline"
-                        radius="xl"
-                        leftIcon={<FaPlus />}
-                    >
-                        New Annotation
-                    </Button> */}
+                    {annotations.length ?
+                        <>
+                            {/* Create New Annotation Button */}
+                            {/* <Button
+                                variant="outline"
+                                radius="xl"
+                                leftIcon={<FaPlus />}
+                            >
+                                New Annotation
+                            </Button> */}
 
-                    {/* Add to Existing Annotation Select */}
-                    <Select
-                        radius="xl"
-                        placeholder="Add to existing annotation"
-                        itemComponent={SelectItem}
-                        onChange={handleAddMention}
-                        data={annotations.map(anno => ({
-                            label: anno.label,
-                            value: anno.id,
-                            annotation: anno,
-                            color: colorMap[anno.id],
-                        }))}
-                    />
+                            {/* Add to Existing Annotation Select */}
+                            <Select
+                                radius="xl"
+                                placeholder="Add to existing annotation"
+                                itemComponent={SelectItem}
+                                onChange={handleAddMention}
+                                data={annotations.map(anno => ({
+                                    label: anno.label,
+                                    value: anno.id,
+                                    annotation: anno,
+                                    color: colorMap[anno.id],
+                                }))}
+                            />
 
-                    {/* Clear Selection Button */}
-                    <Button variant="subtle" radius="xl" onClick={() => selection.empty()}>Clear Selection</Button>
+                            {/* Clear Selection Button */}
+                            <Button variant="subtle" radius="xl" onClick={() => selection.empty()}>Clear Selection</Button>
+                        </>
+                        :
+                        <>
+                            <Text color="dimmed" size="sm">Create or load text annotations to get started.</Text>
+                        </>}
                 </Group>
             }
         </>
@@ -195,7 +203,7 @@ function Annotations({ colors }) {
                 </Center>}
 
             <NavLink
-                label="Add Text Annotation"
+                label="Create Text Annotation"
                 icon={<FaPlus />}
                 variant="subtle"
                 active={true}
