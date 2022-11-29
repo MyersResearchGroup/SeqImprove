@@ -69,14 +69,20 @@ export const useStore = create((set, get) => ({
     textAnnotations: [],
     richDescriptionBuffer: null,
     ...createAsyncAdapter(set, "TextAnnotations", async () => ({
-        // fetch sequence annotations from API
-        textAnnotations: await fetchAnnotateText(get().sbolContent) ?? [],
+        // fetch text annotations from API
+        textAnnotations: (await fetchAnnotateText(get().sbolContent)).map(anno => {
+            anno.mentions.forEach(mention => {
+                // add an Alias object for each mention to interact with the buffer
+                mention.bufferPatch = get().richDescriptionBuffer.createAlias(mention.start, mention.end, `[${mention.text}](${anno.id})`)
+            })
+            return anno
+        }),
     })),
 
     textAnnotationActions: createAnnotationActions(set, get, state => state.textAnnotations, {
         test: hasTextAnnotation,
-        add: (compDef, annoInfo) => addTextAnnotation(compDef, annoInfo, get().richDescriptionBuffer),
-        remove: (compDef, annoInfo) => removeTextAnnotation(compDef, annoInfo, get().richDescriptionBuffer),
+        add: addTextAnnotation,
+        remove: removeTextAnnotation,
     }),
 
     // // role

@@ -15,6 +15,7 @@
     "@mantine/modals": "^5.8.0",
     "@mantine/notifications": "^5.8.0",
     "bioterms": "^0.30.0",
+    "diff": "^5.1.0",
     "immer": "^9.0.16",
     "js-file-download": "^0.4.12",
     "lodash": "^4.17.21",
@@ -24,8 +25,8 @@
     "react-icons": "^4.6.0",
     "react-markdown": "^8.0.3",
     "sbolgraph": "^0.51.0",
-    "zustand": "^4.1.4",
-    "text-ranger": "*"
+    "text-ranger": "*",
+    "zustand": "^4.1.4"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",

@@ -11,7 +11,8 @@ export default function RichDescription({ colorMap, onSelectionChange }) {
 
     const annotations = useStore(s => s.textAnnotations)
     const { isActive } = useStore(s => s.textAnnotationActions)
-    const richDescriptionBuffer = useStore(s => s.richDescriptionBuffer)
+    const description = useStore(s => s.document?.root.richDescription)
+    const rawDescription = useStore(s => s.richDescriptionBuffer.originalText)
 
     // find and sort active mentions
     const activeMentions = annotations
@@ -45,13 +46,13 @@ export default function RichDescription({ colorMap, onSelectionChange }) {
     return (
         <Box>
             <TextSpan offset={0}>
-                {richDescriptionBuffer.getText(0, activeMentions[0]?.start)}
+                {rawDescription.slice(0, activeMentions[0]?.start)}
             </TextSpan>
             {activeMentions.map((mention, i) =>
                 <React.Fragment key={i}>
                     <Mention mention={mention} />
                     <TextSpan offset={mention.end}>
-                        {richDescriptionBuffer.getText(mention.end, activeMentions[i + 1]?.start)}
+                        {rawDescription.slice(mention.end, activeMentions[i + 1]?.start)}
                     </TextSpan>
                 </React.Fragment>
             )}
@@ -76,7 +77,11 @@ function Mention({ mention }) {
     const { getAnnotation, editAnnotation } = useStore(s => s.textAnnotationActions)
     const annotation = getAnnotation(mention.annotationId)
 
-    const handleRemoveAnnotation = () => {
+    const handleRemoveMention = () => {
+        
+        mention.bufferPatch.disable()
+        // TO DO: unregister from buffer
+
         editAnnotation(annotation.id, {
             mentions: annotation.mentions.filter(m =>
                 m.start != mention.start ||
@@ -119,7 +124,7 @@ function Mention({ mention }) {
                     <TextLink size="sm" color="dimmed" href={annotation.id}>{annotation.displayId}</TextLink>
                 </Group>
                 <Group position="center" mt={20}>
-                    <Button color="red" size="xs" variant="subtle" leftIcon={<FaMinus />} onClick={handleRemoveAnnotation}>
+                    <Button color="red" size="xs" variant="subtle" leftIcon={<FaMinus />} onClick={handleRemoveMention}>
                         Remove Mention
                     </Button>
                 </Group>

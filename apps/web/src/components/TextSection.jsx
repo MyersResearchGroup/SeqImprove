@@ -1,10 +1,9 @@
 import { ActionIcon, Button, Center, Group, Loader, NavLink, Select, Text, Textarea } from "@mantine/core"
 import { forwardRef, useMemo, useState } from "react"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
-import { useAsyncLoader, useStore } from "../modules/store"
+import { mutateDocument, useAsyncLoader, useStore } from "../modules/store"
 import FormSection from "./FormSection"
 import TextAnnotationCheckbox from "./TextAnnotationCheckbox"
-import RichText from "./RichText"
 import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { showNotification } from "@mantine/notifications"
 import { hasTrailingPunctuation, removeTrailingPunctuation } from "../modules/text"
@@ -14,23 +13,44 @@ import RichDescription from "./RichDescription"
 function Description({ colors }) {
 
     const annotations = useStore(s => s.textAnnotations)
-    const { getAnnotation, editAnnotation, setActive } = useStore(s => s.textAnnotationActions)
+    const { getAnnotation, editAnnotation, setActive, isActive } = useStore(s => s.textAnnotationActions)
 
     // console.log(annotations)
 
     // make a map of colors for easier access
     const colorMap = useMemo(() => Object.fromEntries(annotations.map((anno, i) => [anno.id, colors[i]])), [colors])
 
-    const description = useStore(s => s.document?.root.richDescription)
-    const setDescription = useStore(s => s.document?.root.setDescription)
-
+    
     // description editing state
+    const description = useStore(s => s.document?.root.richDescription)
+    const richDescriptionBuffer = useStore(s => s.richDescriptionBuffer)
     const [workingDescription, setWorkingDescription] = useState(false)
-    const startDescriptionEdit = () => {
 
+    // handle the start of editing the description
+    const handleStartDescriptionEdit = () => {
+        setWorkingDescription(richDescriptionBuffer.originalText)
     }
-    const handleDescriptionEdit = () => {
-        setDescription(workingDescription)
+
+    // handle finishing editing the description
+    const handleEndDescriptionEdit = (cancel = false) => {
+        if (!cancel) {
+
+            // change text in buffer
+            richDescriptionBuffer.changeText(workingDescription)
+
+            // update mentions with new start & end
+            annotations.forEach(anno => {
+                anno.mentions.forEach(mention => {
+                    mention.start = mention.bufferPatch.start
+                    mention.end = mention.bufferPatch.end
+                })
+            })
+            
+            // propagate buffer changes to rich description
+            mutateDocument(useStore.setState, state => {
+                state.document.root.richDescription = richDescriptionBuffer.getText()
+            })
+        }
         setWorkingDescription(false)
     }
 
@@ -73,6 +93,8 @@ function Description({ colors }) {
 
         // action to add mention to annotation
         const addMention = () => {
+            newMention.bufferPatch = richDescriptionBuffer.createAlias(newMention.start, newMention.end, `[${newMention.text}](${annoId})`)
+
             editAnnotation(annoId, {
                 mentions: [
                     ...anno.mentions,
@@ -122,10 +144,10 @@ function Description({ colors }) {
             <FormSection title="Description" rightSection={
                 workingDescription ?
                     <Group spacing={6}>
-                        <ActionIcon onClick={() => setWorkingDescription(false)} color="red"><FaTimes /></ActionIcon>
-                        <ActionIcon onClick={handleDescriptionEdit} color="green"><FaCheck /></ActionIcon>
+                        <ActionIcon onClick={() => handleEndDescriptionEdit(true)} color="red"><FaTimes /></ActionIcon>
+                        <ActionIcon onClick={() => handleEndDescriptionEdit(false)} color="green"><FaCheck /></ActionIcon>
                     </Group> :
-                    <ActionIcon onClick={() => setWorkingDescription(description)}><FaPencilAlt /></ActionIcon>
+                    <ActionIcon onClick={handleStartDescriptionEdit}><FaPencilAlt /></ActionIcon>
             }>
                 {workingDescription ?
                     <Textarea
@@ -158,6 +180,7 @@ function Description({ colors }) {
 
                             {/* Add to Existing Annotation Select */}
                             <Select
+                                w={250}
                                 radius="xl"
                                 placeholder="Add to existing annotation"
                                 itemComponent={SelectItem}

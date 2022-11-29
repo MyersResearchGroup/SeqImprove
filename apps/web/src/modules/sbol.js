@@ -150,15 +150,15 @@ export function hasTextAnnotation(componentDefinition, annotationId) {
  * }} annoInfo
  * @param {TextBuffer} buffer
  */
-export function addTextAnnotation(componentDefinition, annoInfo, buffer) {
-    if (hasTextAnnotation(componentDefinition, annoInfo.id) || !buffer)
-        return
+export function addTextAnnotation(componentDefinition, annoInfo) {
 
     annoInfo.mentions.forEach(
-        mention => buffer.modifyRange(mention.start, mention.end, original => `[${original}](${annoInfo.id})`)
+        mention => mention.bufferPatch.enable()
     )
 
-    componentDefinition.richDescription = buffer.getText()
+    const buffer = annoInfo.mentions[0]?.bufferPatch.buffer
+    if (buffer)
+        componentDefinition.richDescription = buffer.getText()
 }
 
 /**
@@ -169,19 +169,13 @@ export function addTextAnnotation(componentDefinition, annoInfo, buffer) {
  * @param {S2ComponentDefinition} componentDefinition
  * @param {string} annotationId
  */
-export function removeTextAnnotation(componentDefinition, annoInfo, buffer) {
-    if (!hasTextAnnotation(componentDefinition, annoInfo.id) || !buffer)
-        return
-
-    // Can't do this because we need to keep the TextBuffer transformations intact
-    // componentDefinition.richDescription = componentDefinition.richDescription.replaceAll(
-    //     createAnnotationRegex(annotationId),
-    //     "$1"
-    // )
+export function removeTextAnnotation(componentDefinition, annoInfo) {
 
     annoInfo.mentions.forEach(
-        mention => buffer.modifyRange(mention.start, mention.end, mention.text)
+        mention => mention.bufferPatch.disable()
     )
 
-    componentDefinition.richDescription = buffer.getText()
+    const buffer = annoInfo.mentions[0]?.bufferPatch.buffer
+    if (buffer)
+        componentDefinition.richDescription = buffer.getText()
 }
