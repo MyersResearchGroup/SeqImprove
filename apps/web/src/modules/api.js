@@ -73,3 +73,35 @@ export async function fetchAnnotateText(text) {
     console.log("Successfully annotated.")
     return result.annotations
 }
+
+export async function fetchSimilarParts(topLevelUri) {
+
+    console.log("Fetching similar parts...")
+
+    // Fetch
+    try {
+        var response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/findSimilarParts`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ topLevelUri }),
+        })
+    }
+    catch (err) {
+        console.error("Failed to fetch.")
+        return
+    }
+
+    // Parse
+    try {
+        var result = await response.json()
+    }
+    catch (err) {
+        console.error("Couldn't parse JSON.")
+        return
+    }
+    
+    console.log("Successfully annotated.")
+    return result.similarParts
+}

@@ -1,3 +1,4 @@
+import { set } from "lodash"
 import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
 
@@ -5,6 +6,7 @@ const Prefix = "https://seqimprove.org/"
 
 const Predicates = {
     RichDescription: `${Prefix}richDescription`,
+    TargetOrganism: `${Prefix}targetOrganism`,
 }
 
 
@@ -20,6 +22,7 @@ export async function createSBOLDocument(sbolContent) {
     await document.loadString(sbolContent)
 
     // Prep document by defining some additional getters and setters
+    
 
     // add alias for root component definition
     Object.defineProperty(document, "root", {
@@ -30,19 +33,35 @@ export async function createSBOLDocument(sbolContent) {
             Object.defineProperties(root, {
                 sequence: {
                     get() { return this.sequences[0]?.elements },
-                    enumerable: true,
                 },
                 richDescription: {
                     get() { return this.getStringProperty(Predicates.RichDescription) },
                     set(value) { this.setStringProperty(Predicates.RichDescription, value) },
-                    enumerable: true,
-                }
+                },
+                // for now, only allowing one role
+                role: {
+                    get() { return this.roles[0] },
+                    set(value) {
+                        this.roles.forEach(role => this.removeRole(role))
+                        this.addRole(value)
+                    }
+                },
+
+                targetOrganisms: {
+                    get() { return this.getUriProperties(Predicates.TargetOrganism) },
+                },
+
+                // addTargetOrganism() {
+                //     this.
+                // }
             })
 
             return root
         },
         enumerable: true,
     })
+
+    console.log(document.root)
 
     // initialize rich description as regular description if one doesn't exist
     if (!document.root.richDescription)

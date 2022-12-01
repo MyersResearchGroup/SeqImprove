@@ -1,5 +1,7 @@
 import { SearchIndex } from "."
 import lunr from "lunr"
+import { createRoleURI, decodeRoleURI } from "../roles"
+import { toTitleCase } from "../util"
 
 
 /*
@@ -11,16 +13,19 @@ const soIndex = new SearchIndex(resolve => {
         .then(so => {
             const documents = {}
             const index = lunr(function () {
-                this.field("id", { boost: 3 })
-                this.field("name", { boost: 5 })
+                this.field("id")
+                this.field("shortId", { boost: 3 })
+                this.field("name", { boost: 10 })
                 this.field("description")
                 this.field("synonyms")
 
                 so.graphs[0].nodes.forEach(node => {
-                    const id = "SO:" + node.id.match(/[^_]+$/)?.[0]
+                    const shortId = decodeRoleURI(node.id)
+                    const id = createRoleURI(shortId)
                     const newDoc = {
                         id,
-                        name: node.lbl,
+                        shortId,
+                        name: toTitleCase(node.lbl ?? "unknown"),
                         description: node.meta?.definition?.val,
                         synonyms: node.meta?.synonyms?.map(syn => syn.val).join(", ") ?? "",
                     }

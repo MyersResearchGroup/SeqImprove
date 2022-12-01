@@ -11,11 +11,18 @@ import { useSetState } from '@mantine/hooks'
 
 export default function TargetOrganismsSelection() {
 
-    const {
-        items: organisms,
-        add: addOrganism,
-        remove: removeOrganism
-    } = useStore(s => s.targetOrganisms, shallow)
+
+    const organisms = useStore(s => s.document.root.targetOrganisms, shallow)
+    const addOrganism = useStore(s => s.document.root.addTargetOrganism)
+    const removeOrganism = useStore(s => s.document.root.removeTargetOrganism)
+
+    const handleAdd = value => {
+        console.log(value)
+    }
+
+    const handleRemove = value => {
+        console.log(value)
+    }
 
     const [searchOptions, setSearchOptions] = useSetState({
         prioritizeParents: true,
@@ -51,11 +58,11 @@ export default function TargetOrganismsSelection() {
         <FormSection title="Target Organisms">
             <MultiRowSelect
                 items={organisms}
-                addItem={addOrganism}
-                removeItem={removeOrganism}
+                addItem={handleAdd}
+                removeItem={handleRemove}
                 search={searchOptions.prioritizeParents ? searchWithParent : searchUniprot}
-                itemComponent={OrganismItem}
-                searchItemComponent={OrganismSearchItem}
+                // itemComponent={OrganismItem}
+                // searchItemComponent={OrganismSearchItem}
                 messages={{ initial: "Type something to search", nothingFound: "Nothing found in Taxonomy" }}
                 pluralLabel="organisms"
                 debounce={800}

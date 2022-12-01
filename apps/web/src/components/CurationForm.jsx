@@ -12,6 +12,7 @@ import TextSection from './TextSection'
 import { ModalsProvider } from '@mantine/modals'
 import TextAnnotationModal from './TextAnnotationModal'
 import { TbDownload } from "react-icons/tb"
+import ReactMarkdown from 'react-markdown'
 
 
 export default function CurationForm({ }) {
@@ -20,6 +21,7 @@ export default function CurationForm({ }) {
 
     const displayId = useStore(s => s.document?.root.displayId)
     const description = useStore(s => s.document?.root.description)
+    const richDescription = useStore(s => s.document?.root.richDescription)
 
     // colors for annotations
     const sequenceColors = useCyclicalColors(useStore(s => s.sequenceAnnotations.length))
@@ -60,14 +62,17 @@ export default function CurationForm({ }) {
                         <SplitPanel
                             left={<>
                                 <Title order={5} mb={10}>Description</Title>
-                                <Text color="dimmed">{description}</Text>
+                                <Text color="dimmed">
+                                    <ReactMarkdown linkTarget="_blank">
+                                        {richDescription}
+                                    </ReactMarkdown>
+                                </Text>
                                 <Space h={20} />
-                                {/* <RoleSelection /> */}
+                                <RoleSelection />
                                 <Space h={40} />
-                                {/* <TargetOrganismsSelection /> */}
+                                <TargetOrganismsSelection />
                             </>}
-                            // right={<SimilarParts />}
-                            right={<></>}
+                            right={<SimilarParts />}
                         />
                     </Tabs.Panel>
 
