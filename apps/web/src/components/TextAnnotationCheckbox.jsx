@@ -6,7 +6,7 @@ import AnnotationCheckbox from './AnnotationCheckbox'
 import TextLink from "./TextLink"
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa'
 import { IoWarningOutline } from "react-icons/io5"
-import { openContextModal } from '@mantine/modals'
+import { openConfirmModal, openContextModal } from '@mantine/modals'
 
 
 export default function TextAnnotationCheckbox({ id, color }) {
@@ -20,12 +20,8 @@ export default function TextAnnotationCheckbox({ id, color }) {
     // state for confirming deletion
     const [confirmingDelete, setConfirmingDelete] = useState(false)
     const handleDeleteClick = () => {
-        if(confirmingDelete) {
-            setActive(id, false)
-            removeAnnotation(id)
-        }
-        else
-        setConfirmingDelete(true)
+        setActive(id, false)
+        removeAnnotation(id)
     }
     const deleteRef = useClickOutside(() => setConfirmingDelete(false))
 
@@ -60,7 +56,17 @@ export default function TextAnnotationCheckbox({ id, color }) {
                         <ActionIcon
                             size="sm"
                             color={confirmingDelete ? "red" : "gray"}
-                            onClick={handleDeleteClick}
+                            onClick={() => openConfirmModal({
+                                title: `Delete annotation for "${annotation.label}"`,
+                                children: (
+                                    <></>
+                                ),
+                                labels: { confirm: "Delete", cancel: "Cancel" },
+                                onCancel: () => { },
+                                onConfirm: handleDeleteClick,
+                                confirmProps: { color: "red" },
+                                centered: true,
+                            })}
                             ref={deleteRef}
                         >
                             <FaTrashAlt fontSize={"0.8em"} />
