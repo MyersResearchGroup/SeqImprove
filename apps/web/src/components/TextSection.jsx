@@ -1,6 +1,7 @@
 import { ActionIcon, Button, Center, Group, Loader, NavLink, Select, Text, Textarea } from "@mantine/core"
 import { forwardRef, useMemo, useState } from "react"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
+import { FiDownloadCloud } from "react-icons/fi"
 import { mutateDocument, useAsyncLoader, useStore } from "../modules/store"
 import FormSection from "./FormSection"
 import TextAnnotationCheckbox from "./TextAnnotationCheckbox"
@@ -8,6 +9,7 @@ import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { showNotification } from "@mantine/notifications"
 import { hasTrailingPunctuation, removeTrailingPunctuation } from "../modules/text"
 import RichDescription from "./RichDescription"
+import produce from "immer"
 
 
 function Description({ colors }) {
@@ -20,7 +22,7 @@ function Description({ colors }) {
     // make a map of colors for easier access
     const colorMap = useMemo(() => Object.fromEntries(annotations.map((anno, i) => [anno.id, colors[i]])), [colors])
 
-    
+
     // description editing state
     const description = useStore(s => s.document?.root.richDescription)
     const richDescriptionBuffer = useStore(s => s.richDescriptionBuffer)
@@ -40,15 +42,20 @@ function Description({ colors }) {
 
             // update mentions with new start & end
             annotations.forEach(anno => {
-                anno.mentions.forEach(mention => {
-                    mention.start = mention.bufferPatch.start
-                    mention.end = mention.bufferPatch.end
+                editAnnotation(anno.id, {
+                    mentions: produce(anno.mentions, draft => {
+                        draft.forEach(mention => {
+                            mention.start = mention.bufferPatch.start
+                            mention.end = mention.bufferPatch.end
+                        })
+                    })
                 })
             })
-            
+
             // propagate buffer changes to rich description
             mutateDocument(useStore.setState, state => {
                 state.document.root.richDescription = richDescriptionBuffer.getText()
+                state.document.root.description = richDescriptionBuffer.originalText
             })
         }
         setWorkingDescription(false)
@@ -214,16 +221,9 @@ function Annotations({ colors }) {
 
     return (
         <FormSection title="Recognized Terms">
-            {annotations.length ?
-                annotations.map((anno, i) =>
-                    <TextAnnotationCheckbox id={anno.id} color={colors[i]} key={anno.id} />
-                )
-                :
-                <Center>
-                    {loading ?
-                        <Loader my={30} size="sm" variant="dots" /> :
-                        <Button my={10} onClick={load}>Load Text Annotations</Button>}
-                </Center>}
+            {annotations.map((anno, i) =>
+                <TextAnnotationCheckbox id={anno.id} color={colors[i]} key={anno.id} />
+            )}
 
             <NavLink
                 label="Create Text Annotation"
@@ -240,6 +240,21 @@ function Annotations({ colors }) {
                 })}
                 sx={{ borderRadius: 6 }}
             />
+
+            {loading ?
+                <Center>
+                    <Loader my={30} size="sm" variant="dots" /> :
+                </Center>
+                :
+                <NavLink
+                    label="Analyze Text"
+                    icon={<FiDownloadCloud />}
+                    variant="subtle"
+                    active={true}
+                    color="blue"
+                    onClick={load}
+                    sx={{ borderRadius: 6 }}
+                />}
         </FormSection>
     )
 }

@@ -1,11 +1,10 @@
-import { Predicates as BioTermsPredicates } from "bioterms"
 import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
-import { splitIntoWords } from "./text"
 
+const Prefix = "https://seqimprove.org/"
 
 const Predicates = {
-    RichDescription: "sbh:richDescription",
+    RichDescription: `${Prefix}richDescription`,
 }
 
 
@@ -101,6 +100,46 @@ export function removeSequenceAnnotation(componentDefinition, { id }) {
     annotation.destroy()
 }
 
+export function parseTextAnnotations(description) {
+    // Use a buffer to replace annotations with their regular text
+    const reverseBuffer = new TextBuffer(description)
+
+    const matches = [...description.matchAll(createAnnotationRegex(".+?"))]
+    matches.forEach(match => {
+        reverseBuffer.createAlias(match.index, match.index + match[0].length, match[1])
+            .enable()
+    })
+
+    // project all the indeces to form regular text annotations
+    const reverseResult = reverseBuffer.getText(true)
+    const buffer = new TextBuffer(reverseResult.text)
+
+    // map to annotations
+    let annotations = reverseResult.patches.map((patch, i) => {
+        const alias = buffer.createAlias(patch.projectedStart, patch.projectedEnd, matches[i][0])
+        alias.enable()
+        return {
+            id: matches[i][2],
+            displayId: matches[i][2].match(/[^\/]*$/)?.[0] ?? matches[i][2],
+            label: patch.alias.text,
+            mentions: [{ start: alias.start, end: alias.end, text: patch.alias.text, bufferPatch: alias }],
+        }
+    })
+
+    // combine annotations with same ID
+    annotations = Object.values(
+        annotations.reduce((accum, anno) => {
+            if (accum[anno.id])
+                accum[anno.id].mentions.push(...anno.mentions)
+            else
+                accum[anno.id] = anno
+            return accum
+        }, {})
+    )
+
+    return { buffer, annotations }
+}
+
 /**
  * Creates a regular expression that searches for a text annotation with the
  * passed ID.
@@ -157,8 +196,10 @@ export function addTextAnnotation(componentDefinition, annoInfo) {
     )
 
     const buffer = annoInfo.mentions[0]?.bufferPatch.buffer
-    if (buffer)
+    if (buffer) {
         componentDefinition.richDescription = buffer.getText()
+        componentDefinition.description = buffer.originalText
+    }
 }
 
 /**
@@ -176,6 +217,8 @@ export function removeTextAnnotation(componentDefinition, annoInfo) {
     )
 
     const buffer = annoInfo.mentions[0]?.bufferPatch.buffer
-    if (buffer)
+    if (buffer) {
         componentDefinition.richDescription = buffer.getText()
+        componentDefinition.description = buffer.originalText
+    }
 }

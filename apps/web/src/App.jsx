@@ -21,11 +21,11 @@ export default function App() {
     return (
         <MantineProvider theme={theme} withNormalizeCSS withGlobalStyles>
             <NotificationsProvider>
-            {sbolUri || hasSbolContent ?
-                <CurationForm />
-                :
-                <UploadForm />}
-        </NotificationsProvider>
+                {sbolUri || hasSbolContent ?
+                    <CurationForm />
+                    :
+                    <UploadForm />}
+            </NotificationsProvider>
         </MantineProvider>
     )
 }

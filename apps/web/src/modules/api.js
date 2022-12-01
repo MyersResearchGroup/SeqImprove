@@ -42,7 +42,7 @@ export async function fetchAnnotateSequence(sbolContent) {
     return result.annotations
 }
 
-export async function fetchAnnotateText(sbolContent) {
+export async function fetchAnnotateText(text) {
 
     console.log("Annotating text...")
 
@@ -53,9 +53,7 @@ export async function fetchAnnotateText(sbolContent) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                completeSbolContent: sbolContent,
-            }),
+            body: JSON.stringify({ text }),
         })
     }
     catch (err) {

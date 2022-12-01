@@ -2,7 +2,7 @@ import _, { remove } from "lodash"
 import create from "zustand"
 import produce from "immer"
 import { getSearchParams } from "./util"
-import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, hasSequenceAnnotation, hasTextAnnotation, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
+import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
 import { S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
@@ -11,17 +11,17 @@ import { TextBuffer } from "text-ranger"
 
 // create store
 export const useStore = create((set, get) => ({
-    
+
     /** 
      * SBOL URI
      * @type {string | undefined} */
     uri: getSearchParams().complete_sbol,
-    
+
     /** 
      * Raw SBOL content
      * @type {string} */
     sbolContent: null,
-    
+
     /** 
      * Parsed SBOL document
      * @type {SBOL2GraphView} */
@@ -38,15 +38,24 @@ export const useStore = create((set, get) => ({
         const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
         const document = await createSBOLDocument(sbolContent)
 
+        // parse out existing text annotations
+        const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
+
+        // set description as rich description text
+        document.root.description = richDescriptionBuffer.originalText
+
         return {
             sbolContent,
             document,
-            richDescriptionBuffer: new TextBuffer(document.root.richDescription),
+            richDescriptionBuffer,
+            textAnnotations,
         }
     }),
-    exportDocument: () => {
+    exportDocument: (download = true) => {
         const xml = get().document.serializeXML()
-        fileDownload(xml, `${get().document.root.displayId}.xml`)
+        if (download)
+            fileDownload(xml, `${get().document.root.displayId}.xml`)
+        return xml
     },
 
 
@@ -68,16 +77,42 @@ export const useStore = create((set, get) => ({
     // Text Annotations
     textAnnotations: [],
     richDescriptionBuffer: null,
-    ...createAsyncAdapter(set, "TextAnnotations", async () => ({
+    ...createAsyncAdapter(set, "TextAnnotations", async () => {
+
         // fetch text annotations from API
-        textAnnotations: (await fetchAnnotateText(get().sbolContent)).map(anno => {
-            anno.mentions.forEach(mention => {
-                // add an Alias object for each mention to interact with the buffer
-                mention.bufferPatch = get().richDescriptionBuffer.createAlias(mention.start, mention.end, `[${mention.text}](${anno.id})`)
+        console.debug("Annotating this:\n" + get().document.root.description)
+        const fetchedAnnos = await fetchAnnotateText(get().document.root.description)
+
+        const newAnnotations = produce(get().textAnnotations, draft => {
+            // loop through fetched annotations
+            fetchedAnnos.forEach(anno => {
+                const existingAnno = draft.find(a => a.id == anno.id)
+
+                // new annnotation; add and move on
+                if (!existingAnno) {
+                    draft.push(anno)
+                    return
+                }
+
+                // existing anotation; merge mentions
+                anno.mentions.forEach(mention => {
+                    // avoid intersecting mentions
+                    if (!existingAnno.mentions.some(m => !((mention.end < m.start) || (m.end < mention.start))))
+                        existingAnno.mentions.push(mention)
+                })
             })
-            return anno
-        }),
-    })),
+
+            // make sure each mention has a buffer patch
+            draft.forEach(anno => {
+                anno.mentions.forEach(mention => {
+                    if (!mention.bufferPatch)
+                        mention.bufferPatch = get().richDescriptionBuffer.createAlias(mention.start, mention.end, `[${mention.text}](${anno.id})`)
+                })
+            })
+        })
+
+        return { textAnnotations: newAnnotations }
+    }),
 
     textAnnotationActions: createAnnotationActions(set, get, state => state.textAnnotations, {
         test: hasTextAnnotation,
@@ -219,12 +254,12 @@ function createAnnotationActions(set, get, selector, { test, add, remove } = {})
 
             set(produce(draft => {
                 const item = selector(draft).find(anno => anno.id == id)
-    
+
                 Object.keys(changes).forEach(key => {
                     item[key] = changes[key]
                 })
             }))
-            
+
             // then set it back as active after
             active && setActive(changes.id ?? id, true)
         },
