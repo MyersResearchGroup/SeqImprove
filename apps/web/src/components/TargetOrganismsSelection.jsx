@@ -69,7 +69,7 @@ export default function TargetOrganismsSelection() {
     }
 
     return (
-        <FormSection title="Target Organisms (broken)">
+        <FormSection title="Target Organisms">
             <MultiRowSelect
                 items={organisms}
                 addItem={handleAdd}

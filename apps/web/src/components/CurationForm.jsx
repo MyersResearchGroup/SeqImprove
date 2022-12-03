@@ -1,4 +1,4 @@
-import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header } from '@mantine/core'
+import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List } from '@mantine/core'
 import { useStore } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
@@ -13,6 +13,8 @@ import { ModalsProvider } from '@mantine/modals'
 import TextAnnotationModal from './TextAnnotationModal'
 import { TbDownload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
+import { useEffect } from 'react'
+import { showNotification } from '@mantine/notifications'
 
 
 export default function CurationForm({ }) {
@@ -29,6 +31,24 @@ export default function CurationForm({ }) {
 
     // exporting
     const exportDocument = useStore(s => s.exportDocument)
+
+
+    // show notification with known bugs
+    useEffect(() => {
+        showNotification({
+            title: "Known problems & bugs",
+            message: <>
+                <Text>Here's a list of known problems & bugs that will be fixed. Please take note of any others.</Text>
+                <List size="sm" ml="xs"  >
+                    <List.Item color="gray"><Text color="dimmed">Can't remove target organisms</Text></List.Item>
+                    <List.Item><Text color="dimmed">Sequence annotation highlights don't display properly</Text></List.Item>
+                    <List.Item><Text color="dimmed">Missing proteins section</Text></List.Item>
+                    <List.Item><Text color="dimmed">Missing references section</Text></List.Item>
+                </List>
+            </>,
+            autoClose: false,
+        })
+    }, [])
 
     return (
         <>
