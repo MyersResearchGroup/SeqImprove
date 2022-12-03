@@ -8,6 +8,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | b
 RUN nvm install 16
 
 # clone SYNBICT at root & install deps
+RUN pip install sbol2==1.3
 RUN git clone https://github.com/SD2E/SYNBICT
 RUN python SYNBICT/setup.py install
 

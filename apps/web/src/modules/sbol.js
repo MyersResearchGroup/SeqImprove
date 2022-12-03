@@ -11,6 +11,55 @@ const Predicates = {
 
 
 /**
+ * Add some additional utility members to the sboljs classes
+ */
+Object.defineProperty(SBOL2GraphView.prototype, "root", {
+    get() {
+        return this.rootComponentDefinitions[0]
+    }
+})
+
+Object.defineProperties(S2ComponentDefinition.prototype, {
+    sequence: {
+        get() { return this.sequences[0]?.elements },
+    },
+
+    richDescription: {
+        get() { return this.getStringProperty(Predicates.RichDescription) },
+        set(value) { this.setStringProperty(Predicates.RichDescription, value) },
+    },
+
+    // for now, only allowing one role
+    role: {
+        get() { return this.roles[0] },
+        set(value) {
+            this.roles.forEach(role => this.removeRole(role))
+            this.addRole(value)
+        }
+    },
+
+    targetOrganisms: {
+        get() { return this.getUriProperties(Predicates.TargetOrganism) },
+    },
+    addTargetOrganism: {
+        get() {
+            return (function addTargetOrganism(uri) {
+                this.insertUriProperty(Predicates.TargetOrganism, uri)
+            }).bind(this)
+        }
+    },
+    removeTargetOrganism: {
+        get() {
+            return (function removeTargetOrganism(uri) {
+                console.log(this, Predicates.TargetOrganism, uri)
+                this.graph.removeMatches(this, Predicates.TargetOrganism, uri)
+            }).bind(this)
+        }
+    },
+})
+
+
+/**
  * Creates an SBOL document from the passed SBOL content.
  *
  * @export
@@ -20,48 +69,6 @@ const Predicates = {
 export async function createSBOLDocument(sbolContent) {
     const document = new SBOL2GraphView(new Graph())
     await document.loadString(sbolContent)
-
-    // Prep document by defining some additional getters and setters
-    
-
-    // add alias for root component definition
-    Object.defineProperty(document, "root", {
-        get() {
-            const root = this.rootComponentDefinitions[0]
-
-            // add aliases for root
-            Object.defineProperties(root, {
-                sequence: {
-                    get() { return this.sequences[0]?.elements },
-                },
-                richDescription: {
-                    get() { return this.getStringProperty(Predicates.RichDescription) },
-                    set(value) { this.setStringProperty(Predicates.RichDescription, value) },
-                },
-                // for now, only allowing one role
-                role: {
-                    get() { return this.roles[0] },
-                    set(value) {
-                        this.roles.forEach(role => this.removeRole(role))
-                        this.addRole(value)
-                    }
-                },
-
-                targetOrganisms: {
-                    get() { return this.getUriProperties(Predicates.TargetOrganism) },
-                },
-
-                // addTargetOrganism() {
-                //     this.
-                // }
-            })
-
-            return root
-        },
-        enumerable: true,
-    })
-
-    console.log(document.root)
 
     // initialize rich description as regular description if one doesn't exist
     if (!document.root.richDescription)

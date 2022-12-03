@@ -9,6 +9,9 @@ import rollupNodePolyFill from "rollup-plugin-node-polyfills"
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
+    define: {
+        global: "globalThis",
+    },
     resolve: {
         alias: {
             // This Rollup aliases are extracted from @esbuild-plugins/node-modules-polyfill,
@@ -45,15 +48,18 @@ export default defineConfig({
             vm: "rollup-plugin-node-polyfills/polyfills/vm",
             zlib: "rollup-plugin-node-polyfills/polyfills/zlib",
             tty: "rollup-plugin-node-polyfills/polyfills/tty",
-            domain: "rollup-plugin-node-polyfills/polyfills/domain"
+            domain: "rollup-plugin-node-polyfills/polyfills/domain",
+            buffer: "rollup-plugin-node-polyfills/polyfills/buffer-es6",
+            process: "rollup-plugin-node-polyfills/polyfills/process-es6"
         }
     },
     optimizeDeps: {
+        disabled: false,
         esbuildOptions: {
             // Node.js global to browser globalThis
-            define: {
-                global: "globalThis"
-            },
+            // define: {
+            //     global: "globalThis"
+            // },
             // Enable esbuild polyfill plugins
             plugins: [
                 NodeGlobalsPolyfillPlugin({
@@ -71,6 +77,10 @@ export default defineConfig({
                 // used during production bundling
                 rollupNodePolyFill()
             ]
-        }
+        },
+        commonjsOptions: {
+            include: [],
+        },
+        sourcemap: true,
     }
 })

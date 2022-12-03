@@ -41,7 +41,7 @@ export default function MultiRowSelect({ items, addItem, removeItem, search, ite
     return (
         <>
             {items.length ?
-                items.map(item => <ItemComponent {...item} onRemove={() => removeItem(item.id)} key={item.id} />) :
+                items.map((item, i) => <ItemComponent {...item} onRemove={() => removeItem(item.id)} key={item.id + i} />) :
                 <Text color="dimmed" px={10}>Search below to add {pluralLabel}</Text>}
             <Select
                 value={null}

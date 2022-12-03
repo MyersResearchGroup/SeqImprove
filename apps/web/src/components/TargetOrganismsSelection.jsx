@@ -1,5 +1,5 @@
 import { ActionIcon, Checkbox, Group, Text, Tooltip } from '@mantine/core'
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 import { useUniprot } from '../modules/ontologies/uniprot'
 import FormSection from './FormSection'
 import { FaTimes } from "react-icons/fa"
@@ -7,22 +7,37 @@ import { useStore } from '../modules/store'
 import shallow from 'zustand/shallow'
 import MultiRowSelect from './MultiRowSelect'
 import { useSetState } from '@mantine/hooks'
+import { useMemo } from 'react'
 
 
 export default function TargetOrganismsSelection() {
 
-
-    const organisms = useStore(s => s.document.root.targetOrganisms, shallow)
+    // store state
+    const organismUris = useStore(s => s.document.root.targetOrganisms, shallow)
     const addOrganism = useStore(s => s.document.root.addTargetOrganism)
     const removeOrganism = useStore(s => s.document.root.removeTargetOrganism)
 
+    // handlers
     const handleAdd = value => {
-        console.log(value)
+        // check for duplicates
+        if(organismUris.includes(value.uri))
+            return
+
+        // add to cache
+        setCache({ [value.uri]: value })
+        // add to SDOM
+        addOrganism(value.uri)
+    }
+    const handleRemove = value => {
+        const uri = Object.values(cache).find(item => item.id == value)?.uri
+        uri && removeOrganism(uri)
     }
 
-    const handleRemove = value => {
-        console.log(value)
-    }
+    // the SDOM only stores URIs, so we need a cache for extra info
+    const [cache, setCache] = useSetState({})
+
+    // memo organism objects -- start with URI from SDOM and pull from cache
+    const organisms = useMemo(() => organismUris.map(uri => cache[uri]).filter(item => !!item), [organismUris])
 
     const [searchOptions, setSearchOptions] = useSetState({
         prioritizeParents: true,
@@ -50,19 +65,18 @@ export default function TargetOrganismsSelection() {
                     results.splice(results.indexOf(result), 0, parentResult)
             })
         )
-
         return results
     }
 
     return (
-        <FormSection title="Target Organisms">
+        <FormSection title="Target Organisms (broken)">
             <MultiRowSelect
                 items={organisms}
                 addItem={handleAdd}
                 removeItem={handleRemove}
                 search={searchOptions.prioritizeParents ? searchWithParent : searchUniprot}
-                // itemComponent={OrganismItem}
-                // searchItemComponent={OrganismSearchItem}
+                itemComponent={OrganismItem}
+                searchItemComponent={OrganismSearchItem}
                 messages={{ initial: "Type something to search", nothingFound: "Nothing found in Taxonomy" }}
                 pluralLabel="organisms"
                 debounce={800}
