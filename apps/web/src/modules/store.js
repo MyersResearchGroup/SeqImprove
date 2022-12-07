@@ -120,6 +120,18 @@ export const useStore = create((set, get) => ({
         remove: removeTextAnnotation,
     }),
 
+    // Target Organisms
+    addTargetOrganism: uri => {
+        mutateDocument(set, state => {
+            state.document.root.addTargetOrganism(uri)
+        })
+    },
+    removeTargetOrganism: uri => {
+        mutateDocument(set, state => {
+            state.document.root.removeTargetOrganism(uri)
+        })
+    },
+
     // // role
     // ...createRootValueAdapter(set, get, "role", "setRole", "role"),
 

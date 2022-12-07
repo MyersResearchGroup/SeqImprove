@@ -8,19 +8,20 @@ import shallow from 'zustand/shallow'
 import MultiRowSelect from './MultiRowSelect'
 import { useSetState } from '@mantine/hooks'
 import { useMemo } from 'react'
+import { useEffect } from 'react'
 
 
 export default function TargetOrganismsSelection() {
 
     // store state
     const organismUris = useStore(s => s.document.root.targetOrganisms, shallow)
-    const addOrganism = useStore(s => s.document.root.addTargetOrganism)
-    const removeOrganism = useStore(s => s.document.root.removeTargetOrganism)
+    const addOrganism = useStore(s => s.addTargetOrganism)
+    const removeOrganism = useStore(s => s.removeTargetOrganism)
 
     // handlers
     const handleAdd = value => {
         // check for duplicates
-        if(organismUris.includes(value.uri))
+        if (organismUris.includes(value.uri))
             return
 
         // add to cache
@@ -30,19 +31,27 @@ export default function TargetOrganismsSelection() {
     }
     const handleRemove = value => {
         const uri = Object.values(cache).find(item => item.id == value)?.uri
-        uri && removeOrganism(uri)
+        if(uri) {
+            removeOrganism(uri)
+            setCache({ [uri]: undefined })
+        }
     }
 
     // the SDOM only stores URIs, so we need a cache for extra info
     const [cache, setCache] = useSetState({})
 
     // memo organism objects -- start with URI from SDOM and pull from cache
-    const organisms = useMemo(() => organismUris.map(uri => cache[uri]).filter(item => !!item), [organismUris])
+    const organisms = useMemo(
+        () => organismUris.map(uri => cache[uri]).filter(item => !!item),
+        [organismUris, cache]
+    )
 
+    // state for search objects
     const [searchOptions, setSearchOptions] = useSetState({
         prioritizeParents: true,
     })
 
+    // search Uniprot Taxonomy
     const searchUniprot = useUniprot("taxonomy", result => ({
         id: result.taxonId,
         name: result.scientificName,
@@ -51,6 +60,7 @@ export default function TargetOrganismsSelection() {
         parent: result.parent?.taxonId,
     }))
 
+    // search function that also searches parents
     const searchWithParent = async query => {
         // do regular search
         const results = await searchUniprot(query)
@@ -67,6 +77,17 @@ export default function TargetOrganismsSelection() {
         )
         return results
     }
+
+    // try to search for URIs not in cache so we can get full info about them
+    useEffect(() => {
+        organismUris
+            .filter(uri => !cache[uri])
+            .forEach(async uri => {
+                const matchedId = uri.match(/\d+$/)?.[0]
+                const searchResult = (await searchUniprot(matchedId)).find(result => result.uri == uri)
+                searchResult && setCache({ [uri]: searchResult })
+            })
+    }, [organismUris])
 
     return (
         <FormSection title="Target Organisms">
@@ -89,6 +110,10 @@ export default function TargetOrganismsSelection() {
     )
 }
 
+
+/**
+ * Component for a selected item
+ */
 const OrganismItem = forwardRef(({ id, name, commonName, uri, onRemove }, ref) =>
     <a href={uri} target="_blank">
         <Tooltip label="View in Taxonomy" withArrow position="bottom">
@@ -113,6 +138,9 @@ const OrganismItem = forwardRef(({ id, name, commonName, uri, onRemove }, ref) =
     </a>
 )
 
+/**
+ * Component for an item appearing in the search
+ */
 const OrganismSearchItem = forwardRef(({ label, name, commonName, ...others }, ref) =>
     <div ref={ref} {...others}>
         <Group noWrap position="apart">

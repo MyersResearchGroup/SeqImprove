@@ -40,7 +40,6 @@ export default function CurationForm({ }) {
             message: <>
                 <Text>Here's a list of known problems & bugs that will be fixed. Please take note of any others.</Text>
                 <List size="sm" ml="xs"  >
-                    <List.Item color="gray"><Text color="dimmed">Can't remove target organisms</Text></List.Item>
                     <List.Item><Text color="dimmed">Sequence annotation highlights don't display properly</Text></List.Item>
                     <List.Item><Text color="dimmed">Missing proteins section</Text></List.Item>
                     <List.Item><Text color="dimmed">Missing references section</Text></List.Item>

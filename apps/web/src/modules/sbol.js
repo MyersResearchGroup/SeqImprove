@@ -51,8 +51,7 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
     removeTargetOrganism: {
         get() {
             return (function removeTargetOrganism(uri) {
-                console.log(this, Predicates.TargetOrganism, uri)
-                this.graph.removeMatches(this, Predicates.TargetOrganism, uri)
+                this.graph.removeMatches(this.subject, Predicates.TargetOrganism, uri)
             }).bind(this)
         }
     },

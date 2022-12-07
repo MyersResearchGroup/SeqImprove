@@ -12,5 +12,5 @@ export const useUniprot = (database = "uniprotkb", mapping, options = {}) => asy
         },
     })).json()
 
-    return mapping ? response.results.map(mapping) : response.results
+    return (mapping ? response.results?.map(mapping) : response.results) ?? []
 }
