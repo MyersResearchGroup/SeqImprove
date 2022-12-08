@@ -1,3 +1,4 @@
+import { showNotification } from "@mantine/notifications"
 
 export async function fetchSBOL(url) {
     try {
@@ -5,6 +6,10 @@ export async function fetchSBOL(url) {
     }
     catch (err) {
         console.error(`Failed to fetch SBOL content from ${url}. Running in standalone mode.`)
+        showNotification({
+            title: "Failed to load SBOL from URL",
+            color: "red",
+        })
     }
 }
 
@@ -26,6 +31,7 @@ export async function fetchAnnotateSequence(sbolContent) {
     }
     catch (err) {
         console.error("Failed to fetch.")
+        showServerErrorNotification()
         return
     }
 
@@ -35,6 +41,7 @@ export async function fetchAnnotateSequence(sbolContent) {
     }
     catch (err) {
         console.error("Couldn't parse JSON.")
+        showServerErrorNotification()
         return
     }
     
@@ -58,15 +65,17 @@ export async function fetchAnnotateText(text) {
     }
     catch (err) {
         console.error("Failed to fetch.")
+        showServerErrorNotification()
         return
     }
-
+    
     // Parse
     try {
         var result = await response.json()
     }
     catch (err) {
         console.error("Couldn't parse JSON.")
+        showServerErrorNotification()
         return
     }
     
@@ -90,6 +99,7 @@ export async function fetchSimilarParts(topLevelUri) {
     }
     catch (err) {
         console.error("Failed to fetch.")
+        showServerErrorNotification()
         return
     }
 
@@ -99,9 +109,27 @@ export async function fetchSimilarParts(topLevelUri) {
     }
     catch (err) {
         console.error("Couldn't parse JSON.")
+        showServerErrorNotification()
         return
     }
     
     console.log("Successfully annotated.")
     return result.similarParts
+}
+
+
+function showErrorNotification(title, message) {
+    showNotification({
+        title,
+        color: "red",
+        message,
+    })
+}
+
+function showServerErrorNotification() {
+    showNotification({
+        title: "Failed to load resource",
+        color: "red",
+        message: "This is probably an issue with our servers. Sorry!",
+    })
 }
