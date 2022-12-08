@@ -8,6 +8,7 @@ const Predicates = {
     RichDescription: `${Prefix}richDescription`,
     TargetOrganism: `${Prefix}targetOrganism`,
     Protein: `${Prefix}protein`,
+    Reference: `${Prefix}reference`,
 }
 
 
@@ -71,6 +72,24 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
         get() {
             return (function removeProtein(uri) {
                 this.graph.removeMatches(this.subject, Predicates.Protein, uri)
+            }).bind(this)
+        }
+    },
+
+    references: {
+        get() { return this.getUriProperties(Predicates.Reference) },
+    },
+    addReference: {
+        get() {
+            return (function addReference(uri) {
+                this.insertUriProperty(Predicates.Reference, uri)
+            }).bind(this)
+        }
+    },
+    removeReference: {
+        get() {
+            return (function removeReference(uri) {
+                this.graph.removeMatches(this.subject, Predicates.Reference, uri)
             }).bind(this)
         }
     },

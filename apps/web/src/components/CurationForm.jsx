@@ -15,6 +15,7 @@ import { TbDownload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
 import { useEffect } from 'react'
 import { showNotification } from '@mantine/notifications'
+import References from './References'
 
 
 export default function CurationForm({ }) {
@@ -34,20 +35,18 @@ export default function CurationForm({ }) {
 
 
     // show notification with known bugs
-    useEffect(() => {
-        showNotification({
-            title: "Known problems & bugs",
-            message: <>
-                <Text>Here's a list of known problems & bugs that will be fixed. Please take note of any others.</Text>
-                <List size="sm" ml="xs"  >
-                    <List.Item><Text color="dimmed">Sequence annotation highlights don't display properly</Text></List.Item>
-                    <List.Item><Text color="dimmed">Missing proteins section</Text></List.Item>
-                    <List.Item><Text color="dimmed">Missing references section</Text></List.Item>
-                </List>
-            </>,
-            autoClose: false,
-        })
-    }, [])
+    // useEffect(() => {
+    //     showNotification({
+    //         title: "Known problems & bugs",
+    //         message: <>
+    //             <Text>Here's a list of known problems & bugs that will be fixed. Please take note of any others.</Text>
+    //             <List size="sm" ml="xs"  >
+    //                 <List.Item><Text color="dimmed">Missing references section</Text></List.Item>
+    //             </List>
+    //         </>,
+    //         autoClose: false,
+    //     })
+    // }, [])
 
     return (
         <>
@@ -90,6 +89,8 @@ export default function CurationForm({ }) {
                                 <RoleSelection />
                                 <Space h={40} />
                                 <TargetOrganismsSelection />
+                                <Space h={40} />
+                                <References />
                             </>}
                             right={<SimilarParts />}
                         />

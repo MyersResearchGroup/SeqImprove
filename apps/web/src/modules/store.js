@@ -143,6 +143,18 @@ export const useStore = create((set, get) => ({
             state.document.root.removeProtein(uri)
         })
     },
+
+    // References
+    addReference: uri => {
+        mutateDocument(set, state => {
+            state.document.root.addReference(uri)
+        })
+    },
+    removeReference: uri => {
+        mutateDocument(set, state => {
+            state.document.root.removeReference(uri)
+        })
+    },
 }))
 
 
