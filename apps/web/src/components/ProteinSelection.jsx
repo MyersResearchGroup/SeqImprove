@@ -1,21 +1,50 @@
 import { ActionIcon, Group, Text, Tooltip } from '@mantine/core'
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useMemo } from 'react'
 import { useUniprot } from '../modules/ontologies/uniprot'
 import FormSection from './FormSection'
 import { FaTimes } from "react-icons/fa"
 import { useStore } from '../modules/store'
 import shallow from 'zustand/shallow'
 import MultiRowSelect from './MultiRowSelect'
+import { useSetState } from '@mantine/hooks'
 
 
 export default function ProteinSelection() {
 
-    const {
-        items: proteins,
-        add: addProtein,
-        remove: removeProtein
-    } = useStore(s => s.proteins, shallow)
+    // store state
+    const proteinUris = useStore(s => s.document.root.proteins, shallow)
+    const addProtein = useStore(s => s.addProtein)
+    const removeProtein = useStore(s => s.removeProtein)
 
+    // the SDOM only stores URIs, so we need a cache for extra info
+    const [cache, setCache] = useSetState({})
+
+    // memo protein objects -- start with URI from SDOM and pull from cache
+    const proteins = useMemo(
+        () => proteinUris.map(uri => cache[uri]).filter(item => !!item),
+        [proteinUris, cache]
+    )
+
+    // handlers
+    const handleAdd = value => {
+        // check for duplicates
+        if (proteinUris.includes(value.uri))
+            return
+
+        // add to cache
+        setCache({ [value.uri]: value })
+        // add to SDOM
+        addProtein(value.uri)
+    }
+    const handleRemove = value => {
+        const uri = Object.values(cache).find(item => item?.id == value)?.uri
+        if(uri) {
+            removeProtein(uri)
+            setCache({ [uri]: undefined })
+        }
+    }
+
+    // search UniProt Knowledgebase
     const searchUniprot = useUniprot("uniprotkb", result => ({
         id: result.primaryAccession,
         name: result.proteinDescription?.recommendedName?.fullName?.value,
@@ -24,12 +53,23 @@ export default function ProteinSelection() {
         uri: `https://identifiers.org/UniProt:${result.primaryAccession}`,
     }))
 
+    // try to search for URIs not in cache so we can get full info about them
+    useEffect(() => {
+        proteinUris
+            .filter(uri => !cache[uri])
+            .forEach(async uri => {
+                const matchedId = uri.match(/\w+$/)?.[0]
+                const searchResult = (await searchUniprot(matchedId)).find(result => result.uri == uri)
+                searchResult && setCache({ [uri]: searchResult })
+            })
+    }, [proteinUris])
+
     return (
         <FormSection title="Proteins">
             <MultiRowSelect
                 items={proteins}
-                addItem={addProtein}
-                removeItem={removeProtein}
+                addItem={handleAdd}
+                removeItem={handleRemove}
                 search={searchUniprot}
                 itemComponent={ProteinItem}
                 searchItemComponent={ProtienSearchItem}

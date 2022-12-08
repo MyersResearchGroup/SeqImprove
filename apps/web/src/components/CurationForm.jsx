@@ -112,10 +112,10 @@ export default function CurationForm({ }) {
                     </Tabs.Panel>
 
                     <Tabs.Panel value="proteins" pt={20}>
-                        {/* <SplitPanel
+                        <SplitPanel
                         left={<ProteinSelection />}
-                        right={<SuggestedProteins />}
-                    /> */}
+                        // right={<SuggestedProteins />}
+                    />
                     </Tabs.Panel>
                 </Container>
             </Tabs>

@@ -7,6 +7,7 @@ const Prefix = "https://seqimprove.org/"
 const Predicates = {
     RichDescription: `${Prefix}richDescription`,
     TargetOrganism: `${Prefix}targetOrganism`,
+    Protein: `${Prefix}protein`,
 }
 
 
@@ -52,6 +53,24 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
         get() {
             return (function removeTargetOrganism(uri) {
                 this.graph.removeMatches(this.subject, Predicates.TargetOrganism, uri)
+            }).bind(this)
+        }
+    },
+
+    proteins: {
+        get() { return this.getUriProperties(Predicates.Protein) },
+    },
+    addProtein: {
+        get() {
+            return (function addProtein(uri) {
+                this.insertUriProperty(Predicates.Protein, uri)
+            }).bind(this)
+        }
+    },
+    removeProtein: {
+        get() {
+            return (function removeProtein(uri) {
+                this.graph.removeMatches(this.subject, Predicates.Protein, uri)
             }).bind(this)
         }
     },

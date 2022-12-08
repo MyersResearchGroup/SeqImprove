@@ -30,7 +30,7 @@ export default function TargetOrganismsSelection() {
         addOrganism(value.uri)
     }
     const handleRemove = value => {
-        const uri = Object.values(cache).find(item => item.id == value)?.uri
+        const uri = Object.values(cache).find(item => item?.id == value)?.uri
         if(uri) {
             removeOrganism(uri)
             setCache({ [uri]: undefined })

@@ -3,7 +3,6 @@ import { useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
-import TextHighlighter from "./TextHighlighter"
 
 
 function Sequence({ colors }) {

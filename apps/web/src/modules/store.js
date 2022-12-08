@@ -131,12 +131,18 @@ export const useStore = create((set, get) => ({
             state.document.root.removeTargetOrganism(uri)
         })
     },
-
-    // // role
-    // ...createRootValueAdapter(set, get, "role", "setRole", "role"),
-
-    // proteins: createListAdapter(set, state => state.proteins),
-    // targetOrganisms: createListAdapter(set, state => state.targetOrganisms),
+    
+    // Proteins
+    addProtein: uri => {
+        mutateDocument(set, state => {
+            state.document.root.addProtein(uri)
+        })
+    },
+    removeProtein: uri => {
+        mutateDocument(set, state => {
+            state.document.root.removeProtein(uri)
+        })
+    },
 }))
 
 
