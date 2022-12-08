@@ -1,4 +1,4 @@
-import { Box, Button, Center, FileInput, SegmentedControl, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Box, Button, Center, FileInput, Group, LoadingOverlay, SegmentedControl, Stack, Text, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { MdOutlineFileUpload } from "react-icons/md"
 import { useStore } from '../modules/store'
@@ -7,6 +7,7 @@ import { useStore } from '../modules/store'
 export default function UploadForm() {
 
     const loadSBOL = useStore(s => s.loadSBOL)
+    const docLoading = useStore(s => s.loadingSBOL)
 
     const form = useForm({
         initialValues: {
@@ -60,22 +61,33 @@ export default function UploadForm() {
         }
     }
 
+    const useTestFile = () => {
+        handleSubmit({
+            method: Methods.URL,
+            url: window.location.origin + "/Test_Part.xml",
+        })
+    }
+
     return (
-        <Center sx={{ height: "90vh" }}>
-            <Box>
-                <Text align="center">Welcome to</Text>
-                <Title align="center" mb={30}>SeqImprove</Title>
-                <form onSubmit={form.onSubmit(handleSubmit)}>
-                    <Stack w={400}>
-                        <SegmentedControl data={Object.values(Methods)} {...form.getInputProps("method")} />
-                        {methodForms[form.values.method]}
-                        <Center mt={20}>
-                            <Button type="submit">Submit</Button>
-                        </Center>
-                    </Stack>
-                </form>
-            </Box>
-        </Center>
+        <>
+            <Center sx={{ height: "90vh" }}>
+                <Box>
+                    <Text align="center">Welcome to</Text>
+                    <Title align="center" mb={30}>SeqImprove</Title>
+                    <form onSubmit={form.onSubmit(handleSubmit)}>
+                        <Stack w={400}>
+                            <SegmentedControl data={Object.values(Methods)} {...form.getInputProps("method")} />
+                            {methodForms[form.values.method]}
+                            <Group mt={20} position="center">
+                                <Button variant="outline" onClick={useTestFile}>Try with a test file!</Button>
+                                <Button type="submit">Submit</Button>
+                            </Group>
+                        </Stack>
+                    </form>
+                </Box>
+            </Center>
+            <LoadingOverlay visible={docLoading} />
+        </>
     )
 }
 

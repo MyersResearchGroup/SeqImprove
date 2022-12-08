@@ -13,17 +13,12 @@ import { ModalsProvider } from '@mantine/modals'
 import TextAnnotationModal from './TextAnnotationModal'
 import { TbDownload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
-import { useEffect } from 'react'
-import { showNotification } from '@mantine/notifications'
 import References from './References'
 
 
 export default function CurationForm({ }) {
 
-    const docLoading = useStore(s => s.loadingSBOL)
-
     const displayId = useStore(s => s.document?.root.displayId)
-    const description = useStore(s => s.document?.root.description)
     const richDescription = useStore(s => s.document?.root.richDescription)
 
     // colors for annotations
@@ -49,79 +44,75 @@ export default function CurationForm({ }) {
     // }, [])
 
     return (
-        <>
-
-            <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
-                <Header p="lg">
-                    <Container>
-                        <Group position="apart" align="flex-end">
-                            <Group spacing={40}>
-                                <Title order={3}>{displayId}</Title>
-                                <Tabs.List>
-                                    <Tabs.Tab value="overview">Overview</Tabs.Tab>
-                                    <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
-                                    <Tabs.Tab value="text">Text</Tabs.Tab>
-                                    <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
-                                </Tabs.List>
-                            </Group>
-                            <Button
-                                onClick={exportDocument}
-                                variant="light"
-                                rightIcon={<TbDownload />}
-                            >
-                                Save SBOL
-                            </Button>
-                        </Group>
-                    </Container>
-                </Header>
-
+        <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
+            <Header p="lg">
                 <Container>
-                    <Tabs.Panel value="overview" pt={20}>
+                    <Group position="apart" align="flex-end">
+                        <Group spacing={40}>
+                            <Title order={3}>{displayId}</Title>
+                            <Tabs.List>
+                                <Tabs.Tab value="overview">Overview</Tabs.Tab>
+                                <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
+                                <Tabs.Tab value="text">Text</Tabs.Tab>
+                                <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
+                            </Tabs.List>
+                        </Group>
+                        <Button
+                            onClick={exportDocument}
+                            variant="light"
+                            rightIcon={<TbDownload />}
+                        >
+                            Save SBOL
+                        </Button>
+                    </Group>
+                </Container>
+            </Header>
+
+            <Container>
+                <Tabs.Panel value="overview" pt={20}>
+                    <SplitPanel
+                        left={<>
+                            <Title order={5} mb={10}>Description</Title>
+                            <Text color="dimmed">
+                                <ReactMarkdown linkTarget="_blank">
+                                    {richDescription}
+                                </ReactMarkdown>
+                            </Text>
+                            <Space h={20} />
+                            <RoleSelection />
+                            <Space h={40} />
+                            <TargetOrganismsSelection />
+                            <Space h={40} />
+                            <References />
+                        </>}
+                        right={<SimilarParts />}
+                    />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="sequence" pt={20}>
+                    <SplitPanel
+                        left={<SequenceSection.Sequence colors={sequenceColors} />}
+                        right={<SequenceSection.Annotations colors={sequenceColors} />}
+                    />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="text" pt={20}>
+                    <ModalsProvider modals={{ addAndEdit: TextAnnotationModal }}>
                         <SplitPanel
-                            left={<>
-                                <Title order={5} mb={10}>Description</Title>
-                                <Text color="dimmed">
-                                    <ReactMarkdown linkTarget="_blank">
-                                        {richDescription}
-                                    </ReactMarkdown>
-                                </Text>
-                                <Space h={20} />
-                                <RoleSelection />
-                                <Space h={40} />
-                                <TargetOrganismsSelection />
-                                <Space h={40} />
-                                <References />
-                            </>}
-                            right={<SimilarParts />}
+                            left={<TextSection.Description colors={textColors} />}
+                            right={<TextSection.Annotations colors={textColors} />}
                         />
-                    </Tabs.Panel>
+                    </ModalsProvider>
+                </Tabs.Panel>
 
-                    <Tabs.Panel value="sequence" pt={20}>
-                        <SplitPanel
-                            left={<SequenceSection.Sequence colors={sequenceColors} />}
-                            right={<SequenceSection.Annotations colors={sequenceColors} />}
-                        />
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="text" pt={20}>
-                        <ModalsProvider modals={{ addAndEdit: TextAnnotationModal }}>
-                            <SplitPanel
-                                left={<TextSection.Description colors={textColors} />}
-                                right={<TextSection.Annotations colors={textColors} />}
-                            />
-                        </ModalsProvider>
-                    </Tabs.Panel>
-
-                    <Tabs.Panel value="proteins" pt={20}>
-                        <SplitPanel
+                <Tabs.Panel value="proteins" pt={20}>
+                    <SplitPanel
                         left={<ProteinSelection />}
                         right={<SuggestedProteins />}
                     />
-                    </Tabs.Panel>
-                </Container>
-            </Tabs>
-            <LoadingOverlay visible={docLoading} />
-        </>
+                </Tabs.Panel>
+            </Container>
+        </Tabs>
     )
 }
 

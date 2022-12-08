@@ -4,9 +4,8 @@ import produce from "immer"
 import { getSearchParams } from "./util"
 import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
-import { S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
+import { SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
-import { TextBuffer } from "text-ranger"
 
 
 // create store
@@ -15,7 +14,7 @@ export const useStore = create((set, get) => ({
     /** 
      * SBOL URI
      * @type {string | undefined} */
-    uri: getSearchParams().complete_sbol,
+    uri: undefined,
 
     /** 
      * Raw SBOL content
@@ -30,7 +29,6 @@ export const useStore = create((set, get) => ({
         // try to form a URL out of the input argument
         try {
             var sbolUrl = new URL(sbol)
-            set({ uri: sbolUrl.href })
         }
         catch (err) { }
 
@@ -47,6 +45,7 @@ export const useStore = create((set, get) => ({
         return {
             sbolContent,
             document,
+            uri: sbolUrl?.href,
             richDescriptionBuffer,
             textAnnotations,
         }

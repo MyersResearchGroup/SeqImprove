@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:ns0="http://www.ncbi.nlm.nih.gov/genbank#" xmlns:ns1="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:ns2="https://seqimprove.org/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbol="http://sbols.org/v2#">
+  <sbol:ComponentDefinition rdf:about="https://example.com/Test_Part/1">
+    <sbol:persistentIdentity rdf:resource="https://example.com/Test_Part" />
+    <sbol:displayId>Test_Part</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <ns0:molecule>DNA</ns0:molecule>
+    <ns0:locus>Test_Part</ns0:locus>
+    <dcterms:description>This part makes GFP. It was tested in E. coli and is thought to work in B. subtilis. Brand new sentence. The circuit functions better when background levels of lactose are low. There is also lactse. E. coli is the same as Escherichia coli. Escichia coi.</dcterms:description>
+    <ns1:topLevel rdf:resource="https://example.com/Test_Part/1" />
+    <ns1:ownedBy rdf:resource="https://synbiohub.org/user/zachsents" />
+    <ns0:date>12-Nov-2019</ns0:date>
+    <ns0:division>UNK</ns0:division>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion" />
+    <sbol:type rdf:resource="http://identifiers.org/so/SO:0000987" />
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000804" />
+    <sbol:sequence rdf:resource="https://example.com/Test_Part_seq/1" />
+    <ns2:richDescription>This part makes [GFP](https://identifiers.org/NCBIGene:8790). It was tested in [E. coli](https://identifiers.org/NCBITaxon:562) and is thought to work in [B. subtilis](https://identifiers.org/NCBITaxon:518697). Brand new sentence. The circuit functions better when background levels of [lactose](https://identifiers.org/mesh:D007785) are low. There is also lactse. [E. coli](https://identifiers.org/NCBITaxon:562) is the same as [Escherichia coli](https://identifiers.org/NCBITaxon:562). Escichia coi.</ns2:richDescription>
+    <ns2:targetOrganism rdf:resource="https://www.uniprot.org/taxonomy/562" />
+    <ns2:protein rdf:resource="https://identifiers.org/UniProt:P42212" />
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="https://example.com/Test_Part_seq/1">
+    <sbol:persistentIdentity rdf:resource="https://example.com/Test_Part_seq" />
+    <sbol:displayId>Test_Part_seq</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <sbol:elements>ACTTTTCATACTCCCGCCAcaggtggcacttttcggggaaatgtgcgcggaacccctatttgtttatttttctaaatacattcaaatatgtatccgctcatgagacaataaccctgataaatgcttcaataatattgaaaaaggaagagtTTCAGAGAAGAAACCAATTGTCCATATTGCATCAGACATTGCCGTCACTGCGTCTTTTACTGGCTCTTCTCGCTAACCAAACCGGTAACCCCGCTTATTAAAAGCATTCTGTAACAAAGCGGGACCAAAGCCATGACAAAAACGCGTAACAAAAGTGTCTATAATCACGGCAGAAAAGTCCACATTGATTATTTGCACGGCGTCACACTTTGCTATGCCATAGCATTTTTATCCATAAGATTAGCGGATCCTACCTGACGCTTTTTATCGCAACTCTCTACTGTTTCTCCATACCCGTTTTTTTGGGCTAGCatgaaaccagtaacgttatacgatgtcgcagagtatgccggtgtctcttatcagaccgtttcccgcgtggtgaaccaggccagccacgtttctgcgaaaacgcgggaaaaagtggaagcggcgatggcggagctgaattacattcccaaccgcgtggcacaacaactggcgggcaaacagtcgttgctgattggcgttgccacctccagtctggccctgcacgcgccgtcgcaaattgtcgcggcgattaaatctcgcgccgatcaactgggtgccagcgtggtggtgtcgatggtagaacgaagcggcgtcgaagcctgtaaagcggcggtgcacaatcttctcgcgcaacgcgtcagtgggctgatcattaactatccgctggatgaccaggatgccattgctgtggaagctgcctgcactaatgttccggcgttatttcttgatgtctctgaccagacacccatcaacagtattattttctcccatgaggacggtacgcgactgggcgtggagcatctggtcgcattgggtcaccagcaaatcgcgctgttagcgggcccattaagttctgtctcggcgcgtctgcgtctggctggctggcataaatatctcactcgcaatcaaattcagccgatagcggaacgggaaggcgactggagtgccatgtccggttttcaacaaaccatgcaaatgctgaatgagggcatcgttcccactgcgatgctggttgccaacgatcagatggcgctgggcgcaatgcgcgccattaccgagtccgggctgcgcgttggtgcggatatctcggtagtgggatacgacgataccgaagatagctcatgttatatcccgccgttaaccaccatcaaacaggattttcgcctgctggggcaaaccagcgtggaccgcttgctgcaactctctcagggccaggcggtgaagggcaatcagctgttgccagtctcactggtgaaaagaaaaaccaccctggcgcccaatacgcaaaccgcctctccccgcgcgttggccgattcattaatgcagctggcacgacaggtttcccgactggaaagcgggcagtgataaCCAATTATTGAACACCCTTCGGGGTGTTTaagaggatgtccaatattttttttaaggaataaggatacttcaagactagattcccccctgcattcccatcagaaccgtaaaccttggcgctttccttgggaagtattcaagaagtgccttgtccggtttctgtggctcacaaaccagcgcgcccgatatggctttcttttcacttatgaatgtaccagtacgggacaattagaacgctcctgtaacaatctctttgcaaatgtggggttacattctaaccatgtcacactgctgacgaaattcaaagtaaaaaaaaatgggaccacgtcttgagaacgatagattttctttattttacattgaacagtcgttgtctcagcgcgctttatgttttcattcatacttcatattataaaataacaaaagaagaatttcatattcacgcccaagaaatcaggctgctttccaaatgcaattgacacttcattagccatcacacaaaactctttcttgctggagcttcttttaaaaaagacctcagtacaccaaacacgttacccgacctcgttattttacgacaactatgataaaattctgaagaaaaaataaaaaaattttcatacttcttgcttttatttaaaccattgaatgatttcttttgaacaaaactacctgtttcaccaaaggaaatagaaagaaaaaatcaattagaagaaaacaaaaaacaaaagatctTTTTGTTTCTGGTCTACC</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html" />
+  </sbol:Sequence>
+</rdf:RDF>

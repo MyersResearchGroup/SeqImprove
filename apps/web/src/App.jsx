@@ -4,24 +4,24 @@ import { useStore } from './modules/store'
 import CurationForm from './components/CurationForm'
 import UploadForm from './components/UploadForm'
 import { MantineProvider } from '@mantine/core'
+import { getSearchParams } from './modules/util'
 
 
 export default function App() {
 
     const loadSBOL = useStore(s => s.loadSBOL)
-
-    const sbolUri = useStore(s => s.uri)
-    const hasSbolContent = useStore(s => !!s.sbolContent)
+    const documentLoaded = useStore(s => !!s.document)
 
     // load SBOL into store if we have a complete_sbol parameter
     useEffect(() => {
-        sbolUri && loadSBOL(sbolUri)
-    }, [sbolUri])
+        const paramsUri = getSearchParams().complete_sbol
+        paramsUri && loadSBOL(paramsUri)
+    }, [])
 
     return (
         <MantineProvider theme={theme} withNormalizeCSS withGlobalStyles>
             <NotificationsProvider>
-                {sbolUri || hasSbolContent ?
+                {documentLoaded ?
                     <CurationForm />
                     :
                     <UploadForm />}
