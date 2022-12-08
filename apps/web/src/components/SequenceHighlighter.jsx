@@ -1,6 +1,6 @@
 import { Box, ScrollArea, Text } from '@mantine/core'
 import { useForceUpdate } from '@mantine/hooks'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRef } from 'react'
 import { useMemo } from 'react'
 
@@ -47,6 +47,9 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
         px: spacing / 2,
     }
 
+    // state for max width
+    const [maxContainerWidth, setMaxContainerWidth] = useState(0)
+
     return (
         <ScrollArea
             pr={20}
@@ -63,6 +66,7 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
                         left={0}
                         top={refs.current[anno.id]?.start.offsetTop - 4}
                         w="100%"
+                        maw={maxContainerWidth + 30}
                         key={anno.id}
                     >
                         <Box
@@ -74,15 +78,15 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
                                 borderRadius: 5,
                                 cursor: "pointer",
                                 // border: anno.active ? "none" : `3px solid ${theme.colors[anno.color][3]}`,
-                                border: `3px solid ${theme.colors[anno.color][ anno.active ? 5 : 2]}`,
+                                border: `3px solid ${theme.colors[anno.color][anno.active ? 5 : 2]}`,
                             })}
                         >
                             <Text
                                 {...textProps}
                                 px={undefined}
                                 pr={spacing / 2}
-                                // color={anno.color}
-                                c="transparent"
+                                color={anno.color}
+                            // c="transparent"
                             >
                                 {Array(wordSize - (span?.start.char - 1)).fill("_").join("")}
                             </Text>
@@ -90,8 +94,8 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
                             {Array(span?.end.word - span?.start.word - 1).fill(0).map((_, i) =>
                                 <Text
                                     {...textProps}
-                                    // color={anno.color}
-                                    c="transparent"
+                                    color={anno.color}
+                                    // c="transparent"
                                     key={"filler" + i}
                                 >
                                     {Array(wordSize).fill("_").join("")}
@@ -102,8 +106,8 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
                                 {...textProps}
                                 px={undefined}
                                 pl={spacing / 2}
-                                // color={anno.color}
-                                c="transparent"
+                                color={anno.color}
+                            // c="transparent"
                             >
                                 {Array(span?.end.char).fill("_").join("")}
                             </Text>
@@ -116,7 +120,11 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
                 <Text
                     {...textProps}
                     pos="relative"
-                    ref={createRefForWord(annotationSpans, refs, i)}
+                    ref={el => {
+                        createRefForWord(annotationSpans, refs, i)?.(el)
+                        if(el)
+                            setMaxContainerWidth(Math.max(el.offsetLeft + el.offsetWidth, maxContainerWidth))
+                    }}
                     key={"seq" + i}
                     sx={{ pointerEvents: "none" }}
                 >
