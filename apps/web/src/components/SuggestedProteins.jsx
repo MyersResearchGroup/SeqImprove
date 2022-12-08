@@ -11,8 +11,8 @@ import { HiRefresh } from "react-icons/hi"
 
 export default function SuggestedProteins() {
 
-    const proteinIds = useStore(s => s.proteins.items.map(item => item.id), shallow)
-    const addProtein = useStore(s => s.proteins.add)
+    const proteinUris = useStore(s => s.document.root.proteins, shallow)
+    const addProtein = useStore(s => s.addProtein)
 
     const searchUniprot = useUniprot("uniprotkb", result => ({
         id: result.primaryAccession,
@@ -32,26 +32,29 @@ export default function SuggestedProteins() {
     const [suggested, suggestedHandlers] = useListState()
 
     // grab flat list of text annotation terms from store
-    const textTerms = useStore(s => s.textAnnotations.map(anno => anno.terms).flat(), shallow)
+    const textTerms = useStore(s => s.textAnnotations.map(anno => anno.mentions.map(m => m.text)).flat(), shallow)
 
     // when terms change, look em up on unitprot
     useEffect(() => {
         suggestedHandlers.setState([])
-        textTerms.forEach(term => searchUniprot(term).then(results => {
+        textTerms.forEach(async term => {
+            const results = await searchUniprot(term)
+
             if (!results.length)
                 return
 
             // make sure we don't suggest proteins we already have 
-            !proteinIds.includes(results[0].id) && suggestedHandlers.append({
+            if(!proteinUris.includes(results[0].uri))
+            suggestedHandlers.append({
                 ...results[0],
                 fromTerm: term,
             })
-        }))
+        })
     }, [textTerms, refreshState])
 
     // handle add
     const handleAdd = (protein, index) => {
-        addProtein(protein)
+        addProtein(protein.uri)
         suggestedHandlers.remove(index)
     }
 
