@@ -51,7 +51,7 @@ export default function CurationForm({ }) {
                     <Group position="apart" align="flex-end">
                         <Group spacing={40} ml={-80}>
                             <Tooltip label="Return Home">
-                                <ActionIcon size="xl" onClick={() => window.location.href = "/"}>
+                                <ActionIcon component="a" href="/" size="xl">
                                     <FaHome />
                                 </ActionIcon>
                             </Tooltip>

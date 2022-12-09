@@ -33,7 +33,7 @@ export default function TextAnnotationCheckbox({ id, color }) {
                 <Group spacing="xs" position="apart">
                     <Tooltip label={id} position="bottom" withArrow>
                         <Box>
-                            <TextLink color="gray" href={id}>{annotation.displayId}</TextLink>
+                            <TextLink color="dimmed" size="sm" href={id}>{annotation.displayId}</TextLink>
                         </Box>
                     </Tooltip>
                     <Group spacing={5}>

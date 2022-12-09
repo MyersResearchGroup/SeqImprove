@@ -6,7 +6,7 @@ export default function SplitPanel({ left, right }) {
             <Box sx={{ flexGrow: 1, flexBasis: 565, }}>
                 {left}
             </Box>
-            <Box sx={{flexGrow: 1, flexBasis: 325, maxWidth: 400 }}>
+            <Box sx={{flexGrow: 1, flexBasis: 300, maxWidth: 400 }}>
                 {right}
             </Box>
         </Group>
