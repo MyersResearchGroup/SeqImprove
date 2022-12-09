@@ -23,7 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
+.env*
 
 # deployment artifacts
 *-app.zip
+
+# build artifacts
+vite*.mjs

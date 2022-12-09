@@ -1,4 +1,4 @@
-import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List } from '@mantine/core'
+import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip } from '@mantine/core'
 import { useStore } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
@@ -14,6 +14,7 @@ import TextAnnotationModal from './TextAnnotationModal'
 import { TbDownload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
 import References from './References'
+import { FaHome } from 'react-icons/fa'
 
 
 export default function CurationForm({ }) {
@@ -48,7 +49,12 @@ export default function CurationForm({ }) {
             <Header p="lg">
                 <Container>
                     <Group position="apart" align="flex-end">
-                        <Group spacing={40}>
+                        <Group spacing={40} ml={-80}>
+                            <Tooltip label="Return Home">
+                                <ActionIcon size="xl" onClick={() => window.location.href = "/"}>
+                                    <FaHome />
+                                </ActionIcon>
+                            </Tooltip>
                             <Title order={3}>{displayId}</Title>
                             <Tabs.List>
                                 <Tabs.Tab value="overview">Overview</Tabs.Tab>

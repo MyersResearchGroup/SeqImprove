@@ -49,6 +49,7 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
 
     // state for max width
     const [maxContainerWidth, setMaxContainerWidth] = useState(0)
+    // this isn't quite ready yet -- we'll try this later
 
     return (
         <ScrollArea
@@ -66,7 +67,7 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, w
                         left={0}
                         top={refs.current[anno.id]?.start.offsetTop - 4}
                         w="100%"
-                        maw={maxContainerWidth + 30}
+                        // maw={maxContainerWidth + 30}
                         key={anno.id}
                     >
                         <Box
