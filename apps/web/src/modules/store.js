@@ -2,7 +2,7 @@ import _, { remove } from "lodash"
 import create from "zustand"
 import produce from "immer"
 import { getSearchParams } from "./util"
-import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
+import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
 import { SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
@@ -39,6 +39,9 @@ export const useStore = create((set, get) => ({
         // parse out existing text annotations
         const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
 
+        // get existing sequence annotations
+        const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
+
         // set description as rich description text
         document.root.description = richDescriptionBuffer.originalText
 
@@ -48,6 +51,7 @@ export const useStore = create((set, get) => ({
             uri: sbolUrl?.href,
             richDescriptionBuffer,
             textAnnotations,
+            sequenceAnnotations,
         }
     }),
     exportDocument: (download = true) => {
@@ -61,10 +65,20 @@ export const useStore = create((set, get) => ({
     // Sequence Annotations
     sequenceAnnotations: [],
 
-    ...createAsyncAdapter(set, "SequenceAnnotations", async () => ({
+    ...createAsyncAdapter(set, "SequenceAnnotations", async () => {
         // fetch sequence annotations from API
-        sequenceAnnotations: await fetchAnnotateSequence(get().sbolContent) ?? [],
-    })),
+        const fetchedAnnotations = await fetchAnnotateSequence(get().sbolContent) ?? []
+
+        return {
+            sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
+                fetchedAnnotations.forEach(anno => {
+                    // skip duplicates
+                    if (!draft.find(a => a.id == anno.id))
+                        draft.push(anno)
+                })
+            })
+        }
+    }),
 
     sequenceAnnotationActions: createAnnotationActions(set, get, state => state.sequenceAnnotations, {
         test: hasSequenceAnnotation,
@@ -130,7 +144,7 @@ export const useStore = create((set, get) => ({
             state.document.root.removeTargetOrganism(uri)
         })
     },
-    
+
     // Proteins
     addProtein: uri => {
         mutateDocument(set, state => {

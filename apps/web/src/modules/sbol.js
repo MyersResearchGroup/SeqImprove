@@ -145,6 +145,7 @@ export function addSequenceAnnotation(componentDefinition, annoInfo) {
 
     const sa = componentDefinition.annotateRange(annoInfo.location[0], annoInfo.location[1], annoInfo.name)
     sa.persistentIdentity = annoInfo.id
+    sa.name = annoInfo.name
 }
 
 /**
@@ -162,6 +163,24 @@ export function removeSequenceAnnotation(componentDefinition, { id }) {
     const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
     annotation.destroy()
 }
+
+
+/**
+ * Finds existing SequenceAnnotations on a ComponentDefinition and returns
+ * them in a form suitable for the store.
+ *
+ * @export
+ * @param {S2ComponentDefinition} componentDefinition
+ * @return {any[]} 
+ */
+export function getExistingSequenceAnnotations(componentDefinition) {
+    return componentDefinition.sequenceAnnotations.map(sa => ({
+        id: sa.persistentIdentity,
+        name: sa.displayName,
+        location: [sa.locations[0].start, sa.locations[0].end],
+    }))
+}
+
 
 export function parseTextAnnotations(description) {
     // Use a buffer to replace annotations with their regular text

@@ -1,4 +1,5 @@
-import { Button, Center, Loader, Space } from "@mantine/core"
+import { Button, Center, Loader, NavLink, Space } from "@mantine/core"
+import { FiDownloadCloud } from "react-icons/fi"
 import { useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
@@ -42,22 +43,30 @@ function Annotations({ colors }) {
 
     return (
         <FormSection title="Sequence Annotations">
-            {annotations?.length ?
-                annotations.map((anno, i) =>
-                    <AnnotationCheckbox
-                        title={anno.name}
-                        color={colors[i]}
-                        active={isActive(anno.id) ?? false}
-                        onChange={val => setActive(anno.id, val)}
-                        key={anno.name}
-                    />
-                )
-                :
+            {annotations.map((anno, i) =>
+                <AnnotationCheckbox
+                    title={anno.name}
+                    color={colors[i]}
+                    active={isActive(anno.id) ?? false}
+                    onChange={val => setActive(anno.id, val)}
+                    key={anno.name}
+                />
+            )}
+
+            {loading ?
                 <Center>
-                    {loading ?
-                        <Loader my={30} size="sm" variant="dots" /> :
-                        <Button my={10} onClick={load}>Load Sequence Annotations</Button>}
-                </Center>}
+                    <Loader my={30} size="sm" variant="dots" /> :
+                </Center>
+                :
+                <NavLink
+                    label="Analyze Sequence"
+                    icon={<FiDownloadCloud />}
+                    variant="subtle"
+                    active={true}
+                    color="blue"
+                    onClick={load}
+                    sx={{ borderRadius: 6 }}
+                />}
         </FormSection>
     )
 }
