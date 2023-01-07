@@ -1,73 +1,110 @@
-# Turborepo starter
 
-This is an official npm starter turborepo.
+# SeqImprove
 
-## What's inside?
+SeqImprove is an application for curating and SBOL designs. It can be run as a standalone
+app and as a SynBioHub curation plugin. It is meant to help users easily add metadata 
+to their genetic designs by providing recommendations and a simple interface with which
+to do so.
+## Motivation
 
-This turborepo uses [npm](https://www.npmjs.com/) as a package manager. It includes the following packages/apps:
+This project is a prototype based on the proposal by [Jet Mante](https://geneticlogiclab.org/author/jet-mante/)
+in her doctoral thesis (TO DO: add link). The proposal was inspired by a lack of
+standardization in the way genetic designs are annotated and published, making it
+difficult to study and reuse them.
+## Repository Structure
 
-### Apps and Packages
+This repository is a monorepo containing two applications and a package. The two
+applications are a React frontend and a Dockerized Express/Node.js API that functions as the 
+backend. The package is called text-ranger and was developed to make working with
+text ranges and replacements easier, as this is key functionality for creating
+and displaying text annotations for genetic designs.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
+This project uses [Turborepo](https://turbo.build/) to manage the monorepo.
+## Run Locally
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+Clone the project
 
-### Utilities
-
-This turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-npm run build
+```bash
+git clone https://github.com/zachsents/SeqImprove
 ```
 
-### Develop
+Go to the project directory
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-npm run dev
+```bash
+cd SeqImprove
 ```
 
-### Remote Caching
+Install dependencies
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+```bash
+npm install
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+Start the frontend development server
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your turborepo:
-
-```
-npx turbo link
+```bash
+npm run dev -w web
 ```
 
-## Useful Links
+Navigate to the backend
 
-Learn more about the power of Turborepo:
+```bash
+cd apps/server
+```
 
-- [Pipelines](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+Build the Docker container
+
+```bash
+docker build -t seqimprove .
+```
+
+Run the Docker container
+
+```bash
+docker run -p 5000:5000 seqimprove
+```
+
+The API will be available on port 5000 and the frontend application will be 
+served at [http://localhost:5173](http://localhost:5173).
+## Building for Deployment
+
+From the root directory, to build the frontend, run
+
+```bash
+npm run build -w web
+```
+
+The built output will be in apps/web/dist, ready to be hosted anywhere you can host
+a static web app. Try [Azure Static Web Apps](https://azure.microsoft.com/en-us/products/app-service/static/).
+
+To build the backend, run
+
+```bash
+docker build -t seqimprove ./apps/server
+```
+
+The resulting image can be used to deploy the API anywhere you can run a Docker container.
+Try [Azure Container Apps](https://azure.microsoft.com/en-us/products/container-apps/v).
+## Environment Variables
+
+For the frontend, you will need the following environment variable in a .env file
+(within the apps/web directory):
+
+`VITE_API_LOCATION` URL for the API. For local development, will be `http://localhost:5000`.
+
+For the backend, you will need the following environment variable in a .env file
+(within the apps/server directory):
+
+`FRONTEND_LOCATION` URL for the frontend. For local development, will be `http://localhost:5173`.
+
+
+## Development
+
+When developing, it's easiest to use VSCode. For the frontend, you can develop like
+normal using the development server (`npm run dev`).
+
+For the backend, there's an included Dev Container configuration file. When the
+backend directory is opened in VSCode, VSCode will prompt you to re-open in a
+container. Doing so will allow you to develop within the Docker container the 
+backend relies on. Once inside the container, you can run `npm run dev` to start 
+the server watching for file changes.
