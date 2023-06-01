@@ -49,7 +49,7 @@ function Annotations({ colors }) {
                     color={colors[i]}
                     active={isActive(anno.id) ?? false}
                     onChange={val => setActive(anno.id, val)}
-                    key={anno.name}
+                    key={anno.name + i}
                 />
             )}
 
