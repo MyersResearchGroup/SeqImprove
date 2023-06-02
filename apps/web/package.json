@@ -26,6 +26,7 @@
     "react-icons": "^4.6.0",
     "react-markdown": "^8.0.3",
     "sbolgraph": "^0.51.0",
+    "tabler-icons-react": "^1.56.0",
     "text-ranger": "*",
     "zustand": "^4.1.4"
   },
