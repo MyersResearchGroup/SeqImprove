@@ -1,10 +1,28 @@
-import { Button, Center, Loader, NavLink, Space } from "@mantine/core"
+import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip } from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
+import { Copy, Check } from "tabler-icons-react"
 
+function Copier({ anno, sequence }) {
+    const selectionStart = anno.location[0]
+    const selectionLength = anno.location[1] - selectionStart
+    const selection = Array.from(sequence).splice(selectionStart, selectionLength).join('') 
+
+    return (
+        <CopyButton value={selection} timeout={2000}>
+            {({ copied, copy }) => (
+                <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="right">
+                    <ActionIcon color={copied ? 'teal' : 'gray'} onClick={copy}>
+                        {copied ? <Check size="1rem" /> : <Copy size="1rem" />}
+                    </ActionIcon>
+                </Tooltip>
+            )}
+        </CopyButton>
+  );
+}
 
 function Sequence({ colors }) {
 
@@ -32,7 +50,6 @@ function Sequence({ colors }) {
     )
 }
 
-
 function Annotations({ colors }) {
 
     const annotations = useStore(s => s.sequenceAnnotations)
@@ -41,16 +58,21 @@ function Annotations({ colors }) {
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
 
+    const sequence = useStore(s => s.document?.root.sequence).toLowerCase()
+
     return (
         <FormSection title="Sequence Annotations">
             {annotations.map((anno, i) =>
-                <AnnotationCheckbox
-                    title={anno.name}
-                    color={colors[i]}
-                    active={isActive(anno.id) ?? false}
-                    onChange={val => setActive(anno.id, val)}
-                    key={anno.name + i}
-                />
+                <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name}>
+                    <AnnotationCheckbox                        
+                        title={anno.name}
+                        color={colors[i]}
+                        active={isActive(anno.id) ?? false}
+                        onChange={val => setActive(anno.id, val)}
+                        key={anno.name + i}
+                    />                    
+                    <Copier anno={anno} sequence={sequence}/>   
+                </Group>              
             )}
 
             {loading ?
