@@ -44,6 +44,7 @@ function Sequence({ colors }) {
                         active: isActive(anno.id) ?? false,
                     }))}
                     onChange={setActive}
+                    isActive={isActive}
                     wordSize={8}
                 />}
         </FormSection>
