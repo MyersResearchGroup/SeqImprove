@@ -70,7 +70,11 @@ function Annotations({ colors }) {
                         color={colors[i]}
                         active={isActive(anno.id) ?? false}
                         onChange={val => setActive(anno.id, val)}
+<<<<<<< HEAD
                         key={anno.name}
+=======
+                        key={anno.name + i}
+>>>>>>> main
                     />                    
                     <Copier anno={anno} sequence={sequence}/>   
                 </Group>              
