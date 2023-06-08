@@ -6,7 +6,7 @@ import UploadForm from './components/UploadForm'
 import { MantineProvider } from '@mantine/core'
 import { getSearchParams } from './modules/util'
 
-
+// test comment for commit workflow demonstration
 export default function App() {
 
     const loadSBOL = useStore(s => s.loadSBOL)
