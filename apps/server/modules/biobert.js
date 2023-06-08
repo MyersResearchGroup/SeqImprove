@@ -14,7 +14,10 @@ export async function runBiobert(text) {
         },
         body: JSON.stringify({ text }),
     })
-    const jsonRes = await res.json()
+
+    // make sure response doesn't contain NaN
+    const textRes = await res.text().then(txt => txt.replaceAll(/NaN/g, "0"))
+    const jsonRes = JSON.parse(textRes)
 
     // group grounded terms together
     let annotations = Object.values(
@@ -92,7 +95,7 @@ export async function runBiobert(text) {
         // add in annotation
         word.confidence = topResult.score
         const anno = annotations.find(anno => anno.id == searchIndex[topResult.item])
-        
+
         // Disabling fuzzy matching for now
 
         // but make sure we're not referring to the same word
