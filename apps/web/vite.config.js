@@ -81,6 +81,6 @@ export default defineConfig({
         commonjsOptions: {
             include: [],
         },
-        // sourcemap: true,
+        sourcemap: true,
     }
 })
