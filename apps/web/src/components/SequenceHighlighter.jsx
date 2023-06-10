@@ -3,190 +3,155 @@ import { useForceUpdate, useIntersection } from '@mantine/hooks'
 import { useEffect, useState, useRef, useMemo, createElement } from 'react'
 
 export default function SequenceHighlighter({ sequence, annotations, onChange, isActive, wordSize, spacing = 12, scrollAreaProps = { h: 400 } }) {
-
-    // split sequence into "words"
-    // const splitSequence = sequence.match(new RegExp(`.{1,${wordSize}}`, "g"))
-
-    // create object containing word and character indexes for each annotation
-    // const annotationSpans = useMemo(
-    //     () => Object.fromEntries(
-    //         annotations.map(anno => [
-    //             anno.id,
-    //             {
-    //                 start: {
-    //                     word: Math.floor(anno.location[0] / wordSize),
-    //                     char: anno.location[0] % wordSize,
-    //                 },
-    //                 end: {
-    //                     word: Math.floor(anno.location[1] / wordSize),
-    //                     char: anno.location[1] % wordSize,
-    //                 },
-    //             }
-    //         ])
-    //     ),
-    //     [annotations, sequence, wordSize]
-    // )
-
-    // create refs 
-    // const refs = useRef({})
-
     // force update when annotations are loaded -- forces refs to update
-    const forceUpdate = useForceUpdate()
+    const forceUpdate = useForceUpdate()    
     useEffect(() => {
         forceUpdate()
     }, [annotations, sequence, wordSize])
+    
+    const delimiters = annotations
+        .reduce((delimiters, annotation) => {
+            return delimiters.concat({
+                loc: annotation.location[0],
+                anno: annotation,
+                beg: true
+            }, {
+                loc: annotation.location[1],
+                anno: annotation,
+                beg: false,            
+            });
+        }, [])
+        .sort((a,b) => a.loc < b.loc ? -1 : a.loc == b.loc ? 0 : 1);    
 
-    // props for Text components 
-    // const textProps = {
-    //     ff: "monospace",
-    //     size: "sm",
-    //     display: "inline-block",
-    //     px: spacing / 2,
-    // }
+    const sequenceSections = delimiters.reduce((seqSections, delimiter) => {
+        let i = seqSections.length - 1;
+        let lastSection = seqSections[i];
 
-    // state for max width
-    // const [maxContainerWidth, setMaxContainerWidth] = useState(0)
-    // this isn't quite ready yet -- we'll try this later
+        const startingCharIndex = delimiter.loc - lastSection.start;
 
+        let modifiedSection = [];
+        if (startingCharIndex != 0) {
+            modifiedSection.push({ 
+                seq: lastSection.seq.slice(0, startingCharIndex), 
+                annotations: lastSection.annotations, 
+                start: lastSection.start,
+            });
+        }
+        
+        if (delimiter.beg) {
+            modifiedSection.push({
+                seq: lastSection.seq.slice(startingCharIndex),
+                annotations: lastSection.annotations.concat(delimiter.anno),
+                start: delimiter.loc
+            });
+        } else {            
+            modifiedSection.push({
+                seq: lastSection.seq.slice(startingCharIndex),
+                annotations: lastSection.annotations.filter(anno => anno != delimiter.anno),
+                start: delimiter.loc,
+            });
+        }
+
+        return seqSections
+            .slice(0, i)
+            .concat(...modifiedSection);
+    }, [{ seq: sequence, annotations: [], start: 0 }]);
+    
     return (
         <>
             <ScrollArea
                 pr={20}
                 {...scrollAreaProps}
                 styles={{ viewport: { position: "relative", paddingTop: 4 } }}
-            >
-                {/* {annotations.map(anno => {
-                    const span = annotationSpans[anno.id]
-                    const ref = refs.current[anno.id]
-
-                        return (
-                            <Box
-                                pos="absolute"
-                                left={0}
-                                top={ref?.start.offsetTop - 4}
-                                w="100%"
-                                // maw={maxContainerWidth + 30}
-                                key={anno.id}
-                            >
-                                <Box
-                                    display="inline"
-                                    ml={`calc(${ref?.start.offsetLeft - 2 + spacing / 2}px + ${span?.start.char - 1}ch)`}
-                                    bg={anno.active && `${anno.color}.2`}
-                                    onClick={() => onChange?.(anno.id, !anno.active)}
-                                    sx={theme => ({
-                                        borderRadius: 5,
-                                        cursor: "pointer",
-                                        // border: anno.active ? "none" : `3px solid ${theme.colors[anno.color][3]}`,
-                                        border: `3px solid ${theme.colors[anno.color][anno.active ? 5 : 2]}`,
-                                    })}
-                                >
-                                    <Text
-                                        {...textProps}
-                                        px={undefined}
-                                        pr={spacing / 2}
-                                        // color={anno.color}
-                                        c="transparent"
-                                    >
-                                        {Array(wordSize - (span?.start.char - 1)).fill("_").join("")}
-                                    </Text>
-
-                                    {Array(span?.end.word - span?.start.word - 1).fill(0).map((_, i) =>
-                                        <Text
-                                            {...textProps}
-                                            // color={anno.color}
-                                            c="transparent"
-                                            key={"filler" + i}
-                                        >
-                                            {Array(wordSize).fill("_").join("")}
-                                        </Text>
-                                    )}
-
-                                    <Text
-                                        {...textProps}
-                                        px={undefined}
-                                        pl={spacing / 2}
-                                        // color={anno.color}
-                                        c="transparent"
-                                    >
-                                        {Array(span?.end.char).fill("_").join("")}
-                                    </Text>
-                                </Box>
-                            </Box>
-                        </Box>
-                    )
-                })} */}
-
-                {                    
+            >            
+                {                                          
                     createElement(
                         'p', 
                         {
                             style: {fontFamily: "monospace", fontSize: "14px"}, 
                             onClick: e => {                                 
                                 if (e.target.tagName == 'SPAN') {                                                                        
-                                    const id = e.target.dataset.annotationId
-                                    onChange?.(id, !isActive(id))                                      
+                                    const idx = parseInt(e.target.dataset.seqSectionIdx, 10);
+                                    // debugger
+                                    sequenceSections[idx].annotations.forEach(anno => {
+                                        onChange?.(anno.id, !isActive(anno.id));
+                                    });                                    
                                 }
                             }
                         },
-                        ...insertSpaces(wordSize, annotations.reduce((sequenceParts, annotation) => {    
-                            let k = 0
-                            let j = 0 // sequenceParts Element Index
-
-                            while (k + (sequenceParts[j].length ? sequenceParts[j].length : sequenceParts[j].props.children.length) < annotation.location[0]) {
-                                k += (sequenceParts[j].length ? sequenceParts[j].length : sequenceParts[j].props.children.length)
-                                j++
-                            }
-                            // assuming sequenceParts[j] is text!!! 
-                            const startingCharIndex = annotation.location[0] - k
-                            const annotationLength = annotation.location[1] - annotation.location[0]
-                            
-                            const span = createElement(
+                        ...insertSpaces(wordSize, sequenceSections.map((seqSection, i) => {
+                            return seqSection.annotations.length == 0 ? seqSection.seq : createElement(
                                 'span',
                                 {
                                     style: {
-                                        backgroundColor: (isActive(annotation.id) ? annotation.color : lighter(annotation.color)),
+                                        backgroundColor: colorFromAnnotations(seqSection.annotations, isActive),
                                         cursor: "pointer",
                                         borderStyle: "solid",
-                                        borderRadius: "5px",
-                                        borderColor: darker(annotation.color),
+                                        borderRadius: "1px",
+                                        borderWidth: "1px 0 1px 0",
+                                        borderColor: darker(colorFromAnnotations(seqSection.annotations, isActive)),
                                     },
-                                    'data-annotation-id': annotation.id, // on click event for sequence section needs to know which span was clicked
-                                    // 'data-isActive': '0'
+                                    'data-seq-section-idx': i,
                                 },
-                                sequenceParts[j].slice(startingCharIndex, startingCharIndex + annotationLength)                                                        
-                            )                    
-
-                            return sequenceParts.slice(0,j)
-                                                .concat(
-                                                    sequenceParts[j].slice(0, startingCharIndex),
-                                                    span,
-                                                    sequenceParts[j].slice(startingCharIndex + annotationLength),
-                                                    ...sequenceParts.slice(j + 1)
-                                                )
-
-                        }, [sequence]))
+                                seqSection.seq
+                            );
+                        }))
                     )                    
-                }
-
-                {/* {splitSequence.map((word, i) =>
-                    <Text
-                        {...textProps}
-                        pos="relative"
-                        ref={el => {
-                            createRefForWord(annotationSpans, refs, i)?.(el)
-                            if (el)
-                                setMaxContainerWidth(Math.max(el.offsetLeft + el.offsetWidth, maxContainerWidth))
-                        }}
-                        key={"seq" + i}
-                        sx={{ pointerEvents: "none" }}
-                    >
-                        {word}
-                    </Text>
-                )} */}
+                }                
             </ScrollArea>
             <OnScreenDetector onShow={() => forceUpdate()} />
         </>
     )
+}
+
+function colorFromAnnotations(annotations, isActive) {
+    // return annotations[0].color;
+    let rgbCollection = [];
+
+    annotations.forEach(({ color, id }) => {        
+        // Create a dummy element to apply the color
+        const dummyElement = document.createElement('div');
+        dummyElement.style.color = (isActive(id) ? color : lighter(color));
+        
+        document.body.appendChild(dummyElement);
+
+        // Get the computed RGB values
+        const computedColor = window.getComputedStyle(dummyElement).color;
+        const rgbValues = computedColor.match(/\d+/g).map(Number);  
+
+        rgbCollection.push(rgbValues);
+
+        // remove dummy element
+        document.body.removeChild(dummyElement);
+    });
+        
+    const rgbAvg = [0,1,2].map(i => {
+        return parseInt(
+            rgbCollection.reduce((avg, rgb) => {                
+                return ((1.0 / rgbCollection.length) * rgb[i]) + avg;
+            }, 0.0), 
+            10
+        );
+    });
+
+    // Guard against colors that are too dark for text highlighting
+    const rgb = rgbNorm(rgbAvg);    
+    
+    // Convert RGB to RGB string format
+    const rgbString = `rgb(${rgb.join(', ')})`
+
+    return rgbString;
+}
+
+
+function rgbNorm(rgb) {
+    const sum = rgb.reduce((sum, colorValue) => sum + colorValue);
+    if (sum < 555) {
+        const increment = (555 - sum) / 3;
+        return rgb.map(c => c + increment);
+    } else {
+        return rgb;
+    }
 }
 
 function darker(color) {
@@ -204,10 +169,10 @@ function darker(color) {
     document.body.removeChild(dummyElement)
 
     // Calculate darker RGB values
-    const lighterRgbValues = rgbValues.map(value => Math.floor(value * 0.85))
+    const darkerRgbValues = rgbValues.map(value => Math.floor(value * 0.75))
   
     // Convert RGB to RGB string format
-    const rgbString = `rgb(${lighterRgbValues.join(', ')})`
+    const rgbString = `rgb(${darkerRgbValues.join(', ')})`
 
     return rgbString    
 }
@@ -227,7 +192,7 @@ function lighter(color) {
     document.body.removeChild(dummyElement)
 
     // Calculate lighter RGB values
-    const lighterRgbValues = rgbValues.map(value => Math.floor((255 - value) * 0.7 + value))
+    const lighterRgbValues = rgbValues.map(value => Math.floor((255 - value) * 0.8 + value))
   
     // Convert RGB to RGB string format
     const rgbString = `rgb(${lighterRgbValues.join(', ')})`
@@ -236,74 +201,45 @@ function lighter(color) {
 }
 
 function insertSpaces(wordSize, sequenceParts) {    
-    let result = new Array(sequenceParts.length)
-    let jump = wordSize
+    let result = new Array(sequenceParts.length);
+    let jump = wordSize;
     
     for (let i = 0; i < sequenceParts.length; i++) {
-        let length
-        let text
+        let length;
+        let text;
 
         if (sequenceParts[i].hasOwnProperty('length')) {
-            length = sequenceParts[i].length
-            text = sequenceParts[i]
-            result[i] = ""
-            let prevJ = 0
-            let j
+            length = sequenceParts[i].length;
+            text = sequenceParts[i];
+            result[i] = "";
+            let prevJ = 0;
+            let j;
             for (j = jump; j < length; j += wordSize) {
-                result[i] += text.slice(prevJ, j) + ' '
-                prevJ = j
+                result[i] += text.slice(prevJ, j) + ' ';
+                prevJ = j;
             }
-            result[i] += text.slice(prevJ, j) + (length == j ? ' ' : '')
+            result[i] += text.slice(prevJ, j) + (length == j ? ' ' : '');
             
-            jump = wordSize - ((length + wordSize - jump) % wordSize)
+            jump = wordSize - ((length + wordSize - jump) % wordSize);
          } else {            
-            length = sequenceParts[i].props.children.length
-            text = sequenceParts[i].props.children            
-            let textWithSpaces = ""
-            let prevJ = 0
-            let j
+            length = sequenceParts[i].props.children.length;
+            text = sequenceParts[i].props.children;  
+            let textWithSpaces = "";
+            let prevJ = 0;
+            let j;
             for (j = jump; j < length; j += wordSize) {
-                textWithSpaces += text.slice(prevJ, j) + ' '
-                prevJ = j
+                textWithSpaces += text.slice(prevJ, j) + ' ';
+                prevJ = j;
             }
-            textWithSpaces += text.slice(prevJ, j) + (length == j ? ' ': '')
-            result[i] = createElement('span', sequenceParts[i].props, textWithSpaces)
-            jump = wordSize - ((length + wordSize - jump) % wordSize)            
+            textWithSpaces += text.slice(prevJ, j) + (length == j ? ' ': '');
+            result[i] = createElement('span', sequenceParts[i].props, textWithSpaces);
+            jump = wordSize - ((length + wordSize - jump) % wordSize);
          }
 
     }
 
-    return result
+    return result;
 }
-
-/**
- * Creates a ref function for a given word index that matches an annotations start
- * or end indexes.
- *
- * @param {*} spans
- * @param {*} refs
- * @param {number} wordIndex
- * @return {Function | undefined} Function to be passed as component's ref
- */
-// function createRefForWord(spans, refs, wordIndex) {
-//     // find relevant annotation span
-//     const foundSpan = Object.entries(spans).find(
-//         ([, { start, end }]) => start.word == wordIndex || end.word == wordIndex
-//     )
-
-//     if (!foundSpan)
-//         return
-
-//     const id = foundSpan[0]
-//     const position = foundSpan[1].start.word == wordIndex ? "start" : "end"
-
-//     // create ref function to insert element in refs object
-//     return el => {
-//         refs.current[id] ??= {}
-//         refs.current[id][position] = el
-//     }
-// }
-
 
 function OnScreenDetector({ onShow }) {
 
