@@ -94,8 +94,12 @@ export const useStore = create((set, get) => ({
 
         // fetch text annotations from API
         console.debug("Annotating this:\n" + get().document.root.description)
-        const fetchedAnnos = await fetchAnnotateText(get().document.root.description)
-
+        try {
+            var fetchedAnnos = await fetchAnnotateText(get().document.root.description)
+        } catch(err) {
+            console.error(err);
+            return;
+        }
         const newAnnotations = produce(get().textAnnotations, draft => {
             // loop through fetched annotations
             fetchedAnnos.forEach(anno => {
