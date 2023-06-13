@@ -51,7 +51,7 @@ export default function UploadForm() {
     const handleSubmit = async values => {
         switch (values.method) {
             case Methods.Upload:
-                loadSBOL(await values.file.text())
+                loadSBOL(await values.file.text());
                 break
             case Methods.URL:
                 loadSBOL(values.url)

@@ -1,4 +1,4 @@
-import { showNotification } from "@mantine/notifications"
+import { showServerErrorNotification } from "./util"
 
 export async function fetchSBOL(url) {
     try {
@@ -132,21 +132,4 @@ async function fetchWithTimeout(resource, options = {}) {
     clearTimeout(id);
   
     return response;
-}
-
-function showErrorNotification(title, message) {
-    showNotification({
-        title,
-        color: "red",
-        message,
-    })
-}
-
-function showServerErrorNotification() {
-    showNotification({
-        title: "Failed to load resource",
-        color: "red",
-        message: "This is probably an issue with our servers. Sorry!",
-        autoClose: false,
-    });
 }

@@ -1,3 +1,4 @@
+import { showNotification } from "@mantine/notifications"
 
 export function getSearchParams() {
     return new Proxy(
@@ -43,3 +44,23 @@ export function generateCyclicalColors(themeColors, amount, level) {
 }
 
 const colorCycle = ["pink", "yellow", "teal", "indigo", "red", "lime", "cyan", "violet", "orange", "green", "blue", "grape"]
+
+// Error handling
+
+export function showErrorNotification(title, message) {
+    showNotification({
+        title,
+        color: "red",
+        message,
+        autoClose: false,
+    });
+}
+
+export function showServerErrorNotification() {
+    showNotification({
+        title: "Failed to load resource",
+        color: "red",
+        message: "This is probably an issue with our servers. Sorry!",
+        autoClose: false,
+    });
+}

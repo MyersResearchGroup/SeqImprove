@@ -1,7 +1,7 @@
 import _, { remove } from "lodash"
 import create from "zustand"
 import produce from "immer"
-import { getSearchParams } from "./util"
+import { getSearchParams, showErrorNotification } from "./util"
 import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
 import { SBOL2GraphView } from "sbolgraph"
@@ -30,11 +30,16 @@ export const useStore = create((set, get) => ({
         try {
             var sbolUrl = new URL(sbol)
         }
-        catch (err) { }
+        catch (err) {}
 
         // if it's a URL, fetch it; otherwise, just use it as the content
         const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
-        const document = await createSBOLDocument(sbolContent)
+        try {
+            var document = await createSBOLDocument(sbolContent);
+        } catch (err) {
+            console.error(err);            
+            throw err;
+        }
 
         // parse out existing text annotations
         const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
@@ -238,11 +243,17 @@ function createAsyncAdapter(set, propertySuffix, loader) {
         [loadingPropKey]: false,
         ["load" + propertySuffix]: async (...args) => {
             set({ [loadingPropKey]: true })
-            const result = await loader?.(...args)
-            set({
-                ...result,
-                [loadingPropKey]: false
-            })
+            try {
+                const result = await loader?.(...args);
+                set({
+                    ...result,
+                    [loadingPropKey]: false
+                });
+            } catch (err) {
+                showErrorNotification("Upload Error", "Could not interpret file as SBOL document");
+            } finally {
+                set({ [loadingPropKey]: false });
+            }             
         }
     }
 }
