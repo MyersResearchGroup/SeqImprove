@@ -33,3 +33,11 @@ yarn-error.log*
 .turbo
 
 .vscode
+
+# emacs
+*~
+\#*\#
+*.elc
+auto-save-list
+tramp
+.\#*

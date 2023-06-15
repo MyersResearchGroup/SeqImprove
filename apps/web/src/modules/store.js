@@ -72,7 +72,7 @@ export const useStore = create((set, get) => ({
 
     ...createAsyncAdapter(set, "SequenceAnnotations", async () => {
         // fetch sequence annotations from API
-        const fetchedAnnotations = await fetchAnnotateSequence(get().sbolContent) ?? []
+        const fetchedAnnotations = await fetchAnnotateSequence(get().document.serializeXML()) ?? [] // get().sbolContent
 
         return {
             sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
@@ -206,9 +206,9 @@ function setRootProperty(set, path, value) {
  */
 export function mutateDocument(set, mutator) {
     set(state => {
-        mutator?.(state)
-        return { document: state.document }
-    })
+        mutator?.(state);
+        return { document: state.document };
+    });
 }
 
 
