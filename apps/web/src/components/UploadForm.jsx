@@ -54,7 +54,10 @@ export default function UploadForm() {
                 loadSBOL(await values.file.text());
                 break
             case Methods.URL:
-                loadSBOL(values.url)
+                const url = values.url.match(/\/sbol$/) ? values.url : 
+                            values.url.match(/\/$/) ?     values.url + 'sbol' : 
+                                                          values.url + '/sbol';
+                loadSBOL(url);
                 break
             default:
                 break
