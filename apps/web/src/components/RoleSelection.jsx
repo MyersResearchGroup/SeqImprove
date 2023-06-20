@@ -31,16 +31,24 @@ export default function RoleSelection() {
 
     // make sure search results initially have our selected item
     useEffect(() => {
-        role && searchSO(`shortId:${decodeRoleURI(role).replace(":", "\\:")}`)
-            .then(results => setSearchResults(
-                mapResultsToSelectData(results)
-            ))
+        const func = async () => {
+            if (role) {
+                const ontology = decodeRoleURI(role);
+                if (ontology) {
+                    const results = await searchSO(`shortId:${ontology.replace(":", "\\:")}`);
+                    setSearchResults(mapResultsToSelectData(results));
+                }                
+            }
+        };
+        func();
+        // role && searchSO(`shortId:${decodeRoleURI(role).replace(":", "\\:")}`)
+        //     .then(results => setSearchResults(mapResultsToSelectData(results)));        
     }, [role])
 
 
     return (
-        <Group spacing={40}>
-            <Text size="lg" weight={600} mt={20}>Role</Text>
+        <Group spacing={40}>            
+            <Text size="lg" weight={600} mt={20}>Role</Text>            
             <Select
                 label={<Text color="dimmed" size="xs" ml={10}>{decodeRoleURI(role)}</Text>}
                 placeholder="Select the role for this part"
