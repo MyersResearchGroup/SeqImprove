@@ -65,10 +65,7 @@ export default function UploadForm() {
     }
 
     const useTestFile = () => {
-        handleSubmit({
-            method: Methods.URL,
-            url: window.location.origin + "/Test_Part.xml",
-        })
+        loadSBOL(window.location.origin + "/Test_Part.xml");
     }
 
     return (
