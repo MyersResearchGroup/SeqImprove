@@ -1,4 +1,4 @@
-import { showNotification } from "@mantine/notifications"
+import { showServerErrorNotification } from "./util"
 
 export async function fetchSBOL(url) {
     try {
@@ -19,7 +19,7 @@ export async function fetchAnnotateSequence(sbolContent) {
 
     // Fetch
     try {
-        var response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/annotateSequence`, {
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/annotateSequence`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -27,12 +27,13 @@ export async function fetchAnnotateSequence(sbolContent) {
             body: JSON.stringify({
                 completeSbolContent: sbolContent,
             }),
-        })
+            timeout: 20000,
+        });
     }
     catch (err) {
-        console.error("Failed to fetch.")
-        showServerErrorNotification()
-        return
+        console.error("Failed to fetch.");
+        showServerErrorNotification();
+        return;
     }
 
     // Parse
@@ -55,18 +56,19 @@ export async function fetchAnnotateText(text) {
 
     // Fetch
     try {
-        var response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/annotateText`, {
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/annotateText`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ text }),
-        })
+            timeout: 30000,
+        });
     }
     catch (err) {
         console.error("Failed to fetch.")
         showServerErrorNotification()
-        return
+        throw(err);
     }
     
     // Parse
@@ -117,19 +119,17 @@ export async function fetchSimilarParts(topLevelUri) {
     return result.similarParts
 }
 
-
-function showErrorNotification(title, message) {
-    showNotification({
-        title,
-        color: "red",
-        message,
-    })
-}
-
-function showServerErrorNotification() {
-    showNotification({
-        title: "Failed to load resource",
-        color: "red",
-        message: "This is probably an issue with our servers. Sorry!",
-    })
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 8000 } = options;
+    
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+  
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal  
+    });
+    clearTimeout(id);
+  
+    return response;
 }

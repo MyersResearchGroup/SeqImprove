@@ -23,7 +23,8 @@ Object.defineProperty(SBOL2GraphView.prototype, "root", {
 
 Object.defineProperties(S2ComponentDefinition.prototype, {
     sequence: {
-        get() { return this.sequences[0]?.elements },
+        get() { return this.sequences[0]?.elements; },
+        set(value) { this.sequences[0].elements = value; },
     },
 
     richDescription: {
@@ -104,13 +105,14 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
  * @return {SBOL2GraphView} 
  */
 export async function createSBOLDocument(sbolContent) {
-    const document = new SBOL2GraphView(new Graph())
-    await document.loadString(sbolContent)
+    const document = new SBOL2GraphView(new Graph());
+    await document.loadString(sbolContent);
 
     // initialize rich description as regular description if one doesn't exist
-    if (!document.root.richDescription)
+    if (!document.root.richDescription) {
         document.root.richDescription = document.root.description
-
+    }
+    
     return document
 }
 

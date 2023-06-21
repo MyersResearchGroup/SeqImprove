@@ -1,15 +1,20 @@
-import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip } from "@mantine/core"
+import { useState } from "react"
+import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea } from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
-import { useAsyncLoader, useStore } from "../modules/store"
+import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
+import { mutateDocument, useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
 import { Copy, Check } from "tabler-icons-react"
+import "../index.css"
+
+const WORDSIZE = 8;
 
 function Copier({ anno, sequence }) {
-    const selectionStart = anno.location[0]
-    const selectionLength = anno.location[1] - selectionStart
-    const selection = Array.from(sequence).splice(selectionStart, selectionLength).join('') 
+    const selectionStart = anno.location[0];
+    const selectionLength = anno.location[1] - selectionStart;
+    const selection = Array.from(sequence).splice(selectionStart, selectionLength).join('');
 
     return (
         <CopyButton value={selection} timeout={2000}>
@@ -24,19 +29,86 @@ function Copier({ anno, sequence }) {
   );
 }
 
+function insertSpaces(wordSize, sequence) {
+    const regex = new RegExp(".{1," + String(wordSize) + "}", "g");
+    return sequence.match(regex).join(' ');
+}
+
+function reformat(sequenceText) {
+    // return insertSpaces(WORDSIZE, sequenceText.replace(/\s/g, ''));
+    return sequenceText;
+}
+
 function Sequence({ colors }) {
 
-    const sequence = useStore(s => s.document?.root.sequence)
+    const sequence = useStore(s => s.document?.root.sequence);
 
-    const annotations = useStore(s => s.sequenceAnnotations)
-    useStore(s => s.document?.root.sequenceAnnotations)    // force rerender from document change
+    const annotations = useStore(s => s.sequenceAnnotations);
+    useStore(s => s.document?.root.sequenceAnnotations);    // force rerender from document change
 
-    const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
+    const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions);
+
+    // sequence editing state
+    // const description = useStore(s => s.document?.root.richDescription)
+    // const richDescriptionBuffer = useStore(s => s.richDescriptionBuffer)
+    // const [workingDescription, setWorkingDescription] = useState(false)
+    const [workingSequence, setWorkingSequence] = useState(false);
+
+    const handleStartSequenceEdit = () => {
+        // put spaces in text based on WORDSIZE ? or should I do this? yes, it would be nice, but not required        
+        setWorkingSequence(insertSpaces(WORDSIZE, sequence.toLowerCase()));
+    };
+
+    const handleEndSequenceEdit = (discard = false) => {
+        if (discard) {
+            setWorkingSequence(false);
+            return;
+        }
+
+        setWorkingSequence(false);
+
+        // propagate buffer changes to sequence
+        mutateDocument(useStore.setState, state => {
+            state.document.root.sequence = workingSequence.replace(/\s/g, '');
+            state.sequenceAnnotations.forEach(anno => {
+                state.sequenceAnnotationActions.removeAnnotation(anno.id);
+            });
+        });
+    }
 
     return (
-        <FormSection title="Sequence">
-            {sequence &&
-                <SequenceHighlighter
+        <FormSection title="Sequence" rightSection={
+                workingSequence ?
+                    <Group spacing={6}>
+                        <ActionIcon onClick={() => handleEndSequenceEdit(true)} color="red"><FaTimes /></ActionIcon>
+                        <ActionIcon onClick={() => handleEndSequenceEdit(false)} color="green"><FaCheck /></ActionIcon>
+                    </Group> :
+                    <ActionIcon onClick={handleStartSequenceEdit}><FaPencilAlt /></ActionIcon>
+            }>
+            {workingSequence ?
+                    <Textarea
+                        size="md"
+                        minRows={20}
+                        value={workingSequence}
+                        onChange={event => {
+                            const textArea = event.currentTarget;
+                            const start = textArea.selectionStart;
+                            const end = textArea.selectionEnd;
+
+                            // var charsPerRow = textArea.cols;
+                            // var selectionRow = (start - (start % charsPerRow)) / charsPerRow;
+                            // const lineHeight = textArea.clientHeight / textArea.rows;
+                            
+                            setWorkingSequence(reformat(textArea.value));
+                            
+                            // setTimeout(() => {
+                            //     textArea.selectionEnd = end;
+                            //     textArea.scrollTop = lineHeight * selectionRow;
+                            // }, 0);
+                        }}
+                        styles={{ input: { font: "14px monospace", lineHeight: "1.5em" } }}
+                    /> : sequence &&
+                    <SequenceHighlighter
                     sequence={sequence.toLowerCase()}
                     annotations={annotations.map((anno, i) => ({
                         ...anno,
@@ -45,8 +117,9 @@ function Sequence({ colors }) {
                     }))}
                     onChange={setActive}
                     isActive={isActive}
-                    wordSize={8}
-                />}
+                    wordSize={WORDSIZE}
+                    />
+            }       
         </FormSection>
     )
 }
