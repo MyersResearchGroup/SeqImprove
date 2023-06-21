@@ -100,11 +100,13 @@ For the backend, you will need the following environment variable in a .env file
 
 ## Development
 
-When developing, it's easiest to use VSCode. For the frontend, you can develop like
-normal using the development server (`npm run dev`).
+When developing, it's easiest to use VSCode with the Dev Containers extension from Microsoft installed. This way, the backend server can be hot reloaded. This avoids having to rebuild the Docker container between every change.
 
-For the backend, there's an included Dev Container configuration file. When the
-backend directory is opened in VSCode, VSCode will prompt you to re-open in a
-container. Doing so will allow you to develop within the Docker container the 
-backend relies on. Once inside the container, you can run `npm run dev` to start 
-the server watching for file changes.
+##### Front End
+For the frontend, you can develop like normal using the development server `npm run dev` from within `apps/web` or `npm run dev -w web` from within the root directory of the project.
+
+##### Backend
+First, open server directory in VS Code
+Then: type `CMD-Shift-p` → `Dev Containers: Build & Reopen Container`
+
+Once inside the container, you can open a terminal within VS Code, navigate to the `apps/server` directory and use `npm run dev` to start the backend server.
