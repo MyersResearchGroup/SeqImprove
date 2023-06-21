@@ -27,7 +27,7 @@ export async function fetchAnnotateSequence(sbolContent) {
             body: JSON.stringify({
                 completeSbolContent: sbolContent,
             }),
-            timeout: 20000,
+            timeout: 120000,
         });
     }
     catch (err) {
@@ -62,7 +62,7 @@ export async function fetchAnnotateText(text) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ text }),
-            timeout: 30000,
+            timeout: 120000,
         });
     }
     catch (err) {
