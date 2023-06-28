@@ -1,4 +1,4 @@
-import { Group, Select, Text } from '@mantine/core'
+import { Group, Select, Text, Space } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import { forwardRef, useEffect, useState } from 'react'
 import { useSequenceOntology } from '../modules/ontologies/so'
@@ -7,58 +7,70 @@ import shallow from 'zustand/shallow'
 import { decodeRoleURI } from '../modules/roles'
 
 export default function RoleSelection() {
+    const roles = useStore(s => s.document.root.roles);
+    
+    return roles.map((role, idx) => {
+        const [searchValue, onSearchChange] = useState("");
+        const [debouncedQuery] = useDebouncedValue(searchValue, 300);
 
-    const [searchValue, onSearchChange] = useState("")
-    const [debouncedQuery] = useDebouncedValue(searchValue, 300)
+        const searchSO = useSequenceOntology();
+        const [searchResults, setSearchResults] = useState([]);
+        
+        const setRole = val => {
+            mutateDocument(useStore.setState, state => {
+                state.document.root.role = val
+            })
+        }
 
-    const searchSO = useSequenceOntology()
-    const [searchResults, setSearchResults] = useState([])
+        // when query changes, search
+        useEffect(() => {
+            searchSO(debouncedQuery)
+                .then(results => setSearchResults(
+                    mapResultsToSelectData(results.slice(0, 20))
+                ))
+        }, [debouncedQuery])
 
-    const role = useStore(s => s.document.root.role)
-    const setRole = val => {
-        mutateDocument(useStore.setState, state => {
-            state.document.root.role = val
-        })
-    }
-
-    // when query changes, search
-    useEffect(() => {
-        searchSO(debouncedQuery)
-            .then(results => setSearchResults(
-                mapResultsToSelectData(results.slice(0, 20))
-            ))
-    }, [debouncedQuery])
-
-    // make sure search results initially have our selected item
-    useEffect(() => {
-        role && searchSO(`shortId:${decodeRoleURI(role).replace(":", "\\:")}`)
-            .then(results => setSearchResults(
-                mapResultsToSelectData(results)
-            ))
-    }, [role])
-
-
-    return (
-        <Group spacing={40}>
-            <Text size="lg" weight={600} mt={20}>Role</Text>
-            <Select
-                label={<Text color="dimmed" size="xs" ml={10}>{decodeRoleURI(role)}</Text>}
-                placeholder="Select the role for this part"
-                value={role}
-                onChange={setRole}
-                searchable
-                onSearchChange={onSearchChange}
-                searchValue={searchValue}
-                nothingFound="No options"
-                data={searchResults ?? []}
-                dropdownPosition="bottom"
-                itemComponent={RoleItem}
-                filter={() => true}
-                styles={selectStyles}
-                sx={{ flexGrow: 1, }}
-            />
-        </Group>
-    )
+        // make sure search results initially have our selected item
+        useEffect(() => {
+            const func = async () => {
+                if (role) {
+                    const ontology = decodeRoleURI(role);
+                    if (ontology) {
+                        const results = await searchSO(`shortId:${ontology.replace(":", "\\:")}`);
+                        setSearchResults(mapResultsToSelectData(results));
+                    }                
+                }
+            };
+            func();
+            // role && searchSO(`shortId:${decodeRoleURI(role).replace(":", "\\:")}`)
+            //     .then(results => setSearchResults(mapResultsToSelectData(results)));        
+        }, [role]);
+        
+        return (
+            <div key={idx}>
+                <Group spacing={40}>            
+                    <Text size="lg" weight={600} mt={20}>Role</Text>            
+                    <Select
+                        label={<Text color="dimmed" size="xs" ml={10}>{decodeRoleURI(role)}</Text>}
+                        placeholder="Select the role for this part"
+                        value={role}
+                        onChange={setRole}
+                        searchable
+                        onSearchChange={onSearchChange}
+                        searchValue={searchValue}
+                        nothingFound="No options"
+                        data={searchResults ?? []}
+                        dropdownPosition="bottom"
+                        itemComponent={RoleItem}
+                        filter={() => true}
+                        styles={selectStyles}
+                        sx={{ flexGrow: 1, }}
+                    />
+                </Group>
+                <Space h="lg" />
+            </div>
+        );
+    });
 }
 
 const RoleItem = forwardRef(({ label, shortId, ...others }, ref) =>

@@ -18,7 +18,7 @@ import { FaHome } from 'react-icons/fa'
 
 
 export default function CurationForm({ }) {
-
+    
     const displayId = useStore(s => s.document?.root.displayId)
     const richDescription = useStore(s => s.document?.root.richDescription)
 
@@ -89,7 +89,7 @@ export default function CurationForm({ }) {
                             <Space h={40} />
                             <TargetOrganismsSelection />
                             <Space h={40} />
-                            <References />
+                            <References />                            
                         </>}
                         right={<SimilarParts />}
                     />
