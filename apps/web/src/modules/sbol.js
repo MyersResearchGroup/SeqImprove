@@ -32,12 +32,18 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
         set(value) { this.setStringProperty(Predicates.RichDescription, value) },
     },
 
-    // for now, only allowing one role
-    role: {
-        get() { return this.roles[0] },
+    // role: {
+    //     get() { return this.roles[0] },
+    //     set(value) {
+    //         this.addRole(value)
+    //     }
+    // },
+
+    roles: {
         set(value) {
-            this.roles.forEach(role => this.removeRole(role))
-            this.addRole(value)
+            const roles = this.roles.slice();
+            roles.forEach(role => this.removeRole(role));
+            value.forEach(role => this.addRole(role));
         }
     },
 

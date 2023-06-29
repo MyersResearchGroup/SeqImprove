@@ -21,6 +21,11 @@ export const useStore = create((set, get) => ({
      * @type {string} */
     sbolContent: null,
 
+    /**
+     * roles used in SBOL document for curation form
+     * @type {string[]} */
+    roles: [],
+
     /** 
      * Parsed SBOL document
      * @type {SBOL2GraphView} */
@@ -50,9 +55,13 @@ export const useStore = create((set, get) => ({
         // set description as rich description text
         document.root.description = richDescriptionBuffer.originalText
 
+        // set roles to be the same as from document
+        const roles = document.root.roles;
+
         return {
             sbolContent,
             document,
+            roles,
             uri: sbolUrl?.href,
             richDescriptionBuffer,
             textAnnotations,
