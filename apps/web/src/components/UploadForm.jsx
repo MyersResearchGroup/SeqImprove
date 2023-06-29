@@ -6,8 +6,8 @@ import { useStore } from '../modules/store'
 
 export default function UploadForm() {
 
-    const loadSBOL = useStore(s => s.loadSBOL)
-    const docLoading = useStore(s => s.loadingSBOL)
+    const loadSBOL = useStore(s => s.loadSBOL);
+    const docLoading = useStore(s => s.loadingSBOL);
 
     const form = useForm({
         initialValues: {
@@ -29,7 +29,7 @@ export default function UploadForm() {
             },
             file: (value, values) => values.method == Methods.Upload && !value,
         }
-    })
+    });
 
     const methodForms = {
         [Methods.Upload]: <>
@@ -46,27 +46,30 @@ export default function UploadForm() {
                 {...form.getInputProps("url")}
             />
         </>,
-    }
+    };
 
     const handleSubmit = async values => {
         switch (values.method) {
-            case Methods.Upload:
-                loadSBOL(await values.file.text());
-                break
-            case Methods.URL:
-                const url = values.url.match(/\/sbol$/) ? values.url : 
-                            values.url.match(/\/$/) ?     values.url + 'sbol' : 
-                                                          values.url + '/sbol';
-                loadSBOL(url);
-                break
-            default:
-                break
+        case Methods.Upload:
+            loadSBOL(await values.file.text());
+            break;
+        case Methods.URL:
+            const url = values.url.match(/\/sbol$/) ? values.url : 
+                values.url.match(/\/$/) ?     values.url + 'sbol' : 
+                values.url + '/sbol';
+            loadSBOL(url);
+            break;
+        case Methods.FromScratch:
+            loadSBOL(window.location.origin + "/From_Scratch.xml");
+            break;
+        default:
+            break;
         }
-    }
+    };
 
     const useTestFile = () => {
         loadSBOL(window.location.origin + "/Test_Part.xml");
-    }
+    };
 
     return (
         <>
@@ -79,7 +82,10 @@ export default function UploadForm() {
                             <SegmentedControl data={Object.values(Methods)} {...form.getInputProps("method")} />
                             {methodForms[form.values.method]}
                             <Group mt={20} position="center">
-                                <Button variant="outline" onClick={useTestFile}>Try with a test file!</Button>
+                                {form.values.method == "From Scratch" ?
+                                 undefined :
+                                 <Button variant="outline" onClick={useTestFile}>Try with a test file!</Button>                                    
+                                }
                                 <Button type="submit">Submit</Button>
                             </Group>
                         </Stack>
@@ -88,10 +94,11 @@ export default function UploadForm() {
             </Center>
             <LoadingOverlay visible={docLoading} />
         </>
-    )
+    );
 }
 
 const Methods = {
     Upload: "Upload a file",
     URL: "URL",
+    FromScratch: "From Scratch",
 }

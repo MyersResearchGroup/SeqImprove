@@ -31,7 +31,8 @@ function Copier({ anno, sequence }) {
 
 function insertSpaces(wordSize, sequence) {
     const regex = new RegExp(".{1," + String(wordSize) + "}", "g");
-    return sequence.match(regex).join(' ');
+    const matchData = sequence.match(regex);
+    return matchData ? sequence.match(regex).join(' ') : sequence;
 }
 
 function reformat(sequenceText) {
@@ -78,14 +79,14 @@ function Sequence({ colors }) {
 
     return (
         <FormSection title="Sequence" rightSection={
-                workingSequence ?
+                workingSequence !== false ?
                     <Group spacing={6}>
                         <ActionIcon onClick={() => handleEndSequenceEdit(true)} color="red"><FaTimes /></ActionIcon>
                         <ActionIcon onClick={() => handleEndSequenceEdit(false)} color="green"><FaCheck /></ActionIcon>
                     </Group> :
                     <ActionIcon onClick={handleStartSequenceEdit}><FaPencilAlt /></ActionIcon>
             }>
-            {workingSequence ?
+            {workingSequence !== false ?
                     <Textarea
                         size="md"
                         minRows={20}
@@ -94,17 +95,8 @@ function Sequence({ colors }) {
                             const textArea = event.currentTarget;
                             const start = textArea.selectionStart;
                             const end = textArea.selectionEnd;
-
-                            // var charsPerRow = textArea.cols;
-                            // var selectionRow = (start - (start % charsPerRow)) / charsPerRow;
-                            // const lineHeight = textArea.clientHeight / textArea.rows;
                             
-                            setWorkingSequence(reformat(textArea.value));
-                            
-                            // setTimeout(() => {
-                            //     textArea.selectionEnd = end;
-                            //     textArea.scrollTop = lineHeight * selectionRow;
-                            // }, 0);
+                            setWorkingSequence(reformat(textArea.value));                            
                         }}
                         styles={{ input: { font: "14px monospace", lineHeight: "1.5em" } }}
                     /> : sequence &&

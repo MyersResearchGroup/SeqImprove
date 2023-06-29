@@ -1,4 +1,4 @@
-import { Group, Select, Text, Space } from '@mantine/core'
+import { Group, Select, Text, Space, Button } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import { forwardRef, useEffect, useState } from 'react'
 import { useSequenceOntology } from '../modules/ontologies/so'
@@ -8,6 +8,10 @@ import { decodeRoleURI } from '../modules/roles'
 
 export default function RoleSelection() {
     const roles = useStore(s => s.document.root.roles);
+
+    const addRoleHandler = _ => {
+        console.log(roles);
+    };
     
     return roles.map((role, idx) => {
         const [searchValue, onSearchChange] = useState("");
@@ -19,16 +23,16 @@ export default function RoleSelection() {
         const setRole = val => {
             mutateDocument(useStore.setState, state => {
                 state.document.root.role = val
-            })
-        }
+            });
+        };
 
         // when query changes, search
         useEffect(() => {
             searchSO(debouncedQuery)
                 .then(results => setSearchResults(
                     mapResultsToSelectData(results.slice(0, 20))
-                ))
-        }, [debouncedQuery])
+                ));
+        }, [debouncedQuery]);
 
         // make sure search results initially have our selected item
         useEffect(() => {
@@ -70,7 +74,7 @@ export default function RoleSelection() {
                 <Space h="lg" />
             </div>
         );
-    });
+    }).concat(<Button key={'a'} onClick={addRoleHandler}>Add Role</Button>);
 }
 
 const RoleItem = forwardRef(({ label, shortId, ...others }, ref) =>

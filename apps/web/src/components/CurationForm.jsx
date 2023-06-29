@@ -78,19 +78,20 @@ export default function CurationForm({ }) {
                 <Tabs.Panel value="overview" pt={20}>
                     <SplitPanel
                         left={<>
-                            <Title order={5} mb={10}>Description</Title>
-                            <Text color="dimmed">
-                                <ReactMarkdown linkTarget="_blank">
-                                    {richDescription}
-                                </ReactMarkdown>
-                            </Text>
-                            <Space h={20} />
-                            <RoleSelection />
-                            <Space h={40} />
-                            <TargetOrganismsSelection />
-                            <Space h={40} />
-                            <References />                            
-                        </>}
+                                  <Title order={5} mb={10}>Description</Title>
+                                  <Text color="dimmed">
+                                      <ReactMarkdown linkTarget="_blank">
+                                          {richDescription}
+                                      </ReactMarkdown>
+                                  </Text>
+                                  <Space h={20} />
+                                  <Title order={3}>Roles</Title>    
+                                  <RoleSelection />
+                                  <Space h={40} />
+                                  <TargetOrganismsSelection />
+                                  <Space h={40} />
+                                  <References />                            
+                              </>}
                         right={<SimilarParts />}
                     />
                 </Tabs.Panel>
