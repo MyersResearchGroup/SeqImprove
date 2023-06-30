@@ -1,5 +1,5 @@
-import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip } from '@mantine/core'
-import { useStore } from '../modules/store'
+import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea } from '@mantine/core'
+import { useStore, mutateDocument } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
@@ -14,7 +14,8 @@ import TextAnnotationModal from './TextAnnotationModal'
 import { TbDownload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
 import References from './References'
-import { FaHome } from 'react-icons/fa'
+import { FaHome, FaPencilAlt, FaTimes, FaCheck } from 'react-icons/fa'
+import { useState } from "react"
 
 
 export default function CurationForm({ }) {
@@ -44,6 +45,25 @@ export default function CurationForm({ }) {
     //     })
     // }, [])
 
+    const [ isEditingTitle, setIsEditingTitle ] = useState(false);
+    const [ workingTitle, setWorkingTitle ] = useState(displayId);
+
+    const handleStartTitleEdit = _ => {
+        setIsEditingTitle(true);
+    };
+
+    const handleEndTitleEdit = (cancelled = false) => {
+        setIsEditingTitle(false);
+        
+        if (cancelled) {
+            return;
+        }
+
+        mutateDocument(useStore.setState, state => {
+           state.document.root.displayId = workingTitle
+        });
+    };
+
     return (
         <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
             <Header p="lg">
@@ -55,7 +75,26 @@ export default function CurationForm({ }) {
                                     <FaHome />
                                 </ActionIcon>
                             </Tooltip>
-                            <Title order={3}>{displayId}</Title>
+                            <Group>
+                                {isEditingTitle ?
+                                 <Textarea
+                                     autosize
+                                     macrows={1}
+                                     value={workingTitle}
+                                     onChange={event => {
+                                         setWorkingTitle(event.currentTarget.value);
+                                     }}
+                                     styles={{ input: { font: "22px monospace" } }}
+                                 /> :
+                                 <Title order={3}>{displayId}</Title>
+                                }                                
+                                {isEditingTitle ? 
+                                 <Group spacing={6}>
+                                     <ActionIcon onClick={() => handleEndTitleEdit(true)} color="red"><FaTimes /></ActionIcon>
+                                     <ActionIcon onClick={() => handleEndTitleEdit(false)} color="green"><FaCheck /></ActionIcon>
+                                 </Group> :
+                                <ActionIcon onClick={handleStartTitleEdit}><FaPencilAlt /></ActionIcon>}
+                            </Group>
                             <Tabs.List>
                                 <Tabs.Tab value="overview">Overview</Tabs.Tab>
                                 <Tabs.Tab value="sequence">Sequence</Tabs.Tab>

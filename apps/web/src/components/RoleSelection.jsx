@@ -1,4 +1,4 @@
-import { Group, Select, Text, Space, Button } from '@mantine/core'
+import { Group, Select, Text, Space, Button, CloseButton } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import { forwardRef, useEffect, useState } from 'react'
 import { useSequenceOntology } from '../modules/ontologies/so'
@@ -20,6 +20,17 @@ function Role({ idx }) {
     const setRole = val => {        
         mutateDocument(useStore.setState, state => {
             state.roles = state.roles.slice(0, idx).concat(val, state.roles.slice(idx + 1));
+            state.document.root.roles = state.roles;
+            // to ensure that state.document.root.roles is the same as state.roles, even if different order.
+            if (!equalLists(state.roles, state.document.root.roles)) {
+                throw new Error("useStore roles != document.root.roles");
+            }
+        });
+    };
+
+    const removeRole = () => {
+        mutateDocument(useStore.setState, state => {
+            state.roles = state.roles.slice(0, idx).concat(state.roles.slice(idx + 1));
             state.document.root.roles = state.roles;
             // to ensure that state.document.root.roles is the same as state.roles, even if different order.
             if (!equalLists(state.roles, state.document.root.roles)) {
@@ -78,6 +89,7 @@ function Role({ idx }) {
                     styles={selectStyles}
                     sx={{ flexGrow: 1, }}
                 />
+                <CloseButton iconSize={20} onClick={removeRole} />
             </Group>
             <Space h="lg" />
         </div>
@@ -85,10 +97,10 @@ function Role({ idx }) {
 }
 
 export default function RoleSelection() {
-    const roles = useStore(s => s.document.root.roles);
+    const roles = useStore(s => s.roles);
 
     const addRoleHandler = _ => {
-        console.log(roles);
+        useStore.setState({ roles: roles.concat('')});
     };
     
     return roles.map((_, idx) =>
