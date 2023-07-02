@@ -87,8 +87,9 @@ export const useStore = create((set, get) => ({
             sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
                 fetchedAnnotations.forEach(anno => {
                     // skip duplicates
-                    if (!draft.find(a => a.id == anno.id))
+                    if (!draft.find(a => a.id == anno.id)) {
                         draft.push(anno)
+                    }
                 })
             })
         }

@@ -8,7 +8,7 @@ export default function UploadForm() {
 
     const loadSBOL = useStore(s => s.loadSBOL);
     const docLoading = useStore(s => s.loadingSBOL);
-
+    
     const form = useForm({
         initialValues: {
             method: Methods.Upload,
