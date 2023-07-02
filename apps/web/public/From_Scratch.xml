@@ -3,7 +3,7 @@
   <sbol:ComponentDefinition rdf:about="https://www.seqimprove.synbiohub.org/Part/1">
     <sbol:persistentIdentity rdf:resource="https://www.seqimprove.synbiohub.org/Part"/>
     <sbol:displayId>Display Id</sbol:displayId>
-    <sbol:version>2</sbol:version>
+    <sbol:version>1</sbol:version>
     <prov:wasGeneratedBy rdf:resource="https://www.seqimprove.synbiohub.org"/>
     <dcterms:title>Title</dcterms:title>
     <dcterms:description>This is your description. Click on the Text link to edit it.</dcterms:description>
@@ -14,7 +14,7 @@
   <sbol:Sequence rdf:about="https://www.seqimprove.synbiohub.org/PartSequence/1">
     <sbol:persistentIdentity rdf:resource="https://www.seqimprove.synbiohub.org/PartSequence"/>
     <sbol:displayId>Display Id</sbol:displayId>
-    <sbol:version>2</sbol:version>
+    <sbol:version>1</sbol:version>
     <prov:wasGeneratedBy rdf:resource="https://www.seqimprove.synbiohub.org"/>
     <sbol:elements></sbol:elements>
     <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
