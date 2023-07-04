@@ -8,7 +8,7 @@ to do so.
 ## Motivation
 
 This project is a prototype based on the proposal by [Jet Mante](https://geneticlogiclab.org/author/jet-mante/)
-in her doctoral thesis (TO DO: add link). The proposal was inspired by a lack of
+in her [doctoral thesis](https://www.biorxiv.org/content/10.1101/2023.04.25.538300v1.full). The proposal was inspired by a lack of
 standardization in the way genetic designs are annotated and published, making it
 difficult to study and reuse them.
 ## Repository Structure
