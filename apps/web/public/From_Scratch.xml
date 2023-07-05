@@ -4,8 +4,7 @@
     <sbol:persistentIdentity rdf:resource="https://www.seqimprove.synbiohub.org/Part"/>
     <sbol:displayId>Display Id</sbol:displayId>
     <sbol:version>1</sbol:version>
-    <prov:wasGeneratedBy rdf:resource="https://www.seqimprove.synbiohub.org"/>
-    <dcterms:title>Title</dcterms:title>
+    <prov:wasGeneratedBy rdf:resource="https://www.seqimprove.synbiohub.org"/>    
     <dcterms:description>This is your description. Click on the Text link to edit it.</dcterms:description>
     <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
     <sbol:type rdf:resource="http://identifiers.org/so/SO:0000988"/>
