@@ -1,20 +1,18 @@
 <?xml version="1.0" ?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:igem="http://wiki.synbiohub.org/wiki/Terms/igem#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:gbconv="http://sbols.org/genBankConversion#" xmlns:genbank="http://www.ncbi.nlm.nih.gov/genbank#" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <sbol:ComponentDefinition rdf:about="https://www.seqimprove.synbiohub.org/Part/1">
-    <sbol:persistentIdentity rdf:resource="https://www.seqimprove.synbiohub.org/Part"/>
-    <sbol:displayId>Display Id</sbol:displayId>
+  <sbol:ComponentDefinition rdf:about="https://seqimprove.synbiohub.org/DisplayId/1">
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/DisplayId"/>
+    <sbol:displayId>DisplayId</sbol:displayId>
     <sbol:version>1</sbol:version>
-    <prov:wasGeneratedBy rdf:resource="https://www.seqimprove.synbiohub.org"/>    
+    <dcterms:title>This is the name of your sequence</dcterms:title>    
     <dcterms:description>This is your description. Click on the Text link to edit it.</dcterms:description>
     <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
-    <sbol:type rdf:resource="http://identifiers.org/so/SO:0000988"/>
-    <sbol:sequence rdf:resource="https://www.seqimprove.synbiohub.org/PartSequence/1"/>
+    <sbol:sequence rdf:resource="https://seqimprove.synbiohub.org/DisplayId_Sequence/1"/>
   </sbol:ComponentDefinition>
-  <sbol:Sequence rdf:about="https://www.seqimprove.synbiohub.org/PartSequence/1">
-    <sbol:persistentIdentity rdf:resource="https://www.seqimprove.synbiohub.org/PartSequence"/>
-    <sbol:displayId>Display Id</sbol:displayId>
+  <sbol:Sequence rdf:about="https://seqimprove.synbiohub.org/DisplayId_Sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/DisplayId_Sequence"/>
+    <sbol:displayId>DisplayId</sbol:displayId>
     <sbol:version>1</sbol:version>
-    <prov:wasGeneratedBy rdf:resource="https://www.seqimprove.synbiohub.org"/>
     <sbol:elements></sbol:elements>
     <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
   </sbol:Sequence>
