@@ -16,7 +16,11 @@ import ReactMarkdown from 'react-markdown'
 import References from './References'
 import { FaHome, FaPencilAlt, FaTimes, FaCheck } from 'react-icons/fa'
 import { useState } from "react"
+import { showErrorNotification } from "../modules/util"
 
+function validDisplayID(displayID) {
+    return displayID.match(/^[a-z_]\w+$/i);
+}
 
 export default function CurationForm({ }) {
     
@@ -45,22 +49,66 @@ export default function CurationForm({ }) {
     //     })
     // }, [])
 
-    const [ isEditingTitle, setIsEditingTitle ] = useState(false);
-    const [ workingTitle, setWorkingTitle ] = useState(displayId);
+    const [ isEditingDisplayID, setIsEditingDisplayID ] = useState(false);
+    const [ workingDisplayID, setWorkingDisplayID ] = useState(displayId);
 
-    const handleStartTitleEdit = _ => {
-        setIsEditingTitle(true);
+    const handleStartDisplayIDEdit = _ => {
+        setIsEditingDisplayID(true);
+        setWorkingDisplayID(displayId);
     };
 
-    const handleEndTitleEdit = (cancelled = false) => {
-        setIsEditingTitle(false);
-        
+    const handleEndDisplayIDEdit = (cancelled = false) => {
         if (cancelled) {
+            setIsEditingDisplayID(false);
             return;
         }
+        
+        if (!validDisplayID(workingDisplayID)) {
+            showErrorNotification("DisplayID should contain only alphanumeric characters and underscores. The first character cannot be a number.");
+            return;
+        }
+        
+        setIsEditingDisplayID(false);       
 
         mutateDocument(useStore.setState, state => {
-           state.document.root.displayId = workingTitle
+            // updateChildURIDisplayIDs(workingDisplayID, state.document.root.displayId, state.document);
+            
+            // Replace displayId in URIs in xml            
+            let remainingXML = state.document.serializeXML();
+            let xmlChunks = [];
+            let matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+
+            while (matchData) {
+                xmlChunks.push(remainingXML.slice(0,matchData.index));                
+                const uri = matchData[0];
+                const regexp = new RegExp(state.document.root.displayId, 'g');
+                xmlChunks.push(uri.replace(regexp, workingDisplayID));
+               
+                remainingXML = remainingXML.slice(matchData.index + uri.length);                
+                matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+            }
+            
+            // Replace displayId property in xml
+            remainingXML = xmlChunks.concat(remainingXML).join('');                      
+            xmlChunks = [];
+            const regexpOpenTag = /\<sbol\:displayId\>/;
+            const regexpCloseTag = /\<\/sbol\:displayId\>/;
+            matchData = remainingXML.match(regexpOpenTag);            
+
+            while(matchData) {
+                xmlChunks.push(remainingXML.slice(0, matchData.index + matchData[0].length));
+                remainingXML = remainingXML.slice(matchData.index + matchData[0].length);
+
+                matchData = remainingXML.match(regexpCloseTag);
+                xmlChunks.push(workingDisplayID);
+                
+                remainingXML = remainingXML.slice(remainingXML.match(regexpCloseTag).index);
+                matchData = remainingXML.match(regexpOpenTag);
+            }
+                                    
+            const newSBOLcontent = xmlChunks.concat(remainingXML).join('');
+
+            state.loadSBOL(newSBOLcontent);            
         });
     };
 
@@ -76,24 +124,24 @@ export default function CurationForm({ }) {
                                 </ActionIcon>
                             </Tooltip>
                             <Group>
-                                {isEditingTitle ?
+                                {isEditingDisplayID ?
                                  <Textarea
                                      autosize
                                      macrows={1}
-                                     value={workingTitle}
+                                     value={workingDisplayID}
                                      onChange={event => {
-                                         setWorkingTitle(event.currentTarget.value);
+                                         setWorkingDisplayID(event.currentTarget.value);
                                      }}
                                      styles={{ input: { font: "22px monospace" } }}
                                  /> :
                                  <Title order={3}>{displayId}</Title>
                                 }                                
-                                {isEditingTitle ? 
+                                {isEditingDisplayID ? 
                                  <Group spacing={6}>
-                                     <ActionIcon onClick={() => handleEndTitleEdit(true)} color="red"><FaTimes /></ActionIcon>
-                                     <ActionIcon onClick={() => handleEndTitleEdit(false)} color="green"><FaCheck /></ActionIcon>
+                                     <ActionIcon onClick={() => handleEndDisplayIDEdit(true)} color="red"><FaTimes /></ActionIcon>
+                                     <ActionIcon onClick={() => handleEndDisplayIDEdit(false)} color="green"><FaCheck /></ActionIcon>
                                  </Group> :
-                                <ActionIcon onClick={handleStartTitleEdit}><FaPencilAlt /></ActionIcon>}
+                                <ActionIcon onClick={handleStartDisplayIDEdit}><FaPencilAlt /></ActionIcon>}
                             </Group>
                             <Tabs.List>
                                 <Tabs.Tab value="overview">Overview</Tabs.Tab>

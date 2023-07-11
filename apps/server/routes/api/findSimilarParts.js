@@ -6,7 +6,6 @@ export default function similarParts(app) {
     app.post("/api/findSimilarParts", async (req, res) => {
 
         const { topLevelUri } = req.body
-
         // find similar parts
         console.log(chalk.gray("Finding similar parts..."))
         const similarParts = await findSimilarParts(topLevelUri)

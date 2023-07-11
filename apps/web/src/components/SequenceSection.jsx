@@ -123,7 +123,6 @@ function Annotations({ colors }) {
     useStore(s => s.document?.root?.sequenceAnnotations)    // force rerender from document change
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
-
     const sequence = useStore(s => s.document?.root.sequence).toLowerCase()
 
     return (

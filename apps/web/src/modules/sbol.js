@@ -24,7 +24,18 @@ Object.defineProperty(SBOL2GraphView.prototype, "root", {
 Object.defineProperties(S2ComponentDefinition.prototype, {
     sequence: {
         get() { return this.sequences[0]?.elements; },
-        set(value) { this.sequences[0].elements = value; },
+        set(value) {
+            if (this.sequences) {
+                if (this.sequences[0]) {
+                    this.sequences[0].elements = value;                    
+                } else {
+                    this.sequences[0] = { elements: value };
+                }
+            } else {
+                this.sequences = [ { elements: value } ];
+            }
+
+        },
     },
 
     richDescription: {
