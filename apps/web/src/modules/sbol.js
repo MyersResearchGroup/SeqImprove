@@ -1,6 +1,7 @@
 import { set } from "lodash"
 import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
+import { mutateDocument, useAsyncLoader, useStore } from "./store"
 
 const Prefix = "https://seqimprove.org/"
 
@@ -164,7 +165,7 @@ export function addSequenceAnnotation(componentDefinition, annoInfo) {
 
     const sa = componentDefinition.annotateRange(annoInfo.location[0], annoInfo.location[1], annoInfo.name)
     sa.persistentIdentity = annoInfo.id
-    sa.name = annoInfo.name
+    sa.name = annoInfo.name  
 }
 
 /**
