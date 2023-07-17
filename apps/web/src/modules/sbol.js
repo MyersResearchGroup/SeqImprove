@@ -1,6 +1,7 @@
 import { set } from "lodash"
 import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
+import { mutateDocument, useAsyncLoader, useStore } from "./store"
 
 const Prefix = "https://seqimprove.org/"
 
@@ -24,7 +25,18 @@ Object.defineProperty(SBOL2GraphView.prototype, "root", {
 Object.defineProperties(S2ComponentDefinition.prototype, {
     sequence: {
         get() { return this.sequences[0]?.elements; },
-        set(value) { this.sequences[0].elements = value; },
+        set(value) {
+            if (this.sequences) {
+                if (this.sequences[0]) {
+                    this.sequences[0].elements = value;                    
+                } else {
+                    this.sequences[0] = { elements: value };
+                }
+            } else {
+                this.sequences = [ { elements: value } ];
+            }
+
+        },
     },
 
     richDescription: {
@@ -32,12 +44,18 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
         set(value) { this.setStringProperty(Predicates.RichDescription, value) },
     },
 
-    // for now, only allowing one role
-    role: {
-        get() { return this.roles[0] },
+    // role: {
+    //     get() { return this.roles[0] },
+    //     set(value) {
+    //         this.addRole(value)
+    //     }
+    // },
+
+    roles: {
         set(value) {
-            this.roles.forEach(role => this.removeRole(role))
-            this.addRole(value)
+            const roles = this.roles.slice();
+            roles.forEach(role => this.removeRole(role));
+            value.forEach(role => this.addRole(role));
         }
     },
 
@@ -147,7 +165,7 @@ export function addSequenceAnnotation(componentDefinition, annoInfo) {
 
     const sa = componentDefinition.annotateRange(annoInfo.location[0], annoInfo.location[1], annoInfo.name)
     sa.persistentIdentity = annoInfo.id
-    sa.name = annoInfo.name
+    sa.name = annoInfo.name  
 }
 
 /**

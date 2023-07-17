@@ -21,73 +21,191 @@ export const useStore = create((set, get) => ({
      * @type {string} */
     sbolContent: null,
 
+    /**
+     * roles used in SBOL document for curation form
+     * @type {string[]} */
+    roles: [],
+
     /** 
      * Parsed SBOL document
      * @type {SBOL2GraphView} */
     document: null,
-    ...createAsyncAdapter(set, "SBOL", async sbol => {
-        // try to form a URL out of the input argument
-        try {
-            var sbolUrl = new URL(sbol)
-        }
-        catch (err) {}
+    loadingSBOL: false,
+    loadSBOL: async(sbol) => {
+        set({ loadingSBOL: true });
 
-        // if it's a URL, fetch it; otherwise, just use it as the content
-        const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
         try {
-            var document = await createSBOLDocument(sbolContent);
+            // const result = await loader?.(...args);
+            try {
+                var sbolUrl = new URL(sbol)
+            }
+            catch (err) {}
+
+            // if it's a URL, fetch it; otherwise, just use it as the content
+            const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
+            try {
+                var document = await createSBOLDocument(sbolContent);
+            } catch (err) {
+                console.error(err);            
+                throw err;
+            }
+
+            // parse out existing text annotations
+            const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
+
+            // get existing sequence annotations
+            const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
+
+            // set description as rich description text
+            document.root.description = richDescriptionBuffer.originalText
+
+            // set roles to be the same as from document
+            const roles = document.root.roles;
+            
+            set({
+                // ...result,
+                sbolContent,
+                document,
+                roles,
+                uri: sbolUrl?.href,
+                richDescriptionBuffer,
+                textAnnotations,
+                sequenceAnnotations,
+                loadingSBOL: false
+            });
         } catch (err) {
-            console.error(err);            
-            throw err;
+            showErrorNotification("Upload Error", "Could not interpret file as SBOL document");
+        } finally {
+            set({ loadingSBOL: false });
         }
+    },
+    
+    
+    // ...createAsyncAdapter(set, "SBOL", async sbol => {
+    //     // try to form a URL out of the input argument
+    //     try {
+    //         var sbolUrl = new URL(sbol)
+    //     }
+    //     catch (err) {}
 
-        // parse out existing text annotations
-        const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
+    //     // if it's a URL, fetch it; otherwise, just use it as the content
+    //     const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
+    //     try {
+    //         var document = await createSBOLDocument(sbolContent);
+    //     } catch (err) {
+    //         console.error(err);            
+    //         throw err;
+    //     }
 
-        // get existing sequence annotations
-        const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
+    //     // parse out existing text annotations
+    //     const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
 
-        // set description as rich description text
-        document.root.description = richDescriptionBuffer.originalText
+    //     // get existing sequence annotations
+    //     const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
 
-        return {
-            sbolContent,
-            document,
-            uri: sbolUrl?.href,
-            richDescriptionBuffer,
-            textAnnotations,
-            sequenceAnnotations,
-        }
-    }),
+    //     // set description as rich description text
+    //     document.root.description = richDescriptionBuffer.originalText
+
+    //     // set roles to be the same as from document
+    //     const roles = document.root.roles;
+
+    //     return {
+    //         sbolContent,
+    //         document,
+    //         roles,
+    //         uri: sbolUrl?.href,
+    //         richDescriptionBuffer,
+    //         textAnnotations,
+    //         sequenceAnnotations,
+    //     }
+    // }),
     exportDocument: (download = true) => {
-        const xml = get().document.serializeXML()
-        if (download)
-            fileDownload(xml, `${get().document.root.displayId}.xml`)
-        return xml
+        const xml = get().document.serializeXML();
+        
+        if (download) {
+            fileDownload(xml, `${get().document.root.displayId}.xml`);
+        }
+        
+        return xml;
     },
 
 
     // Sequence Annotations
     sequenceAnnotations: [],
 
-    ...createAsyncAdapter(set, "SequenceAnnotations", async () => {
-        // fetch sequence annotations from API
-        const fetchedAnnotations = await fetchAnnotateSequence(get().document.serializeXML()) ?? [] // get().sbolContent
-
-        return {
-            sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
-                fetchedAnnotations.forEach(anno => {
-                    // skip duplicates
-                    if (!draft.find(a => a.id == anno.id))
-                        draft.push(anno)
-                })
-            })
+    loadingSequenceAnnotations: false,
+    loadSequenceAnnotations: async (...args) => {
+        set({ loadingSequenceAnnotations: true });
+        try {
+            // const result = await loader?.(...args);
+            
+            // fetch sequence annotations from API
+            const fetchedAnnotations = await fetchAnnotateSequence(get().document.serializeXML()) ?? [] // get().sbolContent
+            
+            set({
+                // ...result,
+                sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
+                    fetchedAnnotations.forEach(anno => {
+                        // skip duplicates
+                        if (!draft.find(a => a.id == anno.id)) {
+                            draft.push(anno)
+                        }
+                    });
+                }),
+                loadingSequenceAnnotations: false
+            });
+        } catch (err) {
+            showErrorNotification("Load Error", "Could not load sequence annotations");
+        } finally {
+            set({ loadingSequenceAnnotions: false });
         }
-    }),
+    },
+
+    // ...createAsyncAdapter(set, "SequenceAnnotations", async () => {
+    //     // fetch sequence annotations from API
+    //     const fetchedAnnotations = await fetchAnnotateSequence(get().document.serializeXML()) ?? [] // get().sbolContent
+
+    //     return {
+    //         sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
+    //             fetchedAnnotations.forEach(anno => {
+    //                 // skip duplicates
+    //                 if (!draft.find(a => a.id == anno.id)) {
+    //                     draft.push(anno)
+    //                 }
+    //             })
+    //         })
+    //     };
+    // }),
 
     sequenceAnnotationActions: createAnnotationActions(set, get, state => state.sequenceAnnotations, {
         test: hasSequenceAnnotation,
-        add: addSequenceAnnotation,
+        add: async (...args) => {
+            addSequenceAnnotation(...args);
+
+            let xml = get().document.serializeXML();
+            let xmlChunks = [];
+            let matchData = xml.match(/\=\"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//= ]*)"/);
+
+            while (matchData) {
+                xmlChunks.push(xml.slice(0, matchData.index));
+                const uri = matchData[0];
+                const validURI = uri.replace(/ /g, '') 
+                xmlChunks.push(validURI);
+
+                xml = xml.slice(matchData.index + uri.length);
+                matchData = xml.match(/\=\"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//= ]*)"/);
+            }
+            xml = xmlChunks.concat(xml).join('');
+            const sequenceAnnotations = get().sequenceAnnotations;
+ 
+            try {
+                var document = await createSBOLDocument(xml);
+            } catch (err) {
+                console.error(err);            
+                throw err;
+            }
+            set({ document });
+        },
         remove: removeSequenceAnnotation,
     }),
 
@@ -224,6 +342,46 @@ function createListAdapter(set, selector) {
     }
 }
 
+
+// function loadSequenceAnnotations {
+//     return {
+//         loadingSequenceAnnotations: false,
+//         loadSequenceAnnotations: async (...args) => {
+//             set({ loadingSequenceAnnotations: true });
+//             try {
+//                 const result = await loader?.(...args);
+//                 set({
+//                     ...result,
+//                     loadingSeqeuenceAnnotations: false
+//                 });
+//             } catch (err) {
+//                 showErrorNotification("Load Error", "Could not load sequence annotations");
+//             } finally {
+//                 set({ loadingSequenceAnnotions: false });
+//             }
+//         }
+//     }
+// }
+
+// function loadSBOL() {
+//     return {
+//         loadingSBOL: false,
+//         loadSBOL: async(...args) => {
+//             set({ loadingSBOL: true });
+//             try {
+//                 const result = await loader?.(...args);
+//                 set({
+//                     ...result,
+//                     loadingSBOL: false
+//                 });
+//             } catch (err) {
+//                 showErrorNotification("Upload Error", "Could not interpret file as SBOL document");
+//             } finally {
+//                 set({ loadingSBOL: false });
+//             }
+//         },
+//     };    
+// }
 
 /**
  * Creates a load function which sets a boolean loading property when performing

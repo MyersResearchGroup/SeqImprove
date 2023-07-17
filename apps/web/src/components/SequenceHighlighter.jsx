@@ -72,7 +72,7 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
                             onClick: e => {                                 
                                 if (e.target.tagName == 'SPAN') {                                                                        
                                     const idx = parseInt(e.target.dataset.seqSectionIdx, 10);
-                                    // debugger
+                              
                                     sequenceSections[idx].annotations.forEach(anno => {
                                         onChange?.(anno.id, !isActive(anno.id));
                                     });                                    
@@ -92,6 +92,7 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
                                         borderColor: darker(colorFromAnnotations(seqSection.annotations, isActive)),
                                     },
                                     'data-seq-section-idx': i,
+                                    key: i,
                                 },
                                 seqSection.seq
                             );

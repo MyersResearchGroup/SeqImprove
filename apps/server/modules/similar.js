@@ -1,11 +1,14 @@
 import fetch from "node-fetch"
 
 export async function findSimilarParts(topLevelUri) {
-    const res = await (await fetch(topLevelUri + "/similar", {
+    const res = await fetch(topLevelUri + "/similar", {
         headers: {
             "Accept": "application/json"
         }
-    })).json()
+    }).then(response => response.json()).catch(err => {
+        console.error(err);
+        return [];
+    });;
 
     return res.map(({ name, uri }) => ({
         name, uri

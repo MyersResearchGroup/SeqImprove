@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useForceUpdate } from "@mantine/hooks"
 import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea } from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
@@ -31,7 +32,8 @@ function Copier({ anno, sequence }) {
 
 function insertSpaces(wordSize, sequence) {
     const regex = new RegExp(".{1," + String(wordSize) + "}", "g");
-    return sequence.match(regex).join(' ');
+    const matchData = sequence.match(regex);
+    return matchData ? sequence.match(regex).join(' ') : sequence;
 }
 
 function reformat(sequenceText) {
@@ -59,6 +61,11 @@ function Sequence({ colors }) {
         setWorkingSequence(insertSpaces(WORDSIZE, sequence.toLowerCase()));
     };
 
+    const forceUpdate = useForceUpdate();
+    useEffect(() => {
+        forceUpdate();
+    }, [annotations]);
+
     const handleEndSequenceEdit = (discard = false) => {
         if (discard) {
             setWorkingSequence(false);
@@ -71,21 +78,26 @@ function Sequence({ colors }) {
         mutateDocument(useStore.setState, state => {
             state.document.root.sequence = workingSequence.replace(/\s/g, '');
             state.sequenceAnnotations.forEach(anno => {
+                if (isActive(anno.id)) {
+                    setActive(anno.id);
+                }
                 state.sequenceAnnotationActions.removeAnnotation(anno.id);
             });
+
+            state.sequenceAnnotations = [];
         });
     }
 
     return (
-        <FormSection title="Sequence" rightSection={
-                workingSequence ?
+        <FormSection key = "Sequence" title="Sequence" rightSection={
+                workingSequence !== false ?
                     <Group spacing={6}>
                         <ActionIcon onClick={() => handleEndSequenceEdit(true)} color="red"><FaTimes /></ActionIcon>
                         <ActionIcon onClick={() => handleEndSequenceEdit(false)} color="green"><FaCheck /></ActionIcon>
                     </Group> :
                     <ActionIcon onClick={handleStartSequenceEdit}><FaPencilAlt /></ActionIcon>
             }>
-            {workingSequence ?
+            {workingSequence !== false ?
                     <Textarea
                         size="md"
                         minRows={20}
@@ -94,17 +106,8 @@ function Sequence({ colors }) {
                             const textArea = event.currentTarget;
                             const start = textArea.selectionStart;
                             const end = textArea.selectionEnd;
-
-                            // var charsPerRow = textArea.cols;
-                            // var selectionRow = (start - (start % charsPerRow)) / charsPerRow;
-                            // const lineHeight = textArea.clientHeight / textArea.rows;
                             
-                            setWorkingSequence(reformat(textArea.value));
-                            
-                            // setTimeout(() => {
-                            //     textArea.selectionEnd = end;
-                            //     textArea.scrollTop = lineHeight * selectionRow;
-                            // }, 0);
+                            setWorkingSequence(reformat(textArea.value));                            
                         }}
                         styles={{ input: { font: "14px monospace", lineHeight: "1.5em" } }}
                     /> : sequence &&
@@ -127,17 +130,17 @@ function Sequence({ colors }) {
 function Annotations({ colors }) {
 
     const annotations = useStore(s => s.sequenceAnnotations)
-    const [load, loading] = useAsyncLoader("SequenceAnnotations")
-    useStore(s => s.document?.root?.sequenceAnnotations)    // force rerender from document change
+    const [load, loading] = useAsyncLoader("SequenceAnnotations");
+    useStore(s => s.document?.root?.sequenceAnnotations);    // force rerender from document change
+    const loadSBOL = useStore(s => s.loadSBOL);
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
-
     const sequence = useStore(s => s.document?.root.sequence).toLowerCase()
 
     return (
-        <FormSection title="Sequence Annotations">
+        <FormSection title="Sequence Annotations" key="Sequence Annotations">
             {annotations.map((anno, i) =>
-                <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name}>
+                <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name + '_' + i}>
                     <AnnotationCheckbox                        
                         title={anno.name}
                         color={colors[i]}
@@ -145,7 +148,7 @@ function Annotations({ colors }) {
                         onChange={val => setActive(anno.id, val)}
                         key={anno.name + i}
                     />                    
-                    <Copier anno={anno} sequence={sequence}/>   
+                    <Copier anno={anno} sequence={sequence} />   
                 </Group>              
             )}
 

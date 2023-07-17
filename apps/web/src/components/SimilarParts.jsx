@@ -17,11 +17,10 @@ export default function SimilarParts() {
         if(isSynbiohub)
             fetchSimilarParts(topLevelUri)
             .then(result => {
-                console.log(result)
-                // setSimilarParts(result)
+                setSimilarParts(result)
             })
     }, [uriPrefix])
-
+    
     return isSynbiohub ?
         <FormSection title="Similar Parts">
             <ScrollArea styles={scrollAreaStyles}>
