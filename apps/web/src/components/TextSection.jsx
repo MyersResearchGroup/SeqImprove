@@ -15,7 +15,7 @@ import produce from "immer"
 function Description({ colors }) {
 
     const annotations = useStore(s => s.textAnnotations)
-    const { getAnnotation, editAnnotation, setActive, isActive } = useStore(s => s.textAnnotationActions)
+    const { getAnnotation, editAnnotation, setActive, isActive, removeAnnotation } = useStore(s => s.textAnnotationActions)
 
     // console.log(annotations)
 
@@ -26,10 +26,12 @@ function Description({ colors }) {
     // description editing state
     const description = useStore(s => s.document?.root.richDescription)
     const richDescriptionBuffer = useStore(s => s.richDescriptionBuffer)
-    const [workingDescription, setWorkingDescription] = useState(false)
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const [workingDescription, setWorkingDescription] = useState(false);
 
     // handle the start of editing the description
     const handleStartDescriptionEdit = () => {
+        setIsEditingDescription(true);
         setWorkingDescription(richDescriptionBuffer.originalText)
     }
 
@@ -49,16 +51,81 @@ function Description({ colors }) {
                             mention.end = mention.bufferPatch.end
                         })
                     })
+                });
+            });
+
+            // for each annotation, check to see if there are any mentions. If all mentions are gone, remove the annotation.
+            annotations.forEach(anno => {
+                const textAliases = Object.keys(anno.mentions.reduce((aliases, mention) => {
+                    return {
+                        ...aliases,
+                        [mention.text]: true,
+                    };
+                }, {}));
+                
+                let newMentions = [];
+                let foundInText = false;
+                                
+                textAliases.forEach(alias => {
+                    const regexp = new RegExp(alias, 'g');
+                    const matches = workingDescription.matchAll(regexp);
+
+                    let match = matches.next();
+                    if (match.done) {
+                        return;
+                    }
+
+
+                    while (!match.done) {
+                        const start = match.value.index;
+                        const end = match.value[0].length + start;
+                        newMentions.push({ start, end, text: alias });                                                
+                        match = matches.next();
+                    }
+
+                    foundInText = true;
+                    return;
+                });
+
+                if (!foundInText) {
+                    setActive(anno.id, false);
+                    removeAnnotation(anno.id);
+                    return;
+                }
+
+                newMentions.forEach(mention => {
+                    mention.bufferPatch = richDescriptionBuffer.createAlias(mention.start, mention.end, `[${mention.text}](${anno.id})`);
                 })
-            })
+
+                editAnnotation(anno.id, {
+                    mentions: produce(anno.mentions, draft => newMentions)
+                });
+                
+                // look at the workingDescription.
+                // regex to find all instances of the annotation text (e.g. "GFP") in the workingDescription.                
+                // - corresponding to mentions? How do I find these exactly?
+                // update the annotation mentions start and end locations to reflect the match locations in the workingDescription
+                // if there are no matches, set inactive: setActive(anno.id, false) and removeAnnotation(anno.id);
+                
+                // if (anno.mentions.length == 0) {                
+                //     const { setActive, removeAnnotation } = useStore(s => s.textAnnotationActions);
+
+                //     const handleDeleteClick = () => {
+                //         setActive(anno.id, false)
+                //         removeAnnotation(anno.id)
+                //     }
+                // }
+            });
+
 
             // propagate buffer changes to rich description
             mutateDocument(useStore.setState, state => {
                 state.document.root.richDescription = richDescriptionBuffer.getText()
                 state.document.root.description = richDescriptionBuffer.originalText
-            })
+            });
         }
-        setWorkingDescription(false)
+        setWorkingDescription(false);
+        setIsEditingDescription(false);
     }
 
     // text selection state
@@ -149,14 +216,14 @@ function Description({ colors }) {
     return (
         <>
             <FormSection title="Description" rightSection={
-                workingDescription ?
+                isEditingDescription ?
                     <Group spacing={6}>
                         <ActionIcon onClick={() => handleEndDescriptionEdit(true)} color="red"><FaTimes /></ActionIcon>
                         <ActionIcon onClick={() => handleEndDescriptionEdit(false)} color="green"><FaCheck /></ActionIcon>
                     </Group> :
                     <ActionIcon onClick={handleStartDescriptionEdit}><FaPencilAlt /></ActionIcon>
             }>
-                {workingDescription ?
+                {isEditingDescription ?
                     <Textarea
                         size="md"
                         minRows={8}
