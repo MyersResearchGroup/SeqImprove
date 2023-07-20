@@ -1,0 +1,609 @@
+<rdf:RDF xmlns:brick="https://brickschema.org/schema/Brick#" xmlns:csvw="http://www.w3.org/ns/csvw#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcam="http://purl.org/dc/dcam/" xmlns:doap="http://usefulinc.com/ns/doap#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:geo="http://www.opengis.net/ont/geosparql#" xmlns:odrl="http://www.w3.org/ns/odrl/2/" xmlns:org="http://www.w3.org/ns/org#" xmlns:prof="http://www.w3.org/ns/dx/prof/" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:qb="http://purl.org/linked-data/cube#" xmlns:schema="https://schema.org/" xmlns:sh="http://www.w3.org/ns/shacl#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:sosa="http://www.w3.org/ns/sosa/" xmlns:ssn="http://www.w3.org/ns/ssn/" xmlns:time="http://www.w3.org/2006/time#" xmlns:vann="http://purl.org/vocab/vann/" xmlns:void="http://rdfs.org/ns/void#" xmlns:wgs="https://www.w3.org/2003/01/geo/wgs84_pos#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:sbol="http://sbols.org/v2#">
+  <sbol:ComponentDefinition rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/1">
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_1/1">
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/B0015/1"/>
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_1"/>
+        <sbol:displayId>B0015_comp_1</sbol:displayId>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:version>1</sbol:version>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_5/1">
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_5"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/B0015/1"/>
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>B0015_comp_5</sbol:displayId>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_R0040_u32_TetR_u32_promoter_anno_1/1">
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_R0040_u32_TetR_u32_promoter_anno_1"/>
+        <sbol:displayId>Bba_R0040_u32_TetR_u32_promoter_anno_1</sbol:displayId>
+        <dcterms:title>Bba_R0040 TetR promoter</dcterms:title>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_R0040_u32_TetR_u32_promoter_anno_1/Bba_R0040_u32_TetR_u32_promoter_anno_1_loc/1">
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_R0040_u32_TetR_u32_promoter_anno_1/Bba_R0040_u32_TetR_u32_promoter_anno_1_loc"/>
+            <sbol:end>3340</sbol:end>
+            <sbol:version>1</sbol:version>
+            <sbol:displayId>Bba_R0040_u32_TetR_u32_promoter_anno_1_loc</sbol:displayId>
+            <sbol:start>3287</sbol:start>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_R0040_u32_TetR_u32_promoter_comp_1/1"/>
+        <sbol:version>1</sbol:version>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_4/1">
+        <sbol:displayId>Bba_B0015_anno_4</sbol:displayId>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_4/Bba_B0015_anno_4_loc/1">
+            <sbol:start>6497</sbol:start>
+            <sbol:displayId>Bba_B0015_anno_4_loc</sbol:displayId>
+            <sbol:end>6625</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_4/Bba_B0015_anno_4_loc"/>
+            <sbol:version>1</sbol:version>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_4/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_4"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:displayId>SrpR_RBS_S3_gate</sbol:displayId>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_5/1">
+        <sbol:version>1</sbol:version>
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:displayId>Bba_B0015_comp_5</sbol:displayId>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_5"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/MoClo_Yeast_Toolkit_Dueber_Lab/Bba_B0015/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0034m_comp_1/1">
+        <sbol:displayId>B0034m_comp_1</sbol:displayId>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/B0034m/1"/>
+        <dcterms:title>B0034m</dcterms:title>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0034m_comp_1"/>
+        <sbol:version>1</sbol:version>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_2/1">
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_2"/>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_2/Bba_B0015_anno_2_loc/1">
+            <sbol:end>4634</sbol:end>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_2/Bba_B0015_anno_2_loc"/>
+            <sbol:displayId>Bba_B0015_anno_2_loc</sbol:displayId>
+            <sbol:start>4506</sbol:start>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:version>1</sbol:version>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:displayId>Bba_B0015_anno_2</sbol:displayId>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_2/1"/>
+        <sbol:version>1</sbol:version>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0034m_anno_1/1">
+        <sbol:version>1</sbol:version>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0034m_comp_1/1"/>
+        <dcterms:description>Strong RBS</dcterms:description>
+        <sbol:displayId>B0034m_anno_1</sbol:displayId>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0034m_anno_1/B0034m_anno_1_loc/1">
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0034m_anno_1/B0034m_anno_1_loc"/>
+            <sbol:version>1</sbol:version>
+            <sbol:end>403</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:displayId>B0034m_anno_1_loc</sbol:displayId>
+            <sbol:start>383</sbol:start>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:title>B0034m</dcterms:title>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0034m_anno_1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0057_comp_1/1">
+        <sbol:version>1</sbol:version>
+        <dcterms:title>BBa_B0057</dcterms:title>
+        <sbol:displayId>BBa_B0057_comp_1</sbol:displayId>
+        <sbol:definition rdf:resource="https://synbioks.org/public/Natural_and_Synthetic_Terminators_Voigt_Lab/BBa_B0057/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0057_comp_1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/C0040_anno_1/1">
+        <dcterms:description>tetR protein with LVA degradation tag</dcterms:description>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/C0040_anno_1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/C0040_anno_1/C0040_anno_1_loc/1">
+            <sbol:version>1</sbol:version>
+            <sbol:end>5355</sbol:end>
+            <sbol:start>4699</sbol:start>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/C0040_anno_1/C0040_anno_1_loc"/>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:displayId>C0040_anno_1_loc</sbol:displayId>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:displayId>C0040_anno_1</sbol:displayId>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/C0040_comp_1/1"/>
+        <dcterms:title>C0040</dcterms:title>
+        <sbol:version>1</sbol:version>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate"/>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_3/1">
+        <sbol:version>1</sbol:version>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_3/B0015_anno_3_loc/1">
+            <sbol:version>1</sbol:version>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_3/B0015_anno_3_loc"/>
+            <sbol:displayId>B0015_anno_3_loc</sbol:displayId>
+            <sbol:end>5509</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:start>5381</sbol:start>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_3/1"/>
+        <dcterms:description>Double terminator, rrnBT1-T7TE</dcterms:description>
+        <sbol:displayId>B0015_anno_3</sbol:displayId>
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_3"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_2/1">
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_2"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/B0015/1"/>
+        <sbol:displayId>B0015_comp_2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0040_comp_1/1">
+        <dcterms:title>R0040</dcterms:title>
+        <sbol:displayId>R0040_comp_1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0040_comp_1"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/R0040/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/KanR_u32_terminator_anno_1/1">
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/KanR_u32_terminator_anno_1"/>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/KanR_u32_terminator_comp_1/1"/>
+        <dcterms:title>KanR terminator</dcterms:title>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/KanR_u32_terminator_anno_1/KanR_u32_terminator_anno_1_loc/1">
+            <sbol:start>2322</sbol:start>
+            <sbol:version>1</sbol:version>
+            <sbol:end>2348</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#reverseComplement"/>
+            <sbol:displayId>KanR_u32_terminator_anno_1_loc</sbol:displayId>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/KanR_u32_terminator_anno_1/KanR_u32_terminator_anno_1_loc"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:displayId>KanR_u32_terminator_anno_1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_1/1">
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:definition rdf:resource="https://synbioks.org/public/MoClo_Yeast_Toolkit_Dueber_Lab/Bba_B0015/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_1"/>
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>Bba_B0015_comp_1</sbol:displayId>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_2/1">
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/R0010/1"/>
+        <dcterms:title>R0010</dcterms:title>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_2"/>
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>R0010_comp_2</sbol:displayId>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_1/1">
+        <dcterms:description>lacI regulated promoter (Plac)</dcterms:description>
+        <sbol:displayId>R0010_anno_1</sbol:displayId>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_1"/>
+        <dcterms:title>R0010</dcterms:title>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_1/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_1/R0010_anno_1_loc/1">
+            <sbol:version>1</sbol:version>
+            <sbol:end>378</sbol:end>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_1/R0010_anno_1_loc"/>
+            <sbol:start>179</sbol:start>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:displayId>R0010_anno_1_loc</sbol:displayId>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:version>1</sbol:version>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_1/1">
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/R0010/1"/>
+        <dcterms:title>R0010</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_1"/>
+        <sbol:displayId>R0010_comp_1</sbol:displayId>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_1/1">
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_1/B0015_anno_1_loc/1">
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_1/B0015_anno_1_loc"/>
+            <sbol:displayId>B0015_anno_1_loc</sbol:displayId>
+            <sbol:end>1247</sbol:end>
+            <sbol:version>1</sbol:version>
+            <sbol:start>1119</sbol:start>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:description>Double terminator, rrnBT1-T7TE</dcterms:description>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_1/1"/>
+        <sbol:displayId>B0015_anno_1</sbol:displayId>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_1"/>
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:version>1</sbol:version>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_4/1">
+        <dcterms:description>Double terminator, rrnBT1-T7TE</dcterms:description>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_4"/>
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_4/B0015_anno_4_loc/1">
+            <sbol:version>1</sbol:version>
+            <sbol:start>6497</sbol:start>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_4/B0015_anno_4_loc"/>
+            <sbol:displayId>B0015_anno_4_loc</sbol:displayId>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:end>6625</sbol:end>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>B0015_anno_4</sbol:displayId>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_4/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_5/1">
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_5/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_5"/>
+        <dcterms:description>Double terminator, rrnBT1-T7TE</dcterms:description>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_5/B0015_anno_5_loc/1">
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_5/B0015_anno_5_loc"/>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:start>7558</sbol:start>
+            <sbol:displayId>B0015_anno_5_loc</sbol:displayId>
+            <sbol:end>7686</sbol:end>
+            <sbol:version>1</sbol:version>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>B0015_anno_5</sbol:displayId>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_2/1">
+        <sbol:definition rdf:resource="https://synbioks.org/public/MoClo_Yeast_Toolkit_Dueber_Lab/Bba_B0015/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_2"/>
+        <sbol:displayId>Bba_B0015_comp_2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <dcterms:title>Bba_B0015</dcterms:title>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/C0040_comp_1/1">
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/C0040/1"/>
+        <dcterms:title>C0040</dcterms:title>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/C0040_comp_1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>C0040_comp_1</sbol:displayId>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0040_anno_1/1">
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0040_comp_1/1"/>
+        <dcterms:description>tetR repressible promoter (Ptet)</dcterms:description>
+        <sbol:version>1</sbol:version>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0040_anno_1/R0040_anno_1_loc/1">
+            <sbol:end>3340</sbol:end>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0040_anno_1/R0040_anno_1_loc"/>
+            <sbol:displayId>R0040_anno_1_loc</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <sbol:start>3287</sbol:start>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0040_anno_1"/>
+        <dcterms:title>R0040</dcterms:title>
+        <sbol:displayId>R0040_anno_1</sbol:displayId>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:version>1</sbol:version>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_3/1">
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_3"/>
+        <sbol:version>1</sbol:version>
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_3/Bba_B0015_anno_3_loc/1">
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_3/Bba_B0015_anno_3_loc"/>
+            <sbol:displayId>Bba_B0015_anno_3_loc</sbol:displayId>
+            <sbol:start>5381</sbol:start>
+            <sbol:version>1</sbol:version>
+            <sbol:end>5509</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_3/1"/>
+        <sbol:displayId>Bba_B0015_anno_3</sbol:displayId>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0062_u45_R_anno_1/1">
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>BBa_B0062_u45_R_anno_1</sbol:displayId>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0062_u45_R_comp_1/1"/>
+        <dcterms:description>Natural terminator</dcterms:description>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0062_u45_R_anno_1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0062_u45_R_anno_1/BBa_B0062_u45_R_anno_1_loc/1">
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0062_u45_R_anno_1/BBa_B0062_u45_R_anno_1_loc"/>
+            <sbol:start>109</sbol:start>
+            <sbol:displayId>BBa_B0062_u45_R_anno_1_loc</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <sbol:end>149</sbol:end>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:title>BBa_B0062-R</dcterms:title>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_4/1">
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_4"/>
+        <sbol:displayId>Bba_B0015_comp_4</sbol:displayId>
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/MoClo_Yeast_Toolkit_Dueber_Lab/Bba_B0015/1"/>
+        <sbol:version>1</sbol:version>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_3/1">
+        <sbol:displayId>R0010_comp_3</sbol:displayId>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/R0010/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_3"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <dcterms:title>R0010</dcterms:title>
+        <sbol:version>1</sbol:version>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_3/1">
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:version>1</sbol:version>
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:displayId>Bba_B0015_comp_3</sbol:displayId>
+        <sbol:definition rdf:resource="https://synbioks.org/public/MoClo_Yeast_Toolkit_Dueber_Lab/Bba_B0015/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_3"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_2/1">
+        <sbol:version>1</sbol:version>
+        <sbol:displayId>R0010_anno_2</sbol:displayId>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_2"/>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_2/R0010_anno_2_loc/1">
+            <sbol:displayId>R0010_anno_2_loc</sbol:displayId>
+            <sbol:start>5510</sbol:start>
+            <sbol:end>5709</sbol:end>
+            <sbol:version>1</sbol:version>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_2/R0010_anno_2_loc"/>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:description>lacI regulated promoter (Plac)</dcterms:description>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_2/1"/>
+        <dcterms:title>R0010</dcterms:title>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequence rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate_seq/1"/>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_4/1">
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:displayId>B0015_comp_4</sbol:displayId>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/B0015/1"/>
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_4"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0062_u45_R_comp_1/1">
+        <sbol:definition rdf:resource="https://synbioks.org/public/Natural_and_Synthetic_Terminators_Voigt_Lab/BBa_B0062_u45_R/1"/>
+        <sbol:displayId>BBa_B0062_u45_R_comp_1</sbol:displayId>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0062_u45_R_comp_1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <dcterms:title>BBa_B0062-R</dcterms:title>
+        <sbol:version>1</sbol:version>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_R0040_u32_TetR_u32_promoter_comp_1/1">
+        <dcterms:title>Bba_R0040 TetR promoter</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_R0040_u32_TetR_u32_promoter_comp_1"/>
+        <sbol:definition rdf:resource="https://synbioks.org/public/MoClo_Yeast_Toolkit_Dueber_Lab/Bba_R0040_u32_TetR_u32_promoter/1"/>
+        <sbol:displayId>Bba_R0040_u32_TetR_u32_promoter_comp_1</sbol:displayId>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_5/1">
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_5/Bba_B0015_anno_5_loc/1">
+            <sbol:end>7686</sbol:end>
+            <sbol:version>1</sbol:version>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:displayId>Bba_B0015_anno_5_loc</sbol:displayId>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_5/Bba_B0015_anno_5_loc"/>
+            <sbol:start>7558</sbol:start>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:displayId>Bba_B0015_anno_5</sbol:displayId>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_5"/>
+        <sbol:version>1</sbol:version>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_5/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_3/1">
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_3/R0010_anno_3_loc/1">
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:start>6626</sbol:start>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_3/R0010_anno_3_loc"/>
+            <sbol:end>6825</sbol:end>
+            <sbol:version>1</sbol:version>
+            <sbol:displayId>R0010_anno_3_loc</sbol:displayId>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:title>R0010</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_anno_3"/>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/R0010_comp_3/1"/>
+        <dcterms:description>lacI regulated promoter (Plac)</dcterms:description>
+        <sbol:displayId>R0010_anno_3</sbol:displayId>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_2/1">
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:version>1</sbol:version>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_2"/>
+        <dcterms:description>Double terminator, rrnBT1-T7TE</dcterms:description>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_2/1"/>
+        <sbol:displayId>B0015_anno_2</sbol:displayId>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_2/B0015_anno_2_loc/1">
+            <sbol:displayId>B0015_anno_2_loc</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_anno_2/B0015_anno_2_loc"/>
+            <sbol:start>4506</sbol:start>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:end>4634</sbol:end>
+          </sbol:Range>
+        </sbol:location>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/KanR_u32_terminator_comp_1/1">
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:displayId>KanR_u32_terminator_comp_1</sbol:displayId>
+        <sbol:definition rdf:resource="https://synbioks.org/public/MoClo_Yeast_Toolkit_Dueber_Lab/KanR_u32_terminator/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/KanR_u32_terminator_comp_1"/>
+        <sbol:version>1</sbol:version>
+        <dcterms:title>KanR terminator</dcterms:title>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_1/1">
+        <dcterms:title>Bba_B0015</dcterms:title>
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_comp_1/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_1/Bba_B0015_anno_1_loc/1">
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/Bba_B0015_anno_1/Bba_B0015_anno_1_loc"/>
+            <sbol:version>1</sbol:version>
+            <sbol:displayId>Bba_B0015_anno_1_loc</sbol:displayId>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+            <sbol:end>1247</sbol:end>
+            <sbol:start>1119</sbol:start>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:displayId>Bba_B0015_anno_1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0057_anno_1/1">
+        <sbol:component rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0057_comp_1/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0057_anno_1/BBa_B0057_anno_1_loc/1">
+            <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0057_anno_1/BBa_B0057_anno_1_loc"/>
+            <sbol:displayId>BBa_B0057_anno_1_loc</sbol:displayId>
+            <sbol:end>150</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#reverseComplement"/>
+            <sbol:start>109</sbol:start>
+            <sbol:version>1</sbol:version>
+          </sbol:Range>
+        </sbol:location>
+        <dcterms:description>Natural terminator</dcterms:description>
+        <sbol:displayId>BBa_B0057_anno_1</sbol:displayId>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/BBa_B0057_anno_1"/>
+        <sbol:version>1</sbol:version>
+        <dcterms:title>BBa_B0057</dcterms:title>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:component>
+      <sbol:Component rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_3/1">
+        <dcterms:title>B0015</dcterms:title>
+        <sbol:definition rdf:resource="https://synbioks.org/public/CIDAR_MoClo_Toolkit_Densmore_Lab/B0015/1"/>
+        <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate/B0015_comp_3"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:displayId>B0015_comp_3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+      </sbol:Component>
+    </sbol:component>
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate_seq/1">
+    <sbol:displayId>SrpR_RBS_S3_gate_seq</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <sbol:persistentIdentity rdf:resource="http://seqimprove.synbiohub.org/SrpR_RBS_S3_gate_seq"/>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+    <sbol:elements>gaacttttgctgagttgaaggatcagctcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgctcttcacagggagtgagacccaatacgcaaaccgcctctccccgcgcgttggccgattcattaatgcagctggcacgacaggtttcccgactggaaagcgggcagtgagcgcaacgcaattaatgtgagttagctcactcattaggcaccccaggctttacactttatgcttccggctcgtatgttgtgtggaattgtgagcggataacaatttcacacatactagagaaagaggagaaatactagatggcttcctccgaagacgttatcaaagagttcatgcgtttcaaagttcgtatggaaggttccgttaacggtcacgagttcgaaatcgaaggtgaaggtgaaggtcgtccgtacgaaggtacccagaccgctaaactgaaagttaccaaaggtggtccgctgccgttcgcttgggacatcctgtccccgcagttccagtacggttccaaagcttacgttaaacacccggctgacatcccggactacctgaaactgtccttcccggaaggtttcaaatgggaacgtgttatgaacttcgaagacggtggtgttgttaccgttacccaggactcctccctgcaagacggtgagttcatctacaaagttaaactgcgtggtaccaacttcccgtccgacggtccggttatgcagaaaaaaaccatgggttgggaagcttccaccgaacgtatgtacccggaagacggtgctctgaaaggtgaaatcaaaatgcgtctgaaactgaaagacggtggtcactacgacgctgaagttaaaaccacctacatggctaaaaaaccggttcagctgccgggtgcttacaaaaccgacatcaaactggacatcacctcccacaacgaagactacaccatcgttgaacagtacgaacgtgctgaaggtcgtcactccaccggtgcttaataacgctgatagtgctagtgtagatcgctactagagccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttataggtctcacgctggttgaagagcctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgagtcccgtcaagtcagcgtaatgctctgccagtgttacaaccaattaaccaattctgattagaaaaactcatcgagcatcaaatgaaactgcaatttattcatatcaggattatcaataccatatttttgaaaaagccgtttctgtaatgaaggagaaaactcaccgaggcagttccataggatggcaagatcctggtatcggtctgcgattccgactcgtccaacatcaatacaacctattaatttcccctcgtcaaaaataaggttatcaagtgagaaatcaccatgagtgacgactgaatccggtgagaatggcaaaagcttatgcatttctttccagacttgttcaacaggccagccattacgctcgtcatcaaaatcactcgcatcaaccaaaccgttattcattcgtgattgcgcctgagcgagacgaaatacgcgatcgctgttaaaaggacaattacaaacaggaatcgaatgcaaccggcgcaggaacactgccagcgcatcaacaatattttcacctgaatcaggatattcttctaatacctggaatgctgttttcccggggatcgcagtggtgagtaaccatgcatcatcaggagtacggataaaatgcttgatggtcggaagaggcataaattccgtcagccagtttagtctgaccatctcatctgtaacatcattggcaacgctacctttgccatgtttcagaaacaactctggcgcatcgggcttcccatacaatcgatagattgtcgcacctgattgcccgacattatcgcgagcccatttatacccatataaatcagcatccatgttggaatttaatcgcggcctggagcaagacgtttcccgttgaatatggctcataacaccccttgtattactgtttatgtaagcagacagttttattgttcatgatgatatatttttatcttgtgcaatgtaacatcagagattttgagacacaacgtggctttgttgaataaatctccctatcagtgatagagattgacatccctatcagtgatagagatactgagcacaaagaggagaaaatggtgaatgtgaaaccagtaacgttatacgatgtcgcagagtatgccggtgtctcttatcagaccgtttcccgcgtggtgaaccaggccagccacgtttctgcgaaaacgcgggaaaaagtggaagcggcgatggcggagctgaattacattcccaaccgcgtggcacaacaactggcgggcaaacagtcgttgctgattggcgttgccacctccagtctggccctgcacgcgccgtcgcaaattgtcgcggcgattaaatctcgcgccgatcaactgggtgccagcgtggtggtgtcgatggtagaacgaagcggcgtcgaagcctgtaaagcggcggtgcacaatcttctcgcgcaacgcgtcagtgggctgatcattaactatccgctggatgaccaggatgccattgctgtggaagctgcctgcactaatgttccggcgttatttcttgatgtctctgaccagacacccatcaacagtattattttctcccatgaagacggtacgcgactgggcgtggagcatctggtcgcattgggtcaccagcaaatcgcgctgttagcgggcccattaagttctgtctcggcgcgtctgcgtctggctggctggcataaatatctcactcgcaatcaaattcagccgatagcggaacgggaaggcgactggagtgccatgtccggttttcaacaaaccatgcaaatgctgaatgagggcatcgttcccactgcgatgctggttgccaacgatcagatggcgctgggcgcaatgcgcgccattaccgagtccgggctgcgcgttggtgcggatatctcggtagtgggatacgacgataccgaagacagctcatgttatatcccgccgttaaccaccatcaaacaggattttcgcctgctggggcaaaccagcgtggaccgcttgctgcaactctctcagggccaggcggtgaagggcaatcagctgttgcccgtctcactggtgaaaagaaaaaccaccctggcgcccaatacgcaaaccgcctctccccgcgcgttggccgattcattaatgcagctggcacgacaggtttcccgactggaaagcgggcaggctgcaaacgacgaaaactacgctttagtagcttaataactctgatagtgctagtgtagatctcccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttatataacaccgtgcgtgttgactattttacctctggcggtgataatggttgcaaagaggagaaaatgtccagattagataaaagtaaagtgattaacagcgcattagagctgcttaatgaggtcggaatcgaaggtttaacaacccgtaaactcgcccagaagctaggtgtagagcagcctacattgtattggcatgtaaaaaataagcgggctttgctcgacgccttagccattgagatgttagataggcaccatactcacttttgccctttagaaggggaaagctggcaagattttttacgtaataacgctaaaagttttagatgtgctttactaagtcatcgcgatggagcaaaagtacatttaggtacacggcctacagaaaaacagtatgaaactctcgaaaatcaattagcctttttatgccaacaaggtttttcactagagaatgcattatatgcactcagcgctgtggggcattttactttaggttgcgtattggaagatcaagagcatcaagtcgctaaagaagaaagggaaacacctactactgatagtatgccgccattattacgacaagctatcgaattatttgatcaccaaggtgcagagccagccttcttattcggccttgaattgatcatatgcggattagaaaaacaacttaaatgtgaaagtgggtccgctgcaaacgacgaaaactacgctttagtagcttaataacactgatagtgctagtgtagatcacccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttatacaatacgcaaaccgcctctccccgcgcgttggccgattcattaatgcagctggcacgacaggtttcccgactggaaagcgggcagtgagcgcaacgcaattaatgtgagttagctcactcattaggcaccccaggctttacactttatgcttccggctcgtatgttgtgtggaattgtgagcggataacaatttcacacaaaagaggagaaaatgagcacaaaaaagaaaccattaacacaagagcagcttgaggacgcacgtcgccttaaagcaatttatgaaaaaaagaaaaatgaacttggcttatcccaggaatctgtcgcagacaagatggggatggggcagtcaggcgttggtgctttatttaatggcatcaatgcattaaatgcttataacgccgcattgcttgcaaaaattctcaaagttagcgttgaagaatttagcccttcaatcgccagagaaatctacgagatgtatgaagcggttagtatgcagccgtcacttagaagtgagtatgagtaccctgttttttctcatgttcaggcagggatgttctcacctgagcttagaacctttaccaaaggtgatgcggagagatgggtaagcacaaccaaaaaagccagtgattctgcattctggcttgaggttgaaggtaattccatgaccgcaccaacaggctccaagccaagctttcctgacggaatgttaattctcgttgaccctgagcaggctgttgagccaggtgatttctgcatagccagacttgggggtgatgagtttaccttcaagaaactgatcagggatagcggtcaggtgtttttacaaccactaaacccacagtacccaatgatcccatgcaatgagagttgttccgttgtggggaaagttatcgctagtcagtggcctgaagagacgtttggcgctgcaaacgacgaaaactacgctttagtagcttaataacgctgatagtgctagtgtagatcgcccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttatacaatacgcaaaccgcctctccccgcgcgttggccgattcattaatgcagctggcacgacaggtttcccgactggaaagcgggcagtgagcgcaacgcaattaatgtgagttagctcactcattaggcaccccaggctttacactttatgcttccggctcgtatgttgtgtggaattgtgagcggataacaatttcacacaaaagaggagaaaatgcgtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactttcggttatggtgttcaatgctttgcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaataataaccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttata</sbol:elements>
+  </sbol:Sequence>
+</rdf:RDF>
