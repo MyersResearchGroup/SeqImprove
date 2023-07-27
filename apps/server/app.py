@@ -11,6 +11,7 @@ import json
 import subprocess
 import tempfile
 import requests
+import re
 from sequences_to_features import FeatureLibrary
 from sequences_to_features import FeatureAnnotater
 
@@ -161,7 +162,145 @@ def find_similar_parts(top_level_uri):
         return []
     except Exception as e:
         print("Error occured in find_similar_parts", e)
+
+def flatten(S):
+    if S == []:
+        return S
+    if isinstance(S[0], list):
+        return flatten(S[0]) + flatten(S[1:])
+    return S[:1] + flatten(S[1:])
+
+def split_into_words(text):
+    words = re.split(r'\s+', text)
+    return words
+
+def find_ontology_link(id):
+    return "https://identifiers.org/" + id
+    
+def add_terms(anno):
+    terms = {}
+    for mention in anno['mentions']:
+        terms[mention['text']] = True
+    terms = list(terms.keys())
+    label = terms[0]
+    return {**anno, "terms": terms, "label": label}
+
+def run_biobert(text):
+    BIOBERT_URL = "http://bern2.korea.ac.kr/plain"
+    SEARCH_THRESHOLD = 0.75
+
+    headers = {"Accept": "application/json", "Content-Type": "application/json"}
+    data = {"text": text}
+    res = requests.post(BIOBERT_URL, headers=headers, data=json.dumps(data)); # synchronous!?
+    # make sure response doesn't contani NaN
+    res_text = re.sub('NaN', '0', res.text)
+    res_json = json.loads(res_text)
+    print(res_json)
+
+    # group grounded terms together
+    annotations = res_json['annotations']
+    print("+++++++++++++++++++++++++++++++++++++++++++++")
+    print(annotations)
+    accum = {}
+    for anno in annotations:
+        for id in anno['id']:            
+            mentions = accum[id].get('mentions', []) if id in accum else []
             
+            accum[id] = {
+                'id': find_ontology_link(id),
+                'displayId': id,
+                'mentions': mentions + [{
+                    'text': anno['mention'],
+                    'confidence': anno['prob'],
+                    'start': anno['span']['begin'],
+                    'end': anno['span']['end']
+                }]
+            }
+    annotations = list(accum.values())
+    print("+++++++++++++++++++++++++++++++++++++++++++++")
+    print(annotations)
+    
+    # filter out annotations that are "CUI-less" (ungrounded)
+    cuiless_terms = flatten(list(map(lambda anno: anno['mentions'], filter(lambda anno: anno['displayId'] == "CUI-less", annotations)))) 
+    annotations = list(filter(lambda anno: anno['displayId'] != "CUI-less", annotations))
+    print("+++++++++++++++++++++++++++++++++++++++++++++")
+    print ("cuiless_terms: ", cuiless_terms)
+    print("annotations: ", annotations)
+    # # do fuzzy matching
+    # search_index = {}
+    # search_collection = flatten(list(map(lambda anno: (
+    #     list(map(lambda mention: (
+    #         search_index[mention['text']] = anno['id']
+    #         return mention['text']                           
+    #     ), anno['mentions']))
+    # ), annotations)))
+
+    # # grab all the terms we should search with
+    # words_to_search = [*cuiless_terms]
+    # for i, word in enumerate(split_into_words(text)):        
+    #     if (all([not (word in term) for term in search_collection]) and (
+    #         all([not (word in term['text']) for term in cuiless_terms]))):
+    #         words_to_search.append({
+    #             'text': word,
+    #             'startWord': i,
+    #             'length': 1,
+    #             'fuzzyMatched': true
+    #         })
+
+    # for word in words_to_search:
+    #     # do the fuzzy search!
+    #     top_result =
+
+    #     # ignore empty results and results without a high enough score
+    #     if (not top_result or top_result['score'] < SEARCH_THRESHOLD):
+    #         continue
+
+    #     word['confidence'] = top_result['score']
+    #     anno = None
+    #     for annotation in annotations:
+    #         if annotation['id'] == search_index[top_result['item']]:
+    #             anno = annotation
+    #             break
+
+    # for every annotation, append two keys: terms and label. label is jsut terms[0]
+    # terms is just the unique mentions as text. The text property of the mention, for each annotation
+    annotations = list(map(add_terms, annotations))
+    print("annotations: ", annotations)
+
+    # vvv this method expects a string, so return json form of this, or not?
+    return annotations
+
+#     return """[
+#   {
+#     id: 'https://identifiers.org/NCBIGene:6862',
+#     displayId: 'NCBIGene:6862',
+#     mentions: [ [Object] ],
+#     terms: [ 'TetR' ],
+#     label: 'TetR'
+#   },
+#   {
+#     id: 'https://identifiers.org/NCBIGene:7035',
+#     displayId: 'NCBIGene:7035',
+#     mentions: [ [Object] ],
+#     terms: [ 'LacI' ],
+#     label: 'LacI'
+#   },
+#   {
+#     id: 'https://identifiers.org/NCBIGene:4712',
+#     displayId: 'NCBIGene:4712',
+#     mentions: [ [Object] ],
+#     terms: [ 'CI' ],
+#     label: 'CI'
+#   },
+#   {
+#     id: 'https://identifiers.org/NCBIGene:8790',
+#     displayId: 'NCBIGene:8790',
+#     mentions: [ [Object] ],
+#     terms: [ 'GFP reporter' ],
+#     label: 'GFP reporter'
+#   }
+# ]"""
+
 #  _______  _______ _________     _______  _______          _________ _______  _______ 
 # (  ___  )(  ____ )\__   __/    (  ____ )(  ___  )|\     /|\__   __/(  ____ \(  ____ \
 # | (   ) || (    )|   ) (       | (    )|| (   ) || )   ( |   ) (   | (    \/| (    \/
@@ -203,11 +342,17 @@ def annotate_sequence():
         return {"annotations": annotations}
 
 @app.post("/api/findSimilarParts")
-def similarParts():
+def similar_parts():
     top_level_uri = request.get_json()['topLevelUri']
     # find similar parts
     similar_parts = find_similar_parts(top_level_uri);
     return {"similarParts": similar_parts}
+
+@app.post("/api/annotateText")
+def annotate_text():
+    free_text = request.get_json()['text']
+    biobert_result = run_biobert(free_text)
+    return {"text": free_text, "annotations": biobert_result}
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)
