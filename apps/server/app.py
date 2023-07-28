@@ -93,7 +93,8 @@ def run_node_script(script_path, arguments):
         return None
 
 # feature_libraries: list[str]
-def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+# def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[str]]:
     target_doc = sbol2.Document()
     try:
         target_doc.readString(sbol_content)
@@ -121,26 +122,7 @@ def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Option
             # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
             # so instead I'm serializing the document and grabbing the sequence annotations using the sbolgraph
             # library in javascript:
-            print ("Annotations found, waiting for Node.js script")
-            # Create a temporary file
-            with tempfile.NamedTemporaryFile(prefix="temp_", suffix=".txt", delete=False) as sbol_file_annotated:
-                # Write data to the temporary file (optional)
-                sbol_file_annotated.write(bytes(target_doc.writeString(), "utf-8"))
-                # target_doc.write("./assets/scripts/get_annotations/annotated.xml")
-
-                # Get the file name of the temporary file
-                sbol_file_name_annotated = sbol_file_annotated.name
-                
-                # Once the 'with' block ends, the temporary file will be automatically deleted.
-                node_script_path = "./assets/scripts/get_annotations/get_annotations.js"
-                json_data = run_node_script(node_script_path, [sbol_file_name_annotated, sbol_file_name_original])
-                if not json_data:
-                    print("No JSON data received from Node.js script.")
-                    return status.HTTP_500_INTERNAL_SERVER_ERROR, 'Node.js script returned no json data', None           
-
-                print("JSON data received from the Node.js script:")
-            
-                return None, None, json_data
+            return None, None, target_doc.writeString()
 
 def find_similar_parts(top_level_uri):
     try:
@@ -236,7 +218,8 @@ def annotate_sequence():
     print("Running SYNBICT...")
     # Run SYNBICT
     try:
-        error_code, error_message, annotations = run_synbict(sbol_content)
+        # error_code, error_message, annotations = run_synbict(sbol_content)
+        error_code, error_message, sbol_content_annotated = run_synbict(sbol_content)
         
         if (error_code):
             return {"sbol": sbol_content, "error_message": error_message}, error_code
@@ -244,9 +227,10 @@ def annotate_sequence():
     except Exception as e:
         print("Caught exception")
         print(str(e))
-        return {"sbol": sbol_content, "extra": True}, status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {"sbol": sbol_content}, status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
-        return {"annotations": annotations}
+        # return {"annotations": annotations}
+        return {"sbol": sbol_content_annotated}
 
 @app.post("/api/findSimilarParts")
 def similar_parts():

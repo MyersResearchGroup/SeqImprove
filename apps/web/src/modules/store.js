@@ -18,7 +18,7 @@ export const useStore = create((set, get) => ({
 
     /** 
      * Raw SBOL content
-     * @type {string} */
+     * @Type {string} */
     sbolContent: null,
 
     /**
@@ -137,13 +137,9 @@ export const useStore = create((set, get) => ({
     loadSequenceAnnotations: async (...args) => {
         set({ loadingSequenceAnnotations: true });
         try {
-            // const result = await loader?.(...args);
-            
-            // fetch sequence annotations from API
             const fetchedAnnotations = await fetchAnnotateSequence(get().document.serializeXML()) ?? [] // get().sbolContent
-            
-            set({
-                // ...result,
+
+            set({             
                 sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
                     fetchedAnnotations.forEach(anno => {
                         // skip duplicates
@@ -156,6 +152,7 @@ export const useStore = create((set, get) => ({
             });
         } catch (err) {
             showErrorNotification("Load Error", "Could not load sequence annotations");
+            set({ loadingSequenceAnnotations: false });
         } finally {
             set({ loadingSequenceAnnotions: false });
         }

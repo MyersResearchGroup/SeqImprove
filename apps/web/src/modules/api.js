@@ -1,4 +1,5 @@
 import { showServerErrorNotification } from "./util"
+import { Graph, SBOL2GraphView } from "sbolgraph"
 
 export async function fetchSBOL(url) {
     try {
@@ -38,16 +39,40 @@ export async function fetchAnnotateSequence(sbolContent) {
 
     // Parse
     try {
-        var result = await response.json()
+        var result = await response.json();
     }
     catch (err) {
-        console.error("Couldn't parse JSON.")
-        showServerErrorNotification()
-        return
+        console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return;
     }
     
-    console.log("Successfully annotated.")
-    return result.annotations
+    console.log("Successfully annotated.");
+    // NEW API:
+    // =============
+    // create and load original doc
+    const originalDoc = new SBOL2GraphView(new Graph());
+    await originalDoc.loadString(sbolContent);
+
+    // create and load annotated doc
+    const annDoc = new SBOL2GraphView(new Graph());
+    await annDoc.loadString(result.sbol);
+
+    // make a list of persistentIds to avoid
+    const originalAnnotations = originalDoc.rootComponentDefinitions[0].sequenceAnnotations
+          .map(sa => sa.persistentIdentity);
+
+    // make a list of new annotations
+    return annDoc.rootComponentDefinitions[0].sequenceAnnotations
+    // filter annotations already in original document
+        .filter(sa => !originalAnnotations.includes(sa.persistentIdentity))
+    // just return the info we need
+        .map(sa => ({
+            name: sa.displayName,
+            id: sa.persistentIdentity,
+            location: [sa.rangeMin, sa.rangeMax],
+        }));
+    
 }
 
 export async function fetchAnnotateText(text) {
