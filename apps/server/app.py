@@ -65,10 +65,7 @@ def create_temp_file(content):
 
             # Get the file name of the temporary file
             temp_file_name = temp_file.name
-
-            # You can continue working with the temporary file here as needed.
             # Once the 'with' block ends, the temporary file will be automatically deleted.
-
             return temp_file_name
 
     except Exception as e:
@@ -104,16 +101,10 @@ def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Option
         print('Could not parse sbol_content')    
         return status.HTTP_400_BAD_REQUEST, 'Could not parse sbol_content', None
     else:
-        # sbol_file_path_original = "./assets/scripts/get_annotations/original.xml"
-        # target_doc.write(sbol_file_path_original)
-
         # Create a temporary file
         with tempfile.NamedTemporaryFile(prefix="temp_", suffix=".txt", delete=False) as sbol_file_original:
             # Write data to the temporary file (optional)
             sbol_file_original.write(bytes(target_doc.writeString(), "utf-8"))
-            # for debugging js script
-            # target_doc.write("./assets/scripts/get_annotations/original.xml")
-            # print("successfully written")
 
             # Get the file name of the temporary file
             sbol_file_name_original = sbol_file_original.name
@@ -195,12 +186,10 @@ def run_biobert(text):
     # make sure response doesn't contani NaN
     res_text = re.sub('NaN', '0', res.text)
     res_json = json.loads(res_text)
-    print(res_json)
 
     # group grounded terms together
     annotations = res_json['annotations']
-    print("+++++++++++++++++++++++++++++++++++++++++++++")
-    print(annotations)
+
     accum = {}
     for anno in annotations:
         for id in anno['id']:            
@@ -217,89 +206,16 @@ def run_biobert(text):
                 }]
             }
     annotations = list(accum.values())
-    print("+++++++++++++++++++++++++++++++++++++++++++++")
-    print(annotations)
     
     # filter out annotations that are "CUI-less" (ungrounded)
     cuiless_terms = flatten(list(map(lambda anno: anno['mentions'], filter(lambda anno: anno['displayId'] == "CUI-less", annotations)))) 
     annotations = list(filter(lambda anno: anno['displayId'] != "CUI-less", annotations))
-    print("+++++++++++++++++++++++++++++++++++++++++++++")
-    print ("cuiless_terms: ", cuiless_terms)
-    print("annotations: ", annotations)
-    # # do fuzzy matching
-    # search_index = {}
-    # search_collection = flatten(list(map(lambda anno: (
-    #     list(map(lambda mention: (
-    #         search_index[mention['text']] = anno['id']
-    #         return mention['text']                           
-    #     ), anno['mentions']))
-    # ), annotations)))
-
-    # # grab all the terms we should search with
-    # words_to_search = [*cuiless_terms]
-    # for i, word in enumerate(split_into_words(text)):        
-    #     if (all([not (word in term) for term in search_collection]) and (
-    #         all([not (word in term['text']) for term in cuiless_terms]))):
-    #         words_to_search.append({
-    #             'text': word,
-    #             'startWord': i,
-    #             'length': 1,
-    #             'fuzzyMatched': true
-    #         })
-
-    # for word in words_to_search:
-    #     # do the fuzzy search!
-    #     top_result =
-
-    #     # ignore empty results and results without a high enough score
-    #     if (not top_result or top_result['score'] < SEARCH_THRESHOLD):
-    #         continue
-
-    #     word['confidence'] = top_result['score']
-    #     anno = None
-    #     for annotation in annotations:
-    #         if annotation['id'] == search_index[top_result['item']]:
-    #             anno = annotation
-    #             break
 
     # for every annotation, append two keys: terms and label. label is jsut terms[0]
     # terms is just the unique mentions as text. The text property of the mention, for each annotation
     annotations = list(map(add_terms, annotations))
-    print("annotations: ", annotations)
 
-    # vvv this method expects a string, so return json form of this, or not?
     return annotations
-
-#     return """[
-#   {
-#     id: 'https://identifiers.org/NCBIGene:6862',
-#     displayId: 'NCBIGene:6862',
-#     mentions: [ [Object] ],
-#     terms: [ 'TetR' ],
-#     label: 'TetR'
-#   },
-#   {
-#     id: 'https://identifiers.org/NCBIGene:7035',
-#     displayId: 'NCBIGene:7035',
-#     mentions: [ [Object] ],
-#     terms: [ 'LacI' ],
-#     label: 'LacI'
-#   },
-#   {
-#     id: 'https://identifiers.org/NCBIGene:4712',
-#     displayId: 'NCBIGene:4712',
-#     mentions: [ [Object] ],
-#     terms: [ 'CI' ],
-#     label: 'CI'
-#   },
-#   {
-#     id: 'https://identifiers.org/NCBIGene:8790',
-#     displayId: 'NCBIGene:8790',
-#     mentions: [ [Object] ],
-#     terms: [ 'GFP reporter' ],
-#     label: 'GFP reporter'
-#   }
-# ]"""
 
 #  _______  _______ _________     _______  _______          _________ _______  _______ 
 # (  ___  )(  ____ )\__   __/    (  ____ )(  ___  )|\     /|\__   __/(  ____ \(  ____ \
@@ -312,15 +228,6 @@ def run_biobert(text):
 #
 # =====================================================================================
 # =====================================================================================
-        
-# @app.route('/')
-# def hello_world() -> str:
-#     return "Hello, world cat!"
-
-# @app.post("/echo")
-# def echo():
-#     data = request.get_json()    
-#     return {"input": data, "extra": True}
 
 @app.post("/api/annotateSequence")
 def annotate_sequence():
