@@ -14,8 +14,7 @@ export async function fetchSBOL(url) {
     }
 }
 
-export async function fetchAnnotateSequence(sbolContent) {
-
+export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNames }) {
     console.log("Annotating sequence...")
 
     // Fetch
@@ -27,6 +26,7 @@ export async function fetchAnnotateSequence(sbolContent) {
             },
             body: JSON.stringify({
                 completeSbolContent: sbolContent,
+                partLibraries: selectedLibraryFileNames,
             }),
             timeout: 120000,
         });

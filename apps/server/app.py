@@ -15,7 +15,14 @@ import re
 from sequences_to_features import FeatureLibrary
 from sequences_to_features import FeatureAnnotater
 
+FEATURE_FILES = 0
+FEATURE_FILES = 1
+
 FEATURE_LIBRARIES = []
+# FEATURE_LIBRARIES = [
+#     [[file, file2, file3], featury_library],
+#     [[file, file2, file3], featury_library],
+# ]
 
 def setup():
     print("Initializing the app...")
@@ -38,7 +45,28 @@ def setup():
         feature_docs.append(feature_doc)
 
     feature_library = FeatureLibrary(feature_docs)
-    FEATURE_LIBRARIES.append(feature_library)
+    FEATURE_LIBRARIES.append([
+        ["Anderson_Promoters_Anderson_Lab_collection.xml",
+         "CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml",
+         "CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml",
+         "EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml",
+         "Itaconic_Acid_Pathway_Voigt_Lab_collection.xml",
+         "MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml",
+         "Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml",
+         "Pichia_MoClo_Toolkit_Lu_Lab_collection.xml",
+         "cello_library.xml"],
+        feature_library
+    ])
+
+# ["./assets/synbict/feature-libraries/Anderson_Promoters_Anderson_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/Itaconic_Acid_Pathway_Voigt_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/Pichia_MoClo_Toolkit_Lu_Lab_collection.xml",
+#          "./assets/synbict/feature-libraries/cello_library.xml"],    
 
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
@@ -55,6 +83,39 @@ app.before_first_request(setup)
 #
 # ===========================================================================================================================
 # ===========================================================================================================================
+
+def create_feature_library(part_library_file_names):
+    # check if feature_library has been cached
+    # if so, return feature_library
+    for xs in FEATURE_LIBRARIES:
+        f_names = [*xs[0]]
+        feature_lib = xs[1]
+        part_lib_f_names_cpy = [*part_library_file_names]
+        f_names.sort()
+        part_lib_f_names_cpy.sort()
+        if f_names == part_lib_f_names_cpy:
+            print("used cached feature lib")
+            return feature_lib                    
+    
+    # read in all feature libraries -- SYNBICT says they support
+    # directories, but they actually don't; only lists of files
+    feature_libraries_dir = "./assets/synbict/feature-libraries"
+    feature_libraries_paths = [os.path.join(feature_libraries_dir, file_name) for file_name in part_library_file_names]
+
+    feature_docs = []
+
+    for feature_library_path in feature_libraries_paths:
+        print(feature_library_path)
+        feature_doc = sbol2.Document()
+        feature_doc.read(feature_library_path)
+        feature_docs.append(feature_doc)
+
+    feature_library = FeatureLibrary(feature_docs)
+    
+    # memoize:
+    FEATURE_LIBRARIES.append([part_library_file_names, feature_library])
+    
+    return feature_library
 
 def create_temp_file(content):
     try:
@@ -75,26 +136,26 @@ def create_temp_file(content):
 async def get_feature_libraries_paths(feature_libraries_dir) -> str:
     loop = asyncio.get_event_loop()
     feature_files = await loop.run_in_executor(None, os.listdir, feature_libraries_dir)
-    feature_library_paths = [os.path.join(feature_libraries_dir, library_file) for library_file in feature_files]
+    feature_library_paths = [os.path.join(feature_libraries_dir, library_file) for library_file in feature_files]    
     return feature_library_paths
 
-def run_node_script(script_path, arguments):
-    try:
-        # Run the Node.js script and capture the output
-        result = subprocess.check_output(["node", script_path, *arguments], text=True)
+# def run_node_script(script_path, arguments):
+#     try:
+#         # Run the Node.js script and capture the output
+#         result = subprocess.check_output(["node", script_path, *arguments], text=True)
 
-        # Parse the JSON data from the captured output
-        json_data = json.loads(result)
+#         # Parse the JSON data from the captured output
+#         json_data = json.loads(result)
 
-        return json_data
+#         return json_data
 
-    except subprocess.CalledProcessError as e:
-        print("Error occurred while running the Node.js script:", e)
-        return None
+#     except subprocess.CalledProcessError as e:
+#         print("Error occurred while running the Node.js script:", e)
+#         return None
 
 # feature_libraries: list[str]
 # def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
-def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[str]]:
+def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:    
     target_doc = sbol2.Document()
     try:
         target_doc.readString(sbol_content)
@@ -113,7 +174,8 @@ def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Option
             # Once the 'with' block ends, the temporary file will be automatically deleted.
                     
             target_library = FeatureLibrary([target_doc])
-            feature_library = FEATURE_LIBRARIES[0]
+            # feature_library = FEATURE_LIBRARIES[0]
+            feature_library = create_feature_library(part_library_file_names)
             min_feature_length = 10
             annotater = FeatureAnnotater(feature_library, min_feature_length)
             min_target_length = 10
@@ -213,13 +275,15 @@ def run_biobert(text):
 
 @app.post("/api/annotateSequence")
 def annotate_sequence():
-    sbol_content = request.get_json()['completeSbolContent']
+    request_data = request.get_json()
+    sbol_content = request_data['completeSbolContent']
+    part_library_file_names = request_data['partLibraries']
 
     print("Running SYNBICT...")
     # Run SYNBICT
     try:
         # error_code, error_message, annotations = run_synbict(sbol_content)
-        error_code, error_message, sbol_content_annotated = run_synbict(sbol_content)
+        error_code, error_message, sbol_content_annotated = run_synbict(sbol_content, part_library_file_names)
         
         if (error_code):
             return {"sbol": sbol_content, "error_message": error_message}, error_code

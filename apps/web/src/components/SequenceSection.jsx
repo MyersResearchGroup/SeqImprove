@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea } from "@mantine/core"
+import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect } from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
-import { mutateDocument, useAsyncLoader, useStore } from "../modules/store"
+import { mutateDocument, mutateSequencePartLibrariesSelected, useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
@@ -130,12 +130,28 @@ function Sequence({ colors }) {
 function Annotations({ colors }) {
 
     const annotations = useStore(s => s.sequenceAnnotations)
-    const [load, loading] = useAsyncLoader("SequenceAnnotations");
+    const [loadSequenceAnnotations, loading] = useAsyncLoader("SequenceAnnotations");
     useStore(s => s.document?.root?.sequenceAnnotations);    // force rerender from document change
     const loadSBOL = useStore(s => s.loadSBOL);
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
     const sequence = useStore(s => s.document?.root.sequence).toLowerCase()
+
+    const sequencePartLibraries = [
+        { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
+        { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
+        { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
+        { value: 'EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml', label: 'EcoFlex Moclo Toolkit Freemont Lab Collection' },
+        { value: 'Itaconic_Acid_Pathway_Voigt_Lab_collection.xml', label: 'Itaconic Acid Pathway Voigt Lab Collection' },
+        { value: 'MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml', label: 'MoClo Yeast Toolkit Dueber Lab Colletion' },
+        { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
+        { value: 'Pichia_MoClo_Toolkit_Lu_Lab_collection.xml', label: 'Pichia MoClo Toolkit Lu Lab Collection' },
+        { value: 'cello_library.xml', label: 'Cello Library' },
+    ];
+
+    const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState(sequencePartLibraries);
+    // const sequencePartLibrariesSelected = useStore(s => s.sequencePartLibrariesSelected);
+    // const setSequencePartLibrariesSelected = useStore(s => s.setSequencePartLibrariesSelectedFrom(sequencePartLibraries));
 
     return (
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
@@ -152,20 +168,43 @@ function Annotations({ colors }) {
                 </Group>              
             )}
 
+            <MultiSelect
+                data={sequencePartLibraries}
+                label="Sequence part libraries"
+                placeholder="Choose the libraries to annotate against"
+                value={sequencePartLibrariesSelected}
+                searchable
+                onChange={((...librariesSelected) => {
+                    const chosenLibraries = sequencePartLibraries.filter(lib => {
+                        return librariesSelected[0].includes(lib.value);
+                    });
+                    // mutate the libraries Selected in the store                    
+                    if (chosenLibraries.length == 0) {
+                        mutateSequencePartLibrariesSelected(useStore.setState, state => {                        
+                            state.sequencePartLibrariesSelected = sequencePartLibraries;
+                        });
+                    } else {
+                        mutateSequencePartLibrariesSelected(useStore.setState, state => {                        
+                            state.sequencePartLibrariesSelected = chosenLibraries;
+                        });
+                    }
+                    setSequencePartLibrariesSelected(...librariesSelected);
+                })}               
+            />
+
             {loading ?
                 <Center>
                     <Loader my={30} size="sm" variant="dots" /> :
                 </Center>
-                :
-                <NavLink
+             : <NavLink
                     label="Analyze Sequence"
                     icon={<FiDownloadCloud />}
                     variant="subtle"
                     active={true}
                     color="blue"
-                    onClick={load}
+                    onClick={loadSequenceAnnotations}
                     sx={{ borderRadius: 6 }}
-                />}
+               />}
         </FormSection>
     )
 }
