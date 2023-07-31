@@ -89,14 +89,19 @@ function Sequence({ colors }) {
     }
 
     return (
-        <FormSection key = "Sequence" title="Sequence" rightSection={
+        <FormSection
+            key="Sequence"
+            title="Sequence"
+            rightSection={
                 workingSequence !== false ?
                     <Group spacing={6}>
                         <ActionIcon onClick={() => handleEndSequenceEdit(true)} color="red"><FaTimes /></ActionIcon>
                         <ActionIcon onClick={() => handleEndSequenceEdit(false)} color="green"><FaCheck /></ActionIcon>
                     </Group> :
                     <ActionIcon onClick={handleStartSequenceEdit}><FaPencilAlt /></ActionIcon>
-            }>
+            }
+            style={{ maxWidth: "800px" }}
+        >
             {workingSequence !== false ?
                     <Textarea
                         size="md"

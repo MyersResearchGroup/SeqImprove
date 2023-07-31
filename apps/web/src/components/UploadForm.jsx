@@ -1,8 +1,59 @@
 import { Box, Button, Center, FileInput, Group, LoadingOverlay, SegmentedControl, Stack, Text, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { MdOutlineFileUpload } from "react-icons/md"
+import { MdOutlineFileUpload } from 'react-icons/md'
 import { useStore } from '../modules/store'
+import { showErrorNotification } from '../modules/util'
 
+function fileNameExtension(fileName) {
+    let matchData;
+    if (matchData = fileName.match(/\.[^.]+$/)) {
+        return matchData[0];
+    }
+
+    return '';
+}
+
+function parseFasta(fastaContent) {
+    // split sequence from description line
+    const [ descriptionLine, ...sequenceLines ] = fastaContent.split('\n');
+    // grab first "word" from description line
+    const [ first, ...rest ] = descriptionLine.split(' ');
+    if (first[0] !== '>') {
+        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, expected '>' on line 1"];
+    }
+    const firstWord = first.slice(1);
+    const description = rest.join(' ');
+    // convert first word to sbol compliant displayId
+    const displayId = (firstWord[0].match(/[a-z_]/i) ? firstWord[0] : '_') + firstWord.slice(1).replace(/\W/g, '_');
+    // join and validate sequence
+    const sequence = sequenceLines.join('');
+    if (sequence.match(/^[actg]+$/i) === null) {
+        return [{ displayId: null, description: null, sequence: null }, "Detected protein sequence. Only DNA sequences are accepted by SeqImprove."];
+    }
+    return [{ displayId, description, sequence }, null]
+}
+
+function compileFastaToSBOL({ displayId, description, sequence }) {
+    return `<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:igem="http://wiki.synbiohub.org/wiki/Terms/igem#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:gbconv="http://sbols.org/genBankConversion#" xmlns:genbank="http://www.ncbi.nlm.nih.gov/genbank#" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sbol:ComponentDefinition rdf:about="https://seqimprove.synbiohub.org/${displayId}/1">
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/${displayId}"/>
+    <sbol:displayId>${displayId}</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>${displayId}</dcterms:title>    
+    <dcterms:description>${description}</dcterms:description>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:sequence rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="https://seqimprove.synbiohub.org/${displayId}_Sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence"/>
+    <sbol:displayId>${displayId}</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <sbol:elements>${sequence}</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+</rdf:RDF>`
+}
 
 export default function UploadForm() {
 
@@ -51,7 +102,28 @@ export default function UploadForm() {
     const handleSubmit = async values => {
         switch (values.method) {
         case Methods.Upload:
-            loadSBOL(await values.file.text());
+            const ext = fileNameExtension(values.file.name)
+            
+            if (ext == '.fasta' ||
+                ext == '.fa' ||
+                ext == '.fna' ||
+                ext == '.ffn' ||
+                ext == '.frn') {
+
+                // fastaDoc = { displayId, description, sequence }
+                const [ fastaDoc, err ] = parseFasta(await values.file.text());
+                if (err) {
+                    showErrorNotification(err);
+                    return;
+                }                
+                const sbolContent = compileFastaToSBOL(fastaDoc);
+                loadSBOL(sbolContent);                
+            } else if (ext == '.faa') {
+                showErrorNotification("SeqImprove only accepts DNA sequences, no protein sequences");
+            } else {
+                loadSBOL(await values.file.text());
+            }
+            
             break;
         case Methods.URL:
             const url = values.url.match(/\/sbol$/) ? values.url : 

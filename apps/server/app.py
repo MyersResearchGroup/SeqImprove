@@ -16,7 +16,7 @@ from sequences_to_features import FeatureLibrary
 from sequences_to_features import FeatureAnnotater
 
 FEATURE_FILES = 0
-FEATURE_FILES = 1
+FEATURE_LIBRARY = 1
 
 FEATURE_LIBRARIES = []
 # FEATURE_LIBRARIES = [
@@ -78,13 +78,12 @@ def create_feature_library(part_library_file_names):
     # check if feature_library has been cached
     # if so, return feature_library
     for xs in FEATURE_LIBRARIES:
-        f_names = [*xs[0]]
-        feature_lib = xs[1]
+        f_names = [*xs[FEATURE_FILES]]
+        feature_lib = xs[FEATURE_LIBRARY]
         part_lib_f_names_cpy = [*part_library_file_names]
         f_names.sort()
         part_lib_f_names_cpy.sort()
         if f_names == part_lib_f_names_cpy:
-            print("used cached feature lib")
             return feature_lib                    
     
     # read in all feature libraries -- SYNBICT says they support
@@ -171,7 +170,7 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 feature_library = create_feature_library([part_lib_f_name])
                 min_feature_length = 10
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
-                min_target_length = 10
+                min_target_length = 10                
                 annotated_identities = annotater.annotate(target_library, min_target_length, in_place=True)
 
                 # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,

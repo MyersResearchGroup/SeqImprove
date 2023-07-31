@@ -59,11 +59,9 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
     
     return (
         <>
-            <ScrollArea
-                pr={20}
-                {...scrollAreaProps}
-                styles={{ viewport: { position: "relative", paddingTop: 4 } }}
-            >            
+            <div
+                style={{overflowY: 'scroll', width: '100%', height: '500px', overflowX: 'clip'}}
+            >
                 {                                          
                     createElement(
                         'p', 
@@ -99,7 +97,7 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
                         }))
                     )                    
                 }                
-            </ScrollArea>
+            </div>
             <OnScreenDetector onShow={() => forceUpdate()} />
         </>
     )
