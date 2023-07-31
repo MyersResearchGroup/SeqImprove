@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, forwardRef } from "react"
 import { useForceUpdate } from "@mantine/hooks"
 import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect } from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
@@ -153,17 +153,31 @@ function Annotations({ colors }) {
     // const sequencePartLibrariesSelected = useStore(s => s.sequencePartLibrariesSelected);
     // const setSequencePartLibrariesSelected = useStore(s => s.setSequencePartLibrariesSelectedFrom(sequencePartLibraries));
 
+    const AnnotationCheckboxContainer = forwardRef((props, ref) => (
+        <div ref={ref} {...props}>
+            <AnnotationCheckbox  {...props} />
+        </div>
+    ));
+
     return (
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
             {annotations.map((anno, i) =>
                 <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name + '_' + i}>
-                    <AnnotationCheckbox                        
-                        title={anno.name}
-                        color={colors[i]}
-                        active={isActive(anno.id) ?? false}
-                        onChange={val => setActive(anno.id, val)}
-                        key={anno.name + i}
-                    />                    
+                    {anno.featureLibrary ? <Tooltip label={anno.featureLibrary.replace(/_/g, ' ').slice(0, anno.featureLibrary.length - 4)}>
+                                <AnnotationCheckboxContainer
+                                    title={anno.name}
+                                    color={colors[i]}
+                                    active={isActive(anno.id) ? 1 : 0}
+                                    onChange={val => setActive(anno.id, val)}
+                                />    
+                            </Tooltip> :
+                     <AnnotationCheckbox
+                         title={anno.name}
+                         color={colors[i]}
+                         active={isActive(anno.id) ? 1 : 0}
+                         onChange={val => setActive(anno.id, val)}
+                     />
+                    }
                     <Copier anno={anno} sequence={sequence} />   
                 </Group>              
             )}

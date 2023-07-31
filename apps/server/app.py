@@ -58,16 +58,6 @@ def setup():
         feature_library
     ])
 
-# ["./assets/synbict/feature-libraries/Anderson_Promoters_Anderson_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/Itaconic_Acid_Pathway_Voigt_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/Pichia_MoClo_Toolkit_Lu_Lab_collection.xml",
-#          "./assets/synbict/feature-libraries/cello_library.xml"],    
-
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
 app.before_first_request(setup)
@@ -155,36 +145,40 @@ async def get_feature_libraries_paths(feature_libraries_dir) -> str:
 
 # feature_libraries: list[str]
 # def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
-def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:    
-    target_doc = sbol2.Document()
-    try:
-        target_doc.readString(sbol_content)
-    except Exception:
-        print('Could not parse sbol_content')    
-        return status.HTTP_400_BAD_REQUEST, 'Could not parse sbol_content', None
-    else:
-        # Create a temporary file
-        with tempfile.NamedTemporaryFile(prefix="temp_", suffix=".txt", delete=False) as sbol_file_original:
-            # Write data to the temporary file (optional)
-            sbol_file_original.write(bytes(target_doc.writeString(), "utf-8"))
+def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:
+    anno_libs_assoc = []
 
-            # Get the file name of the temporary file
-            sbol_file_name_original = sbol_file_original.name
+    for part_lib_f_name in part_library_file_names:            
+        target_doc = sbol2.Document()
+        try:
+            target_doc.readString(sbol_content)
+        except Exception:
+            print('Could not parse sbol_content')    
+            return status.HTTP_400_BAD_REQUEST, 'Could not parse sbol_content', None
+        else:
+            # Create a temporary file
+            with tempfile.NamedTemporaryFile(prefix="temp_", suffix=".txt", delete=False) as sbol_file_original:
+                # Write data to the temporary file (optional)
+                sbol_file_original.write(bytes(target_doc.writeString(), "utf-8"))
 
-            # Once the 'with' block ends, the temporary file will be automatically deleted.
-                    
-            target_library = FeatureLibrary([target_doc])
-            # feature_library = FEATURE_LIBRARIES[0]
-            feature_library = create_feature_library(part_library_file_names)
-            min_feature_length = 10
-            annotater = FeatureAnnotater(feature_library, min_feature_length)
-            min_target_length = 10
-            annotated_identities = annotater.annotate(target_library, min_target_length, in_place=True)
+                # Get the file name of the temporary file
+                sbol_file_name_original = sbol_file_original.name
 
-            # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
-            # so instead I'm serializing the document and grabbing the sequence annotations using the sbolgraph
-            # library in javascript:
-            return None, None, target_doc.writeString()
+                # Once the 'with' block ends, the temporary file will be automatically deleted.
+
+                target_library = FeatureLibrary([target_doc])
+                # feature_library = FEATURE_LIBRARIES[0]
+                feature_library = create_feature_library([part_lib_f_name])
+                min_feature_length = 10
+                annotater = FeatureAnnotater(feature_library, min_feature_length)
+                min_target_length = 10
+                annotated_identities = annotater.annotate(target_library, min_target_length, in_place=True)
+
+                # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
+                # so instead I'm serializing the document and grabbing the sequence annotations using the sbolgraph
+                # library in javascript in the front end
+                anno_libs_assoc.append([target_doc.writeString(), part_lib_f_name])
+    return None, None, anno_libs_assoc
 
 def find_similar_parts(top_level_uri):
     try:
@@ -282,8 +276,12 @@ def annotate_sequence():
     print("Running SYNBICT...")
     # Run SYNBICT
     try:
-        # error_code, error_message, annotations = run_synbict(sbol_content)
-        error_code, error_message, sbol_content_annotated = run_synbict(sbol_content, part_library_file_names)
+        # anno_libs_assoc = [
+        #     [sbol_xml_annotated, part_lib_file_name],
+        #     [sbol_xml_annotated, part_lib_file_name],
+        #     ...
+        # ]
+        error_code, error_message, anno_libs_assoc,  = run_synbict(sbol_content, part_library_file_names)
         
         if (error_code):
             return {"sbol": sbol_content, "error_message": error_message}, error_code
@@ -294,7 +292,7 @@ def annotate_sequence():
         return {"sbol": sbol_content}, status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
         # return {"annotations": annotations}
-        return {"sbol": sbol_content_annotated}
+        return {"annotations": anno_libs_assoc}
 
 @app.post("/api/findSimilarParts")
 def similar_parts():
