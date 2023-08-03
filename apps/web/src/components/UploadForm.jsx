@@ -28,7 +28,7 @@ function parseFasta(fastaContent) {
     // join and validate sequence
     const sequence = sequenceLines.join('');
     if (sequence.match(/^[actg]+$/i) === null) {
-        return [{ displayId: null, description: null, sequence: null }, "Only DNA sequences are accepted by SeqImprove."];
+        return [{ displayId: null, description: null, sequence: null }, "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."];
     }
     return [{ displayId, description, sequence }, null]
 }
