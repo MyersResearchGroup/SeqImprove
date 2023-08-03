@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "dependencies": {
+    "sbolgraph": "^0.51.0"
+  }
+}

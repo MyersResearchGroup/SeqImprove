@@ -1,0 +1,5 @@
+SYNBICT.egg-info/PKG-INFO
+SYNBICT.egg-info/SOURCES.txt
+SYNBICT.egg-info/dependency_links.txt
+SYNBICT.egg-info/requires.txt
+SYNBICT.egg-info/top_level.txt

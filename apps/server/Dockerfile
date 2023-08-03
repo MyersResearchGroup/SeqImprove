@@ -1,24 +1,31 @@
-FROM python:3.10
-
-# use same shell for each run command to help with installation
-SHELL ["/bin/bash", "--login", "-c"]
-
-# install NVM and Node 16
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-RUN nvm install 16
+# init a base image
+FROM python:3.10-bookworm
+# update pip to minimize dependency errors 
+RUN pip install --upgrade pip
+# define the present working directory
 
 # clone SYNBICT at root & install deps
 RUN pip install sbol2==1.3
 RUN git clone https://github.com/SD2E/SYNBICT
-RUN python SYNBICT/setup.py install
+WORKDIR /SYNBICT
+RUN python3 setup.py install
 
-# move into work dir
-WORKDIR /SeqImprove
+WORKDIR /docker-flask-api
+# copy the contents into the working dir
+ADD . /docker-flask-api
+# run pip to install the dependencies of the flask app
+RUN pip install -r requirements.txt
 
-# copy over app files
-COPY . .
+# install node
+RUN apt update
+RUN apt install nodejs npm -y
 
-# install Node deps
-RUN npm install
+# install node dependencies
+WORKDIR /docker-flask-api/assets/scripts/get_annotations
+RUN npm install sbolgraph
 
-ENTRYPOINT npm start
+# go back to server directory
+WORKDIR /docker-flask-api
+
+# define the command to start the container
+CMD ["python3","app.py"]

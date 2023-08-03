@@ -1,4 +1,5 @@
 import { showServerErrorNotification } from "./util"
+import { Graph, SBOL2GraphView } from "sbolgraph"
 
 export async function fetchSBOL(url) {
     try {
@@ -13,8 +14,7 @@ export async function fetchSBOL(url) {
     }
 }
 
-export async function fetchAnnotateSequence(sbolContent) {
-
+export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNames }) {
     console.log("Annotating sequence...")
 
     // Fetch
@@ -26,6 +26,7 @@ export async function fetchAnnotateSequence(sbolContent) {
             },
             body: JSON.stringify({
                 completeSbolContent: sbolContent,
+                partLibraries: selectedLibraryFileNames,
             }),
             timeout: 120000,
         });
@@ -38,16 +39,48 @@ export async function fetchAnnotateSequence(sbolContent) {
 
     // Parse
     try {
-        var result = await response.json()
+        var result = await response.json();
     }
     catch (err) {
-        console.error("Couldn't parse JSON.")
-        showServerErrorNotification()
-        return
+        console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return;
     }
     
-    console.log("Successfully annotated.")
-    return result.annotations
+    console.log("Successfully annotated.");    
+    const annoLibsAssoc = result.annotations;
+    
+    // create and load original doc
+    const originalDoc = new SBOL2GraphView(new Graph());
+    await originalDoc.loadString(sbolContent);
+    
+    // make a list of persistentIds to avoid
+    const originalAnnotations = originalDoc.rootComponentDefinitions[0].sequenceAnnotations
+          .map(sa => sa.persistentIdentity);
+    
+    let annotations = [];  
+
+    await Promise.all(annoLibsAssoc.map(([ sbolAnnotated, partLibrary ]) => {
+        return (async () => {
+            // create and load annotated doc
+            const annDoc = new SBOL2GraphView(new Graph());
+            await annDoc.loadString(sbolAnnotated);
+            
+            // concatenate new annotations to result
+            annotations = annotations.concat(annDoc.rootComponentDefinitions[0].sequenceAnnotations
+                                             // filter annotations already in original document
+                                             .filter(sa => !originalAnnotations.includes(sa.persistentIdentity))
+                                             // just return the info we need
+                                             .map(sa => ({
+                                                 name: sa.displayName,
+                                                 id: sa.persistentIdentity,
+                                                 location: [sa.rangeMin, sa.rangeMax],
+                                                 featureLibrary: partLibrary,
+                                             })));
+        })();
+    }));
+
+    return annotations;            
 }
 
 export async function fetchAnnotateText(text) {

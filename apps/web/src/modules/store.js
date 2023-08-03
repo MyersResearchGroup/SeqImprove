@@ -16,9 +16,34 @@ export const useStore = create((set, get) => ({
      * @type {string | undefined} */
     uri: undefined,
 
+    /**
+     * Sequence part libraries selected */
+    sequencePartLibrariesSelected: [
+        { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
+        { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
+        { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
+        { value: 'EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml', label: 'EcoFlex Moclo Toolkit Freemont Lab Collection' },
+        { value: 'Itaconic_Acid_Pathway_Voigt_Lab_collection.xml', label: 'Itaconic Acid Pathway Voigt Lab Collection' },
+        { value: 'MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml', label: 'MoClo Yeast Toolkit Dueber Lab Colletion' },
+        { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
+        { value: 'Pichia_MoClo_Toolkit_Lu_Lab_collection.xml', label: 'Pichia MoClo Toolkit Lu Lab Collection' },
+        { value: 'cello_library.xml', label: 'Cello Library' },
+    ],
+
+    // setSequencePartLibrariesSelectedFrom: (availableLibraries) => {
+    //     return (selectedLibraryFileNames) => {
+    //         console.log(selectedLibraryFileNames);
+    //         const chosenSequencePartLibraries = get().sequencePartLibrariesSelected.filter(lib => {            
+    //             return availableLibraries.includes(lib.value);
+    //         })
+    //         console.log(chosenSequencePartLibraries);
+    //         set({ sequencePartLibrariesSelected: chosenSequencePartLibraries });
+    //     };
+    // },
+
     /** 
      * Raw SBOL content
-     * @type {string} */
+     * @Type {string} */
     sbolContent: null,
 
     /**
@@ -136,14 +161,14 @@ export const useStore = create((set, get) => ({
     loadingSequenceAnnotations: false,
     loadSequenceAnnotations: async (...args) => {
         set({ loadingSequenceAnnotations: true });
+
         try {
-            // const result = await loader?.(...args);
-            
-            // fetch sequence annotations from API
-            const fetchedAnnotations = await fetchAnnotateSequence(get().document.serializeXML()) ?? [] // get().sbolContent
-            
-            set({
-                // ...result,
+            const fetchedAnnotations = await fetchAnnotateSequence({
+                sbolContent: get().document.serializeXML(),
+                selectedLibraryFileNames: get().sequencePartLibrariesSelected.map(lib => lib.value),
+            }) ?? [];
+
+            set({             
                 sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
                     fetchedAnnotations.forEach(anno => {
                         // skip duplicates
@@ -156,6 +181,7 @@ export const useStore = create((set, get) => ({
             });
         } catch (err) {
             showErrorNotification("Load Error", "Could not load sequence annotations");
+            set({ loadingSequenceAnnotations: false });
         } finally {
             set({ loadingSequenceAnnotions: false });
         }
@@ -329,6 +355,12 @@ export function mutateDocument(set, mutator) {
     });
 }
 
+export function mutateSequencePartLibrariesSelected(set, mutator) {
+    set(state => {
+        mutator(state);
+        return { sequencePartLibrariesSelected: state.sequencePartLibrariesSelected };
+    });
+}
 
 function createListAdapter(set, selector) {
     return {
@@ -341,47 +373,6 @@ function createListAdapter(set, selector) {
         })),
     }
 }
-
-
-// function loadSequenceAnnotations {
-//     return {
-//         loadingSequenceAnnotations: false,
-//         loadSequenceAnnotations: async (...args) => {
-//             set({ loadingSequenceAnnotations: true });
-//             try {
-//                 const result = await loader?.(...args);
-//                 set({
-//                     ...result,
-//                     loadingSeqeuenceAnnotations: false
-//                 });
-//             } catch (err) {
-//                 showErrorNotification("Load Error", "Could not load sequence annotations");
-//             } finally {
-//                 set({ loadingSequenceAnnotions: false });
-//             }
-//         }
-//     }
-// }
-
-// function loadSBOL() {
-//     return {
-//         loadingSBOL: false,
-//         loadSBOL: async(...args) => {
-//             set({ loadingSBOL: true });
-//             try {
-//                 const result = await loader?.(...args);
-//                 set({
-//                     ...result,
-//                     loadingSBOL: false
-//                 });
-//             } catch (err) {
-//                 showErrorNotification("Upload Error", "Could not interpret file as SBOL document");
-//             } finally {
-//                 set({ loadingSBOL: false });
-//             }
-//         },
-//     };    
-// }
 
 /**
  * Creates a load function which sets a boolean loading property when performing
