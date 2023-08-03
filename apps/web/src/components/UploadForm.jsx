@@ -120,9 +120,10 @@ export default function UploadForm() {
                 loadSBOL(sbolContent);                
             } else if (ext == '.faa') {
                 showErrorNotification("SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.");                
+            } else {
+                // assume sbol document
+                loadSBOL(await values.file.text());
             }
-            // assume sbol document
-            loadSBOL(await values.file.text());
             
             break;
         case Methods.URL:
