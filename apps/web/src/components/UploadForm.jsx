@@ -28,7 +28,7 @@ function parseFasta(fastaContent) {
     // join and validate sequence
     const sequence = sequenceLines.join('');
     if (sequence.match(/^[actg]+$/i) === null) {
-        return [{ displayId: null, description: null, sequence: null }, "Detected protein sequence. Only DNA sequences are accepted by SeqImprove."];
+        return [{ displayId: null, description: null, sequence: null }, "Only DNA sequences are accepted by SeqImprove."];
     }
     return [{ displayId, description, sequence }, null]
 }
@@ -119,8 +119,7 @@ export default function UploadForm() {
                 const sbolContent = compileFastaToSBOL(fastaDoc);
                 loadSBOL(sbolContent);                
             } else if (ext == '.faa') {
-                showErrorNotification("SeqImprove only accepts DNA sequences, no protein sequences");
-            } else {
+                showErrorNotification("SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.");
                 loadSBOL(await values.file.text());
             }
             
