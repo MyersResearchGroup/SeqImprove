@@ -1,6 +1,19 @@
 import { showServerErrorNotification } from "./util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 
+export async function bootAPIserver() {
+    try {
+        var response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/boot`);        
+    } catch (err) {
+        console.error(err);
+        return
+    }
+
+    if (response.status == 200) {
+        console.log(response);
+    }
+}
+
 export async function fetchSBOL(url) {
     try {
         return await (await fetch(url)).text()
@@ -46,8 +59,11 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
         showServerErrorNotification();
         return;
     }
-    
-    console.log("Successfully annotated.");    
+
+    if (response.status == 200) {
+        console.log("Successfully annotated.");
+    }
+
     const annoLibsAssoc = result.annotations;
     
     // create and load original doc

@@ -18,11 +18,17 @@ from sequences_to_features import FeatureAnnotater
 FEATURE_FILES = 0
 FEATURE_LIBRARY = 1
 
-FEATURE_LIBRARIES = []
+FEATURE_LIBRARIES = {}
+# OLD:
 # FEATURE_LIBRARIES = [
 #     [[file, file2, file3], featury_library],
 #     [[file, file2, file3], featury_library],
 # ]
+# NEW:
+# FEATURE_LIBRARIES = {
+#     "file1": featury_library1,
+#     "file2": featury_library2,
+# }
 
 def setup():
     print("Initializing the app...")
@@ -35,28 +41,13 @@ def setup():
     # directories, but they actually don't; only lists of files
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_libraries_paths = asyncio.run(get_feature_libraries_paths(feature_libraries_dir))
-
-    feature_docs = []
             
     for feature_library_path in feature_libraries_paths:
         print(feature_library_path)
         feature_doc = sbol2.Document()
         feature_doc.read(feature_library_path)
-        feature_docs.append(feature_doc)
-
-    feature_library = FeatureLibrary(feature_docs)
-    FEATURE_LIBRARIES.append([
-        ["Anderson_Promoters_Anderson_Lab_collection.xml",
-         "CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml",
-         "CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml",
-         "EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml",
-         "Itaconic_Acid_Pathway_Voigt_Lab_collection.xml",
-         "MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml",
-         "Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml",
-         "Pichia_MoClo_Toolkit_Lu_Lab_collection.xml",
-         "cello_library.xml"],
-        feature_library
-    ])
+        # FEATURE_LIBRARIES.append([feature_library_path, FeatureLibrary([feature_doc])])
+        FEATURE_LIBRARIES[feature_library_path] = FeatureLibrary([feature_doc])
 
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
@@ -74,37 +65,12 @@ app.before_first_request(setup)
 # ===========================================================================================================================
 # ===========================================================================================================================
 
-def create_feature_library(part_library_file_names):
-    # check if feature_library has been cached
-    # if so, return feature_library
-    for xs in FEATURE_LIBRARIES:
-        f_names = [*xs[FEATURE_FILES]]
-        feature_lib = xs[FEATURE_LIBRARY]
-        part_lib_f_names_cpy = [*part_library_file_names]
-        f_names.sort()
-        part_lib_f_names_cpy.sort()
-        if f_names == part_lib_f_names_cpy:
-            return feature_lib                    
-    
-    # read in all feature libraries -- SYNBICT says they support
-    # directories, but they actually don't; only lists of files
+# only retrieves feature library that already exists after setup
+# might create a libarary in the future
+def create_feature_library(part_library_file_name):    
     feature_libraries_dir = "./assets/synbict/feature-libraries"
-    feature_libraries_paths = [os.path.join(feature_libraries_dir, file_name) for file_name in part_library_file_names]
-
-    feature_docs = []
-
-    for feature_library_path in feature_libraries_paths:
-        print(feature_library_path)
-        feature_doc = sbol2.Document()
-        feature_doc.read(feature_library_path)
-        feature_docs.append(feature_doc)
-
-    feature_library = FeatureLibrary(feature_docs)
-    
-    # memoize:
-    FEATURE_LIBRARIES.append([part_library_file_names, feature_library])
-    
-    return feature_library
+    feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
+    return FEATURE_LIBRARIES[feature_library_path]
 
 def create_temp_file(content):
     try:
@@ -145,7 +111,7 @@ async def get_feature_libraries_paths(feature_libraries_dir) -> str:
 # feature_libraries: list[str]
 # def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
 def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:
-    anno_libs_assoc = []
+    anno_lib_assoc = []
 
     for part_lib_f_name in part_library_file_names:            
         target_doc = sbol2.Document()
@@ -167,7 +133,7 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
 
                 target_library = FeatureLibrary([target_doc])
                 # feature_library = FEATURE_LIBRARIES[0]
-                feature_library = create_feature_library([part_lib_f_name])
+                feature_library = create_feature_library(part_lib_f_name)
                 min_feature_length = 10
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
                 min_target_length = 10                
@@ -176,8 +142,8 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
                 # so instead I'm serializing the document and grabbing the sequence annotations using the sbolgraph
                 # library in javascript in the front end
-                anno_libs_assoc.append([target_doc.writeString(), part_lib_f_name])
-    return None, None, anno_libs_assoc
+                anno_lib_assoc.append([target_doc.writeString(), part_lib_f_name])
+    return None, None, anno_lib_assoc
 
 def find_similar_parts(top_level_uri):
     try:
@@ -266,6 +232,11 @@ def run_biobert(text):
 # =====================================================================================
 # =====================================================================================
 
+@app.get("/api/boot")
+def boot_app():
+    print("Starting up...")
+    return "Rise and shine"
+
 @app.post("/api/annotateSequence")
 def annotate_sequence():
     request_data = request.get_json()
@@ -275,12 +246,12 @@ def annotate_sequence():
     print("Running SYNBICT...")
     # Run SYNBICT
     try:
-        # anno_libs_assoc = [
+        # anno_lib_assoc = [
         #     [sbol_xml_annotated, part_lib_file_name],
         #     [sbol_xml_annotated, part_lib_file_name],
         #     ...
         # ]
-        error_code, error_message, anno_libs_assoc,  = run_synbict(sbol_content, part_library_file_names)
+        error_code, error_message, anno_lib_assoc,  = run_synbict(sbol_content, part_library_file_names)
         
         if (error_code):
             return {"sbol": sbol_content, "error_message": error_message}, error_code
@@ -291,7 +262,7 @@ def annotate_sequence():
         return {"sbol": sbol_content}, status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
         # return {"annotations": annotations}
-        return {"annotations": anno_libs_assoc}
+        return {"annotations": anno_lib_assoc}
 
 @app.post("/api/findSimilarParts")
 def similar_parts():

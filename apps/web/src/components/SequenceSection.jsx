@@ -1,6 +1,6 @@
 import { useState, useEffect, forwardRef } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect } from "@mantine/core"
+import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text } from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
 import { mutateDocument, mutateSequencePartLibrariesSelected, useAsyncLoader, useStore } from "../modules/store"
@@ -132,6 +132,41 @@ function Sequence({ colors }) {
     )
 }
 
+function MyAnnotationCheckbox({ title, color, active, onChange, featureLibrary }) {
+    const [isVisible, setIsVisible] = useState(false);
+    
+    return <div className="my-anno-checkbox-container"
+                onMouseEnter={() => setIsVisible(true)}
+                onMouseLeave={() => setIsVisible(false)}                
+           >
+               <input type="checkbox"
+                      id={title}
+                      name={title}
+                      className="my-checkbox"
+                      style={{accentColor: color}}
+                      checked={active ? "checked" : ""}
+                      onChange={onChange}
+               />
+               <label for={title} style={{color: color}}>
+                   {title}
+               </label>
+               {(!isVisible) &&
+                <span class="material-symbols-outlined">
+                    info
+                </span>
+               }
+               {isVisible && <div className="tooltip">{featureLibrary}</div>}
+           </div>
+}
+
+function MyToolTip({ featureLibrary }) {    
+    return <span className="tooltip"
+                 data-text={featureLibrary}
+           >
+               info
+           </span>    
+}
+
 function Annotations({ colors }) {
 
     const annotations = useStore(s => s.sequenceAnnotations)
@@ -155,8 +190,6 @@ function Annotations({ colors }) {
     ];
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState(sequencePartLibraries);
-    // const sequencePartLibrariesSelected = useStore(s => s.sequencePartLibrariesSelected);
-    // const setSequencePartLibrariesSelected = useStore(s => s.setSequencePartLibrariesSelectedFrom(sequencePartLibraries));
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
         <div ref={ref} {...props}>
@@ -168,22 +201,20 @@ function Annotations({ colors }) {
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
             {annotations.map((anno, i) =>
                 <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name + '_' + i}>
-                    {anno.featureLibrary ? <Tooltip label={anno.featureLibrary.replace(/_/g, ' ').slice(0, anno.featureLibrary.length - 4)}>
-                                <AnnotationCheckboxContainer
-                                    title={anno.name}
-                                    color={colors[i]}
-                                    active={isActive(anno.id) ? 1 : 0}
-                                    onChange={val => setActive(anno.id, val)}
-                                />    
-                            </Tooltip> :
-                     <AnnotationCheckbox
-                         title={anno.name}
-                         color={colors[i]}
-                         active={isActive(anno.id) ? 1 : 0}
-                         onChange={val => setActive(anno.id, val)}
-                     />
-                    }
-                    <Copier anno={anno} sequence={sequence} />   
+                    <AnnotationCheckbox
+                        title={anno.name}
+                        color={colors[i]}
+                        active={isActive(anno.id) ? 1 : 0}
+                        onChange={val => setActive(anno.id, val)}                        
+                    />
+
+                    {anno.featureLibrary &&
+                     <MyToolTip
+                         featureLibrary={anno.featureLibrary.replace(/_/g, ' ').slice(0, anno.featureLibrary.length - 4)}
+                     >
+                     </MyToolTip>}
+                    
+                <Copier anno={anno} sequence={sequence} />   
                 </Group>              
             )}
 
