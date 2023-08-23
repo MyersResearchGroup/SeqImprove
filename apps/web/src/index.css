@@ -12,7 +12,6 @@ body {
 .tooltip {
     font-size: 15px;
     color: #a1a1a1;
-    posiiton: relative;
     border-bottom:1px dashed #000;
 }
 
