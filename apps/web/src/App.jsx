@@ -5,10 +5,11 @@ import CurationForm from './components/CurationForm'
 import UploadForm from './components/UploadForm'
 import { MantineProvider, Center, Box, Text, Space } from '@mantine/core'
 import { getSearchParams } from './modules/util'
-
+import { bootAPIserver } from "./modules/api"
 
 export default function App() {
 
+    bootAPIserver();
     const loadSBOL = useStore(s => s.loadSBOL)
     const documentLoaded = useStore(s => !!s.document)
 

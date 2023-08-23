@@ -2,3 +2,37 @@
 body {
     min-height: 95vh;
 }
+
+.material-symbols-outlined {
+    font-size: 15px;
+    color: #a1a1a1;
+    posiiton: relative;
+}
+
+.tooltip {
+    font-size: 15px;
+    color: #a1a1a1;
+    posiiton: relative;
+    border-bottom:1px dashed #000;
+}
+
+.tooltip:before {
+    font-size: 12px;
+    content: attr(data-text);
+    position: absolute;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-radius:10px;
+    background: #000;
+    color: #fff;
+    text-align:center;
+    text-wrap: balance;
+    z-index: 10;
+    display: none;
+}
+
+.tooltip:hover:before {
+    display: block;
+}
