@@ -175,8 +175,8 @@ function Annotations({ colors }) {
     const loadSBOL = useStore(s => s.loadSBOL);
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
-    const sequence = useStore(s => s.document?.root.sequence).toLowerCase()
-
+    const sequence = useStore(s => s.document?.root.sequence)?.toLowerCase()
+    
     const sequencePartLibraries = [
         { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
         { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
