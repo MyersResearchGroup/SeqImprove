@@ -14,6 +14,8 @@ import requests
 import re
 from sequences_to_features import FeatureLibrary
 from sequences_to_features import FeatureAnnotater
+import subprocess
+from waitress import serve
 
 FEATURE_FILES = 0
 FEATURE_LIBRARY = 1
@@ -52,6 +54,9 @@ def setup():
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
 app.before_first_request(setup)
+
+def create_app():
+    return app
 
 #           _______  _        _______  _______  _______        _______  _______ _________          _______  ______   _______ 
 # |\     /|(  ____ \( \      (  ____ )(  ____ \(  ____ )      (       )(  ____ \\__   __/|\     /|(  ___  )(  __  \ (  ____ \
@@ -220,6 +225,22 @@ def run_biobert(text):
 
     return annotations
 
+def convert_genbank_to_sbol2(genbank_content, uri_prefix):    
+    result_sbol_content = ""
+    
+    # create a temporary file using a context manager    
+    with tempfile.NamedTemporaryFile() as file_genbank:
+        file_genbank.write(bytes(genbank_content, 'utf-8'))
+        file_genbank.seek(0)
+        with tempfile.NamedTemporaryFile() as file_sbol:
+            command = ["java", "-jar", "libSBOLj-2.4.0-withDependencies.jar", file_genbank.name, "-l", "SBOL2", "-o", file_sbol.name, "-p", uri_prefix]
+            output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
+            print(output)
+            result_sbol_content = file_sbol.read().decode('utf-8')
+    # files are now closed and removed        
+    
+    return result_sbol_content
+
 #  _______  _______ _________     _______  _______          _________ _______  _______ 
 # (  ___  )(  ____ )\__   __/    (  ____ )(  ___  )|\     /|\__   __/(  ____ \(  ____ \
 # | (   ) || (    )|   ) (       | (    )|| (   ) || )   ( |   ) (   | (    \/| (    \/
@@ -234,8 +255,37 @@ def run_biobert(text):
 
 @app.get("/api/boot")
 def boot_app():
-    print("Starting up...")
+    print("hi")
     return "Rise and shine"
+
+@app.post("/api/convert/genbanktosbol2")
+def genbank_to_sbol2():    
+    request_data = request.get_json()
+    # need to make sure 'GenBankContent' field exists before doing this:
+    print("BEGINNING CONVERSION")
+    if ('GenBankContent' in request_data and 'uriPrefix' in request_data):
+        genbank_content = request_data['GenBankContent']
+        uri_prefix = request_data['uriPrefix']
+        try:
+            sbol2_content = convert_genbank_to_sbol2(genbank_content, uri_prefix)
+        except Exception as e:
+            print(str(e))
+            return {"sbol2_content": "", "err": e}
+        else:
+            print("CONVERSION SUCCESSFUL")
+            return {"sbol2_content": sbol2_content, "err": ""}
+        
+    else:
+        error_message = ""
+        if 'GenBankContent' in request_data:
+            error_message = "Missing uriPrefix field in request data"
+        else:
+            error_message = "Missing GenBankContent field in request data"
+            
+        return {"sbol2_content": "", "err": error_message };
+    
+    
+    
 
 @app.post("/api/annotateSequence")
 def annotate_sequence():
@@ -277,5 +327,7 @@ def annotate_text():
     biobert_result = run_biobert(free_text)
     return {"text": free_text, "annotations": biobert_result}
 
-if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port=5000)
+# if __name__ == '__main__':
+#     app.run(debug=True,host='0.0.0.0',port=5000)
+if __name__ == "__main__":    
+    serve(app, host="0.0.0.0", port=8080)

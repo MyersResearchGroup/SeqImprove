@@ -4,6 +4,9 @@ FROM python:3.10-bookworm
 RUN pip install --upgrade pip
 # define the present working directory
 
+RUN apt update
+RUN apt install default-jdk -y
+
 # clone SYNBICT at root & install deps
 RUN pip install sbol2==1.3
 RUN git clone https://github.com/SD2E/SYNBICT
@@ -28,4 +31,6 @@ RUN npm install sbolgraph
 WORKDIR /docker-flask-api
 
 # define the command to start the container
-CMD ["python3","app.py"]
+# CMD ["python3","app.py"]
+# waitress-serve --port=5000 --call app:create_app
+CMD ["waitress-serve", "--port=5000", "--call", "app:create_app"]

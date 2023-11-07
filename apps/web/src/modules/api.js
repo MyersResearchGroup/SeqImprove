@@ -14,6 +14,50 @@ export async function bootAPIserver() {
     }
 }
 
+export async function fetchConvertGenbankToSBOL2(genbankContent) {
+    const TYPE_ERROR = 11;
+    let response;
+    let result;
+    let count;
+    for (count = 4; count < 10; count++) {
+        try {
+            response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/convert/genbanktosbol2`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"                
+                },
+                body: JSON.stringify({
+                    GenBankContent: genbankContent,
+                    uriPrefix: "https://seqimprove.synbiohub.org",
+                }),
+                timeout: count * 1000,
+            });
+            break;
+        }
+        catch (err) {            
+            console.error(err);            
+            count = TYPE_ERROR - 1;
+        }
+    }
+    if (count == 10) {
+        return { sbol2_content: "", err: "Network Error" };
+    } else if (count == TYPE_ERROR) {        
+        return { sbol2_content: "", err: TypeError };
+    }
+    
+    // Parse
+    try {
+        result = await response.json();
+    }
+    catch (err) {
+        console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return { sbol2_content: "", err: "Parse Error" };
+    }
+    
+    return { sbol2_content: result.sbol2_content, err: result.err };
+}
+
 export async function fetchSBOL(url) {
     try {
         return await (await fetch(url)).text()

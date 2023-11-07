@@ -1,17 +1,10 @@
-import { Box, Button, Center, FileInput, Group, LoadingOverlay, SegmentedControl, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Box, Button, Center, FileInput, Group, LoadingOverlay, NativeSelect, SegmentedControl, Stack, Text, TextInput, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { useStore } from '../modules/store'
 import { showErrorNotification } from '../modules/util'
-
-function fileNameExtension(fileName) {
-    let matchData;
-    if (matchData = fileName.match(/\.[^.]+$/)) {
-        return matchData[0];
-    }
-
-    return '';
-}
+import { fetchConvertGenbankToSBOL2 } from '../modules/api'
+// import { Graph, S2ComponentDefinition, SBOL2GraphView, genbankToSBOL2 } from "sbolgraph"
 
 function parseFasta(fastaContent) {
     // split sequence from description line
@@ -55,6 +48,21 @@ function compileFastaToSBOL({ displayId, description, sequence }) {
 </rdf:RDF>`
 }
 
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 8000 } = options;
+    
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    
+    const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal  
+    });
+    clearTimeout(id);
+    
+    return response;
+}
+
 export default function UploadForm() {
 
     const loadSBOL = useStore(s => s.loadSBOL);
@@ -65,6 +73,7 @@ export default function UploadForm() {
             method: Methods.Upload,
             url: "",
             file: null,
+            file_t: "SBOL2",
         },
         validate: {
             url: (value, values) => {
@@ -84,47 +93,67 @@ export default function UploadForm() {
 
     const methodForms = {
         [Methods.Upload]: <>
-            <FileInput
-                placeholder="Click to upload a file"
-                radius="xl"
-                icon={<MdOutlineFileUpload />}
-                {...form.getInputProps("file")}
-            />
-        </>,
+                              <FileInput
+                                  placeholder="Click to upload a file"
+                                  radius="xl"
+                                  icon={<MdOutlineFileUpload />}
+                                  {...form.getInputProps("file")}
+                              />
+                              <NativeSelect
+                                  label="Input Format"                                  
+                                  data={['SBOL2', 'FASTA', 'GenBank']}
+                                  {...form.getInputProps("file_t")}
+                              />
+                          </>,
         [Methods.URL]: <>
-            <TextInput
-                placeholder="Enter an SBOL URL"
-                {...form.getInputProps("url")}
-            />
-        </>,
+                           <TextInput
+                               placeholder="Enter an SBOL URL"
+                               {...form.getInputProps("url")}
+                           />
+                       </>,
     };
 
-    const handleSubmit = async values => {
+    const handleSubmit = async values => {        
         switch (values.method) {
         case Methods.Upload:
-            const ext = fileNameExtension(values.file.name)
-            
-            if (ext == '.fasta' ||
-                ext == '.fa' ||
-                ext == '.fna' ||
-                ext == '.ffn' ||
-                ext == '.frn') {
 
-                // fastaDoc = { displayId, description, sequence }
+            switch (values.file_t) {
+            case "SBOL2":
+                loadSBOL(await values.file.text());
+                break;
+            case "FASTA":
                 const [ fastaDoc, err ] = parseFasta(await values.file.text());
                 if (err) {
                     showErrorNotification(err);
                     return;
                 }                
                 const sbolContent = compileFastaToSBOL(fastaDoc);
-                loadSBOL(sbolContent);                
-            } else if (ext == '.faa') {
-                showErrorNotification("SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.");                
-            } else {
-                // assume sbol document
-                loadSBOL(await values.file.text());
+                loadSBOL(sbolContent);
+                break;
+            case "GenBank":
+                const genbank_text = await values.file.text();                
+                const { sbol2_content, err1 } = await fetchConvertGenbankToSBOL2(genbank_text);
+                if (!err1) {
+                    loadSBOL(sbol2_content);    
+                } else {
+                    console.error(err1);
+                    switch (err1) {
+                    case TypeError:
+                        showErrorNotification("There was a problem processing your GenBank file. It may not be valid.");
+                        break;
+                    case "Network Error":
+                        showErrorNotification("Network Error. It could be that our servers are down. Check your internet connection.");
+                        break;
+                    case "Parse Error":
+                        showErrorNotification("There was a problem processing your GenBank file. This could be an internal server error.");
+                        break;
+                    default:
+                        showErrorNotification("There was a problem processing your GenBank file.");
+                    }                 
+                }
+                break;
             }
-            
+                                  
             break;
         case Methods.URL:
             const url = values.url.match(/\/sbol$/) ? values.url : 
@@ -162,7 +191,7 @@ export default function UploadForm() {
                                 <Button type="submit">Submit</Button>
                             </Group>
                         </Stack>
-                    </form>
+                    </form>                    
                 </Box>
             </Center>
             <LoadingOverlay visible={docLoading} />
