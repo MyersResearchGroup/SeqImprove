@@ -51,6 +51,7 @@ export default function CurationForm({ }) {
 
     const [ isEditingDisplayID, setIsEditingDisplayID ] = useState(false);
     const [ workingDisplayID, setWorkingDisplayID ] = useState(displayId);
+    const [ displayIDisReadOnly, setDisplayIDisReadOnly ] = useState(false);
 
     const handleStartDisplayIDEdit = _ => {
         setIsEditingDisplayID(true);
@@ -140,14 +141,39 @@ export default function CurationForm({ }) {
                                  <Group spacing={6}>
                                      <ActionIcon onClick={() => handleEndDisplayIDEdit(true)} color="red"><FaTimes /></ActionIcon>
                                      <ActionIcon onClick={() => handleEndDisplayIDEdit(false)} color="green"><FaCheck /></ActionIcon>
-                                 </Group> :
-                                <ActionIcon onClick={handleStartDisplayIDEdit}><FaPencilAlt /></ActionIcon>}
+                                 </Group> : !displayIDisReadOnly &&
+                                 <ActionIcon onClick={handleStartDisplayIDEdit}><FaPencilAlt /></ActionIcon>} 
                             </Group>
                             <Tabs.List>
-                                <Tabs.Tab value="overview">Overview</Tabs.Tab>
-                                <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
-                                <Tabs.Tab value="text">Text</Tabs.Tab>
-                                <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
+                                <Tabs.Tab value="overview" onClick={() => {
+                                              setDisplayIDisReadOnly(false);
+                                              console.log(displayIDisReadOnly);
+                                          }}>Overview</Tabs.Tab>
+                                <Tabs.Tab value="sequence" onClick={() => {
+                                              if (isEditingDisplayID) {
+                                                  handleEndDisplayIDEdit(true);
+                                              }
+                                              setDisplayIDisReadOnly(true);
+                                              console.log(displayIDisReadOnly);
+                                          }}>Sequence</Tabs.Tab>
+                                <Tabs.Tab value="text" onClick={() => {
+                                              if (isEditingDisplayID) {
+                                                  handleEndDisplayIDEdit(true);                                              
+                                              }
+                                              setDisplayIDisReadOnly(true);
+                                              setTimeout(() => {
+                                                  console.log(displayIDisReadOnly);
+                                              }, 0);
+                                          }}>Text</Tabs.Tab>
+                                <Tabs.Tab value="proteins" onClick={() => {
+                                              if (isEditingDisplayID) {
+                                                  handleEndDisplayIDEdit(true);                                                  
+                                              }
+                                              setDisplayIDisReadOnly(true);
+                                              setTimeout(() => {
+                                                  console.log(displayIDisReadOnly);
+                                              }, 0);
+                                          }}>Proteins</Tabs.Tab>
                             </Tabs.List>
                         </Group>
                         <Button
