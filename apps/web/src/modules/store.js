@@ -154,7 +154,14 @@ export const useStore = create((set, get) => ({
         return xml;
     },
 
+    serializeXML: () => get().document.serializeXML(),
 
+    // SynbioHubLogin, SessionToken        
+    _SynBioHubSessionToken: null,
+    isLoggedInToSynBioHub: () => get()._SynBioHubSessionToken != null ? true : false,
+    setSynBioHubSessionToken: (token) => set({ _SynBioHubSessionToken: token }),
+    getSynBioHubSessionToken: () => get()._SynBioHubSessionToken,
+    
     // Sequence Annotations
     sequenceAnnotations: [],
 

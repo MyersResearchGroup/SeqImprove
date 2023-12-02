@@ -1,4 +1,4 @@
-import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea } from '@mantine/core'
+import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea, Menu, Modal, TextInput, PasswordInput, Loader, Center } from '@mantine/core'
 import { useStore, mutateDocument } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
@@ -11,7 +11,7 @@ import SequenceSection from './SequenceSection'
 import TextSection from './TextSection'
 import { ModalsProvider } from '@mantine/modals'
 import TextAnnotationModal from './TextAnnotationModal'
-import { TbDownload } from "react-icons/tb"
+import { TbDownload, TbUpload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
 import References from './References'
 import { FaHome, FaPencilAlt, FaTimes, FaCheck } from 'react-icons/fa'
@@ -20,6 +20,95 @@ import { showErrorNotification } from "../modules/util"
 
 function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
+}
+
+function SynBioHubClientLogin({ opened, setLoginState }) {       
+    if (opened) {
+        const [email, setEmail] = useState('');
+        const [password, setPassword] = useState('');
+        const [inputError, setInputError] = useState(false);
+        
+        const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSynBioHub);
+        const setSynBioHubSessionToken = useStore(s => s.setSynBioHubSessionToken);
+
+        const [ isLoading, setIsLoading ] = useState(false);
+        
+        return (
+            <Group>
+                <Title order={3}>Login to SynBioHub</Title>
+                <Group>
+                    <TextInput                   
+                        label="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.currentTarget.value)}
+                        withAsterisk
+                        error={inputError != false}
+                    />                    
+                    <PasswordInput
+                        placeholder="123456"
+                        label="Password"
+                        value={password}
+                        description="Password must include at least one letter, number and special character"
+                        onChange={(e) => setPassword(e.currentTarget.value)}
+                        withAsterisk
+                        error={inputError}
+                    />                    
+                        {isLoading ? 
+                         <Center>
+                             <Loader my={30} size="sm" variant="dots" />
+                         </Center> :
+                         <Button onClick={async () => {                                
+                                const params = new URLSearchParams();
+                                params.append('email', email);
+                                params.append('password', password);
+                                const synbiohub_url_login = "https:/" + "/synbiohub.org/login";
+                                setIsLoading(true);
+                                const response = await fetch(synbiohub_url_login, {
+                                    method: "POST",
+                                    headers: {"Accept": "text/plain"},
+                                    body: params,
+                                });
+                                setIsLoading(false);
+                                
+                                if (response.ok) {
+                                    setInputError(false);
+                                    const session_token = await response.text();
+                                    setSynBioHubSessionToken(session_token);
+                                    setLoginState(true);
+                                    /* react is not updating, what do? */
+                                } else if (response.status == 401) {
+                                    setInputError("Unable to log in with these credentials");
+                                } else {
+                                    setInputError("There was a problem logging in to SynBioHub.");
+                                }
+                            }}>
+                             Submit
+                         </Button>
+                        }                    
+                </Group>
+                
+            </Group>            
+        );
+    }
+}
+
+function SynBioHubClientUpload({ opened, setLoginState }) {
+    const upload = async () => {
+        const xml = useStore(s => s.serializeXML());        
+        const response = await fetch("https://wor.synbiohub.org/instances");
+        const registries = await response.json();
+        console.log(registries);
+    };
+    
+    if (opened) {        
+        
+        const synBioHubSessionToken = useStore(s => s.getSynBioHubSessionToken());
+        const setSynBioHubSessionToken = useStore(s => s.setSynBioHubSessionToken);
+        
+        return (
+            <h2>Upload Page</h2>
+        )
+    }
 }
 
 export default function CurationForm({ }) {
@@ -31,9 +120,19 @@ export default function CurationForm({ }) {
     const sequenceColors = useCyclicalColors(useStore(s => s.sequenceAnnotations.length))
     const textColors = useCyclicalColors(useStore(s => s.textAnnotations.length))
 
+    // SynBioHub Login
+    // const [ synBioHubSessionToken, setSynBioHubSessionToken ] = useState(null);
+    // const [ isLoggedInToSynBioHub, setIsLoggedInToSynBioHub ] = useState(false);        
+    const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSynBioHub);    
+    const [ isInteractingWithSynBioHub, setIsInteractingWithSynBioHub ] = useState(false);
+    const [ isLoggedInToSynBioHubState, setIsLoggedInToSynBioHubState ] = useState(isLoggedInToSynBioHub());
+    
     // exporting
     const exportDocument = useStore(s => s.exportDocument)
-
+    
+    const uploadDocumentSynBioHub = async () => {        
+        setIsInteractingWithSynBioHub(true);
+    };    
 
     // show notification with known bugs
     // useEffect(() => {
@@ -146,47 +245,54 @@ export default function CurationForm({ }) {
                             </Group>
                             <Tabs.List>
                                 <Tabs.Tab value="overview" onClick={() => {
-                                              setDisplayIDisReadOnly(false);
-                                              console.log(displayIDisReadOnly);
+                                              setDisplayIDisReadOnly(false);                                              
                                           }}>Overview</Tabs.Tab>
                                 <Tabs.Tab value="sequence" onClick={() => {
                                               if (isEditingDisplayID) {
                                                   handleEndDisplayIDEdit(true);
                                               }
                                               setDisplayIDisReadOnly(true);
-                                              console.log(displayIDisReadOnly);
                                           }}>Sequence</Tabs.Tab>
                                 <Tabs.Tab value="text" onClick={() => {
                                               if (isEditingDisplayID) {
                                                   handleEndDisplayIDEdit(true);                                              
                                               }
                                               setDisplayIDisReadOnly(true);
-                                              setTimeout(() => {
-                                                  console.log(displayIDisReadOnly);
-                                              }, 0);
                                           }}>Text</Tabs.Tab>
                                 <Tabs.Tab value="proteins" onClick={() => {
                                               if (isEditingDisplayID) {
                                                   handleEndDisplayIDEdit(true);                                                  
                                               }
                                               setDisplayIDisReadOnly(true);
-                                              setTimeout(() => {
-                                                  console.log(displayIDisReadOnly);
-                                              }, 0);
                                           }}>Proteins</Tabs.Tab>
                             </Tabs.List>
                         </Group>
-                        <Button
-                            onClick={exportDocument}
-                            variant="light"
-                            rightIcon={<TbDownload />}
-                        >
+                        <Menu shadow="md" width={200}>
+                            <Menu.Target>
+                                <Button>Export Document</Button>
+                            </Menu.Target>
+
+                            <Menu.Dropdown>
+                                <Menu.Item onClick={exportDocument}>
+                                    Download SBOL2 {<TbDownload />}
+                                </Menu.Item>
+                                <Menu.Item onClick={uploadDocumentSynBioHub}>
+                                    Upload to SynBioHub {<TbUpload />}
+                                </Menu.Item>
+                            </Menu.Dropdown>
+                        </Menu>
+                        {/* <Button onClick={exportDocument} variant="light" rightIcon={<TbDownload />}>
                             Save SBOL
-                        </Button>
+                            </Button> */}
                     </Group>
                 </Container>
             </Header>
 
+                        <Modal opened={isInteractingWithSynBioHub} onClose={() => setIsInteractingWithSynBioHub(false)}>                            
+                            <SynBioHubClientLogin opened={!isLoggedInToSynBioHubState} setLoginState={setIsLoggedInToSynBioHubState} />
+                            <SynBioHubClientUpload opened={isLoggedInToSynBioHubState} setLoginState={setIsLoggedInToSynBioHubState} />
+                        </Modal>
+                        
             <Container>
                 <Tabs.Panel value="overview" pt={20}>
                     <SplitPanel
