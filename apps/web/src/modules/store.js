@@ -154,13 +154,16 @@ export const useStore = create((set, get) => ({
         return xml;
     },
 
-    serializeXML: () => get().document.serializeXML(),
+    serializeXML: () => {
+        // get().document.changeURIPrefix('https://seqimprove.org/');
+        // console.log(get().document.uriPrefixes);
+        return get().document.serializeXML();
+    },
 
-    // SynbioHubLogin, SessionToken        
-    _SynBioHubSessionToken: null,
-    isLoggedInToSynBioHub: () => get()._SynBioHubSessionToken != null ? true : false,
-    setSynBioHubSessionToken: (token) => set({ _SynBioHubSessionToken: token }),
-    getSynBioHubSessionToken: () => get()._SynBioHubSessionToken,
+    // SynbioHubLogin, SessionToken            
+    isLoggedInToSynBioHub: () => !!sessionStorage.getItem("SynBioHubSessionToken"),   
+    setSynBioHubSessionToken: (token) => sessionStorage.setItem("SynBioHubSessionToken", token),    
+    getSynBioHubSessionToken: () => sessionStorage.getItem("SynBioHubSessionToken"),    
     
     // Sequence Annotations
     sequenceAnnotations: [],
