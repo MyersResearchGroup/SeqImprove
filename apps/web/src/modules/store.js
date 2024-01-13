@@ -161,7 +161,7 @@ export const useStore = create((set, get) => ({
     },
 
     // SynbioHubLogin, SessionToken            
-    isLoggedInToSynBioHub: () => !!sessionStorage.getItem("SynBioHubSessionToken"),   
+    isLoggedInToSynBioHub: () => sessionStorage.getItem("SynBioHubSessionToken") != 'null',   
     setSynBioHubSessionToken: (token) => sessionStorage.setItem("SynBioHubSessionToken", token),    
     getSynBioHubSessionToken: () => sessionStorage.getItem("SynBioHubSessionToken"),    
     
@@ -169,6 +169,7 @@ export const useStore = create((set, get) => ({
     sequenceAnnotations: [],
 
     loadingSequenceAnnotations: false,
+       
     loadSequenceAnnotations: async (...args) => {
         set({ loadingSequenceAnnotations: true });
 

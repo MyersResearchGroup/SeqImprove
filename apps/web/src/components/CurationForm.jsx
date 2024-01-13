@@ -22,9 +22,10 @@ function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
 }
 
-function SynBioHubClient({opened, onClose, setOpened, isLoggedInToSynBioHubState, setIsLoggedInToSynBioHubState}) {
+function SynBioHubClient({opened, onClose, setOpened, isLoggedInToSynBioHubState, setIsLoggedInToSynBioHubState, synBioHubs}) {
     // const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSynBioHub);
     // const [ isLoggedInToSynBioHubState, setIsLoggedInToSynBioHubState ] = useState(isLoggedInToSynBioHub());
+    const [ synBioHubUrlPrefix, setSynBioHubUrlPrefix ] = useState('');    
 
     return (
         <Modal
@@ -34,27 +35,36 @@ function SynBioHubClient({opened, onClose, setOpened, isLoggedInToSynBioHubState
             size={"auto"}
         >
 
-            <SynBioHubClientLogin opened={!isLoggedInToSynBioHubState} setLoginState={setIsLoggedInToSynBioHubState} />
-            <SynBioHubClientUpload opened={isLoggedInToSynBioHubState} setOpened={setOpened}/>
+            <SynBioHubClientLogin opened={!isLoggedInToSynBioHubState} setLoginState={setIsLoggedInToSynBioHubState} setSynBioHubUrlPrefix={setSynBioHubUrlPrefix} synBioHubs={synBioHubs} />
+            <SynBioHubClientUpload opened={isLoggedInToSynBioHubState} setOpened={setOpened} synBioHubUrlPrefix={synBioHubUrlPrefix} />
         </Modal>
     );
 }
 
-function SynBioHubClientLogin({ opened, setLoginState }) {       
+function SynBioHubClientLogin({ opened, setLoginState, setSynBioHubUrlPrefix, synBioHubs }) {       
     if (opened) {
-        const [email, setEmail] = useState('');
+        const [email, setEmail] = useState('');                
+        
         const [password, setPassword] = useState('');
         const [inputError, setInputError] = useState(false);
 
         const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSynBioHub);
         const setSynBioHubSessionToken = useStore(s => s.setSynBioHubSessionToken);
-
+              
         const [ isLoading, setIsLoading ] = useState(false);
 
         return (
             <Group>
-                <Title order={3}>Login to SynBioHub</Title>
+                <Title order={3}>Login</Title>
                 <Group>
+                    <Select
+                        label="Online database"
+                        placeholder="Pick one"
+                        data={synBioHubs}                      
+                        onChange={(v) => {                          
+                            setSynBioHubUrlPrefix(v);
+                        }}                        
+                    />
                     <TextInput                   
                         label="Email"
                         value={email}
@@ -65,8 +75,7 @@ function SynBioHubClientLogin({ opened, setLoginState }) {
                     <PasswordInput
                         placeholder="123456"
                         label="Password"
-                        value={password}
-                        description="Password must include at least one letter, number and special character"
+                        value={password}                        
                         onChange={(e) => setPassword(e.currentTarget.value)}
                         withAsterisk
                         error={inputError}
@@ -109,18 +118,12 @@ function SynBioHubClientLogin({ opened, setLoginState }) {
     }
 }
 
-function SynBioHubClientUpload({ opened, setLoginState, setOpened }) {        
-    if (opened) {        
-
+function SynBioHubClientUpload({ opened, setLoginState, setOpened, synBioHubUrlPrefix }) {        
+    if (opened) {
+        
         const synBioHubSessionToken = useStore(s => s.getSynBioHubSessionToken());
         console.log(synBioHubSessionToken);
-        const setSynBioHubSessionToken = useStore(s => s.setSynBioHubSessionToken);        
-
-        const upload = async () => {
-            const xml = useStore(s => s.serializeXML());        
-            const response = await fetch("https://wor.synbiohub.org/instances");
-            const registries = await response.json();
-        };        
+        const setSynBioHubSessionToken = useStore(s => s.setSynBioHubSessionToken);
 
         /* Submission data:
            id: (auto fill displayID)
@@ -147,7 +150,7 @@ function SynBioHubClientUpload({ opened, setLoginState, setOpened }) {
         const xml = useStore(s => s.serializeXML());        
 
         (async () => {
-            const response = await fetch("https://wor.synbiohub.org/instances");
+            const response = await fetch(synBioHubUrlPrefix + "/instances");
             const registries = await response.json();
             console.log(registries);
         })();
@@ -155,7 +158,7 @@ function SynBioHubClientUpload({ opened, setLoginState, setOpened }) {
         (async () => {
             if (!rootCollectionsLoaded) { // curl -X GET -H "Accept: text/plain" -H "X-authorization: 5ab3af6e-2ddd-4ac2-af76-d4285d2ffe03" https://synbiohub.org/rootCollections
 
-                const response2 = await fetch("https://synbiohub.org/rootCollections", {                
+                const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {                
                     method: "GET",
                     headers: {
                         "Accept": "text/plain",
@@ -163,12 +166,15 @@ function SynBioHubClientUpload({ opened, setLoginState, setOpened }) {
                     },
                 });
 
-                const _rootCollections = await response2.json();                               
-                const userRootCollections = _rootCollections.filter(collection => collection.uri.match(/https:\/\/synbiohub.org\/user\/*/));
-                setRootCollections(userRootCollections);                
-                setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));                
-                setRootCollectionsLoaded(true);   
-            }            
+                const _rootCollections = await response2.json();
+                
+                // const userRootCollections = _rootCollections.filter(collection => collection.uri.match(/https:\/\/synbiohub.org\/user\/*/));
+                let regex = RegExp(synBioHubUrlPrefix + "/user/*");
+                const userRootCollections = _rootCollections.filter(collection => collection.uri.match(regex));
+                setRootCollections(userRootCollections);
+                setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
+                setRootCollectionsLoaded(true);
+            }           
         })();
 
         const [ createNewOption, setCreateNewOption ] = useState('false');
@@ -373,11 +379,7 @@ export default function CurationForm({ }) {
     const [ isInteractingWithSynBioHub, setIsInteractingWithSynBioHub ] = useState(false);    
 
     // exporting
-    const exportDocument = useStore(s => s.exportDocument)
-
-    const uploadDocumentSynBioHub = async () => {        
-        setIsInteractingWithSynBioHub(true);
-    };    
+    const exportDocument = useStore(s => s.exportDocument); 
 
     // show notification with known bugs
     // useEffect(() => {
@@ -459,9 +461,20 @@ export default function CurationForm({ }) {
 
     const setSynBioHubSessionToken = useStore(s => s.setSynBioHubSessionToken); 
     const [ isLoggedInToSynBioHubState, setIsLoggedInToSynBioHubState ] = useState(useStore(s => s.isLoggedInToSynBioHub));
-    const logout = () => {
-        setSynBioHubSessionToken(null);
+    
+    const logout = () => {        
+        sessionStorage.removeItem("SynBioHubSessionToken");
         setIsLoggedInToSynBioHubState(false);
+        setSynBioHubSessionToken(null);
+        setIsLoggedInToSynBioHubState(false);        
+    };
+
+    const [ synBioHubs, setSynBioHubs ] = useState([]);    
+
+    const loadSynBioHubs = async () => {
+        const response = await fetch("https://wor.synbiohub.org/instances");
+        const registries = await response.json();
+        setSynBioHubs(registries.map(r => r.uriPrefix));
     };
 
     return (
@@ -536,7 +549,10 @@ export default function CurationForm({ }) {
                                 <Menu.Item onClick={exportDocument}>
                                     Download SBOL2 {<TbDownload />}
                                 </Menu.Item>
-                                <Menu.Item onClick={uploadDocumentSynBioHub}>
+                                <Menu.Item onClick={() => {
+                                               loadSynBioHubs();
+                                               setIsInteractingWithSynBioHub(true);
+                                           }}>
                                     Upload to SynBioHub {<TbUpload />}
                                 </Menu.Item>
                             </Menu.Dropdown>
@@ -553,6 +569,7 @@ export default function CurationForm({ }) {
                             setOpened={setIsInteractingWithSynBioHub}
                             isLoggedInToSynBioHubState={isLoggedInToSynBioHubState}
                             setIsLoggedInToSynBioHubState={setIsLoggedInToSynBioHubState}
+                            synBioHubs={synBioHubs}
                         />                        
                         <Container>
                             <Tabs.Panel value="overview" pt={20}>
