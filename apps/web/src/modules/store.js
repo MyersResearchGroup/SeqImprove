@@ -62,27 +62,25 @@ export const useStore = create((set, get) => ({
         try {
             // const result = await loader?.(...args);
             try {
-                var sbolUrl = new URL(sbol)
+                var sbolUrl = new URL(sbol);
             }
             catch (err) {}
 
             // if it's a URL, fetch it; otherwise, just use it as the content
-            const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
-            
+            const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol;            
             var document = await createSBOLDocument(sbolContent);
             
             // parse out existing text annotations
-            const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
+            const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription);
 
             // get existing sequence annotations
-            const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
-
-            if (!document.root.sequence) {
-                throw("Failed to process sbol content");
-            }
+            const sequenceAnnotations = getExistingSequenceAnnotations(document.root);            
+            // if (!document.root.sequence) {                
+            //     throw("Failed to process sbol content");
+            // }            
                 
             // set description as rich description text
-            document.root.description = richDescriptionBuffer.originalText
+            document.root.description = richDescriptionBuffer.originalText;
 
             // set roles to be the same as from document
             const roles = document.root.roles;
