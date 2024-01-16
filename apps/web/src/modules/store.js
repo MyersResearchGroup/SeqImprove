@@ -160,10 +160,23 @@ export const useStore = create((set, get) => ({
         return get().document.serializeXML();
     },
 
-    // SynbioHubLogin, SessionToken            
-    isLoggedInToSynBioHub: () => sessionStorage.getItem("SynBioHubSessionToken") != 'null',   
-    setSynBioHubSessionToken: (token) => sessionStorage.setItem("SynBioHubSessionToken", token),    
-    getSynBioHubSessionToken: () => sessionStorage.getItem("SynBioHubSessionToken"),    
+    // SynbioHubLogin, SessionToken
+    isLoggedInToSomeSynBioHub: !!sessionStorage.getItem("SynBioHubSessionToken"),
+    synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix"),
+    logout: () => {
+        sessionStorage.removeItem("SynBioHubSessionToken");
+        sessionStorage.removeItem("synBioHubSessionUrlPrefix");
+        set({ isLoggedInToSomeSynBioHub: false });
+        set({ synBioHubUrlPrefix: '' });        
+    },
+    login: (token, urlPrefix) => {
+        sessionStorage.setItem("SynBioHubSessionToken", token);
+        sessionStorage.setItem("synBioHubUrlPrefix", urlPrefix);
+        set({
+            isLoggedInToSomeSynBioHub: true,
+            synBioHubUrlPrefix: urlPrefix,
+        });        
+    },        
     
     // Sequence Annotations
     sequenceAnnotations: [],
