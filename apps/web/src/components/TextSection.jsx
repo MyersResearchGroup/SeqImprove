@@ -282,7 +282,7 @@ function Description({ colors }) {
 
 function Annotations({ colors }) {
 
-    const annotations = useStore(s => s.textAnnotations)
+    const annotations = useStore(s => s.textAnnotations)    
     const [load, loading] = useAsyncLoader("TextAnnotations")
     useStore(s => s.document?.root.richDescription)    // force rerender from document change
 

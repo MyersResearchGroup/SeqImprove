@@ -67,7 +67,10 @@ export const useStore = create((set, get) => ({
             catch (err) {}
 
             // if it's a URL, fetch it; otherwise, just use it as the content
-            const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol;            
+            var sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol;
+            // Replace https://identifiers.org with https://ontobee.org
+            // sbolContent = sbolContent.replace('https://identifiers.org', 'https://ontobee.org');
+            
             var document = await createSBOLDocument(sbolContent);
             
             // parse out existing text annotations
@@ -83,7 +86,7 @@ export const useStore = create((set, get) => ({
             document.root.description = richDescriptionBuffer.originalText;
 
             // set roles to be the same as from document
-            const roles = document.root.roles;
+            const roles = document.root.roles;            
             
             set({
                 // ...result,
@@ -296,7 +299,7 @@ export const useStore = create((set, get) => ({
                     if (!mention.bufferPatch)
                         mention.bufferPatch = get().richDescriptionBuffer.createAlias(mention.start, mention.end, `[${mention.text}](${anno.id})`)
                 })
-            })
+            })           
         })
 
         return { textAnnotations: newAnnotations }

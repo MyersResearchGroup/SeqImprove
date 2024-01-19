@@ -108,7 +108,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
         console.log("Successfully annotated.");
     }
 
-    const annoLibsAssoc = result.annotations;
+    const annoLibsAssoc = result.annotations;    
     
     // create and load original doc
     const originalDoc = new SBOL2GraphView(new Graph());
@@ -174,8 +174,12 @@ export async function fetchAnnotateText(text) {
         return
     }
     
-    console.log("Successfully annotated.")
-    return result.annotations
+    console.log("Successfully annotated.")    
+    // https://bioregistry.io/NCBITaxon:562
+    result.annotations.forEach((anno, i) => {
+        result.annotations[i].id = "https://bioregistry.io/" + anno.displayId;
+    });
+    return result.annotations;
 }
 
 export async function fetchSimilarParts(topLevelUri) {
