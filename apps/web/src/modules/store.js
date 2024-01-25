@@ -62,30 +62,31 @@ export const useStore = create((set, get) => ({
         try {
             // const result = await loader?.(...args);
             try {
-                var sbolUrl = new URL(sbol)
+                var sbolUrl = new URL(sbol);
             }
             catch (err) {}
 
             // if it's a URL, fetch it; otherwise, just use it as the content
-            const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
+            var sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol;
+            // Replace https://identifiers.org with https://ontobee.org
+            // sbolContent = sbolContent.replace('https://identifiers.org', 'https://ontobee.org');
             
             var document = await createSBOLDocument(sbolContent);
             
             // parse out existing text annotations
-            const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
+            const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription);
 
             // get existing sequence annotations
-            const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
-
-            if (!document.root.sequence) {
-                throw("Failed to process sbol content");
-            }
+            const sequenceAnnotations = getExistingSequenceAnnotations(document.root);            
+            // if (!document.root.sequence) {                
+            //     throw("Failed to process sbol content");
+            // }            
                 
             // set description as rich description text
-            document.root.description = richDescriptionBuffer.originalText
+            document.root.description = richDescriptionBuffer.originalText;
 
             // set roles to be the same as from document
-            const roles = document.root.roles;
+            const roles = document.root.roles;            
             
             set({
                 // ...result,
@@ -154,11 +155,35 @@ export const useStore = create((set, get) => ({
         return xml;
     },
 
+    serializeXML: () => {
+        // get().document.changeURIPrefix('https://seqimprove.org/');
+        // console.log(get().document.uriPrefixes);
+        return get().document.serializeXML();
+    },
 
+    // SynbioHubLogin, SessionToken
+    isLoggedInToSomeSynBioHub: !!sessionStorage.getItem("SynBioHubSessionToken"),
+    synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix"),
+    logout: () => {
+        sessionStorage.removeItem("SynBioHubSessionToken");
+        sessionStorage.removeItem("synBioHubSessionUrlPrefix");
+        set({ isLoggedInToSomeSynBioHub: false });
+        set({ synBioHubUrlPrefix: '' });        
+    },
+    login: (token, urlPrefix) => {
+        sessionStorage.setItem("SynBioHubSessionToken", token);
+        sessionStorage.setItem("synBioHubUrlPrefix", urlPrefix);
+        set({
+            isLoggedInToSomeSynBioHub: true,
+            synBioHubUrlPrefix: urlPrefix,
+        });        
+    },        
+    
     // Sequence Annotations
     sequenceAnnotations: [],
 
     loadingSequenceAnnotations: false,
+       
     loadSequenceAnnotations: async (...args) => {
         set({ loadingSequenceAnnotations: true });
 
@@ -274,7 +299,7 @@ export const useStore = create((set, get) => ({
                     if (!mention.bufferPatch)
                         mention.bufferPatch = get().richDescriptionBuffer.createAlias(mention.start, mention.end, `[${mention.text}](${anno.id})`)
                 })
-            })
+            })           
         })
 
         return { textAnnotations: newAnnotations }

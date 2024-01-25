@@ -56,6 +56,15 @@ export function showErrorNotification(title, message) {
     });
 }
 
+export function showNotificationSuccess(title, message) {
+    showNotification({
+        title,
+        color: "green",
+        message,
+        autoClose: true,
+    });
+}
+
 export function showServerErrorNotification() {
     showNotification({
         title: "Failed to load resource",

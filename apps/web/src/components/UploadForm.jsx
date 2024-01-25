@@ -161,7 +161,7 @@ export default function UploadForm() {
                 values.url + '/sbol';
             loadSBOL(url);
             break;
-        case Methods.FromScratch:
+        case Methods.FromScratch:          
             loadSBOL(window.location.origin + "/From_Scratch.xml");
             break;
         default:

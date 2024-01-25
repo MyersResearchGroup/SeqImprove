@@ -5,5 +5,6 @@ export function decodeRoleURI(uri) {
 }
 
 export function createRoleURI(shortId) {
+    // console.log("shortId: " + shortId);
     return `http://identifiers.org/so/${shortId}`
 }
