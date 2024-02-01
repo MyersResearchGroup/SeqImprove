@@ -20,7 +20,7 @@ function parseFasta(fastaContent) {
     const displayId = (firstWord[0].match(/[a-z_]/i) ? firstWord[0] : '_') + firstWord.slice(1).replace(/\W/g, '_');
     // join and validate sequence
     const sequence = sequenceLines.join('');
-    if (sequence.match(/^[actguryswkmbdhvn.-]+$/i) === null) {
+    if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-]+$/i) === null) {
         return [{ displayId: null, description: null, sequence: null }, "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."];
     }
     return [{ displayId, description, sequence }, null]

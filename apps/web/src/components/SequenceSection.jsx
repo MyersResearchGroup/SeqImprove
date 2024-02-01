@@ -8,6 +8,7 @@ import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
 import { Copy, Check } from "tabler-icons-react"
+import { showErrorNotification } from '../modules/util'
 import "../index.css"
 
 const WORDSIZE = 8;
@@ -34,6 +35,13 @@ function insertSpaces(wordSize, sequence) {
     const regex = new RegExp(".{1," + String(wordSize) + "}", "g");
     const matchData = sequence.match(regex);
     return matchData ? sequence.match(regex).join(' ') : sequence;
+}
+
+function isValid(sequence) {
+    if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]+$/i) === null) { // contains invalid char
+        return "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.";
+    }
+    return;
 }
 
 function reformat(sequenceText) {
@@ -67,6 +75,12 @@ function Sequence({ colors }) {
     }, [annotations]);
 
     const handleEndSequenceEdit = (discard = false) => {
+        const err = isValid(workingSequence);
+        if (err) {
+            showErrorNotification(err);
+            // highlight the errors
+            return;
+        }    
         if (discard) {
             setWorkingSequence(false);
             return;
@@ -93,7 +107,7 @@ function Sequence({ colors }) {
             key="Sequence"
             title="Sequence"
             rightSection={
-                workingSequence !== false ?
+                workingSequence !== false ? //TODO:if not false, a string, empty strings 
                     <Group spacing={6}>
                         <ActionIcon onClick={() => handleEndSequenceEdit(true)} color="red"><FaTimes /></ActionIcon>
                         <ActionIcon onClick={() => handleEndSequenceEdit(false)} color="green"><FaCheck /></ActionIcon>
@@ -102,7 +116,7 @@ function Sequence({ colors }) {
             }
             style={{ maxWidth: "800px" }}
         >
-            {workingSequence !== false ?
+            {workingSequence !== false ? //TextArea is the editor
                     <Textarea
                         size="md"
                         minRows={20}
@@ -112,7 +126,7 @@ function Sequence({ colors }) {
                             const start = textArea.selectionStart;
                             const end = textArea.selectionEnd;
                             
-                            setWorkingSequence(reformat(textArea.value));                            
+                            setWorkingSequence(reformat(textArea.value));  //value is the value of ACTG, reformat is adding spaces, call validate function                      
                         }}
                         styles={{ input: { font: "14px monospace", lineHeight: "1.5em" } }}
                     /> : sequence &&
