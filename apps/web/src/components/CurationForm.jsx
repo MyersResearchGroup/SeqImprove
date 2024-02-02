@@ -226,10 +226,9 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                          value={citations.join(',')}
                          description="Comma separated pubmed IDs of citations to store with the submission"
                          onChange={(e) => {
-                             const cits = e.currentTarget.value.split(',');                         
+                             const cits = e.currentTarget.value.split(',');
                              setCitations(cits.slice(0, cits.length-1).map(cit => cit.trim()).concat(cits.slice(-1)))
-                         }}
-                         withAsterisk
+                         }}                         
                          error={inputError != false}
                      />
                      <Button onClick={async () => {
