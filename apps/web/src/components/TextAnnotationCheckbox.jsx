@@ -37,21 +37,23 @@ export default function TextAnnotationCheckbox({ id, color }) {
                         </Box>
                     </Tooltip>
                     <Group spacing={5}>
-                        <ActionIcon
-                            size="sm"
-                            onClick={() => openContextModal({
-                                modal: "addAndEdit",
-                                title: "Edit Annotation",
-                                innerProps: {
-                                    editing: true,
-                                    label: annotation.label,
-                                    identifier: annotation.displayId,
-                                    uri: annotation.id,
-                                }
-                            })}
-                        >
-                            <FaPencilAlt fontSize={"0.8em"} />
-                        </ActionIcon>
+                        {/*
+                           <ActionIcon
+                           size="sm"
+                           onClick={() => openContextModal({
+                           modal: "addAndEdit",
+                           title: "Edit Annotation",
+                           innerProps: {
+                           editing: true,
+                           label: annotation.label,
+                           identifier: annotation.displayId,
+                           uri: annotation.id,
+                           }
+                           })}
+                           >
+                           <FaPencilAlt fontSize={"0.8em"} />
+                           </ActionIcon>
+                          */}                        
 
                         <ActionIcon
                             size="sm"
