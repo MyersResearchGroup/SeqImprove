@@ -125,7 +125,7 @@ function Sequence({ colors }) {
                             const textArea = event.currentTarget;
                             const start = textArea.selectionStart;
                             const end = textArea.selectionEnd;
-                            
+                            // isValid?nothing : update the state
                             setWorkingSequence(reformat(textArea.value));  //value is the value of ACTG, reformat is adding spaces, call validate function                      
                         }}
                         styles={{ input: { font: "14px monospace", lineHeight: "1.5em" } }}
