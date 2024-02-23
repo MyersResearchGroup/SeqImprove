@@ -351,7 +351,8 @@ export default function CurationForm({ }) {
 
     // exporting
     const exportDocument = useStore(s => s.exportDocument); 
-
+    const sequence = useStore(s => s.document?.root.sequence)?.toLowerCase();
+   
     // show notification with known bugs
     // useEffect(() => {
     //     showNotification({
@@ -439,6 +440,13 @@ export default function CurationForm({ }) {
         setSynBioHubs(registries.map(r => r.uriPrefix));
     };
 
+    function isValid(sequence) {
+        if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]+$/i) === null) { // contains invalid char
+            return false;
+        }
+        return true;
+    }
+
     return (
         <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
             <Header p="lg">
@@ -504,11 +512,17 @@ export default function CurationForm({ }) {
                         }                        
                         <Menu shadow="md" width={200}>
                             <Menu.Target>
-                                <Button>Export Document</Button>
+                                <Button onClick={()=>{
+                                    if(!isValid(sequence)){
+                                        //showMessage if inValid
+                                        const errMessage = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."
+                                        showErrorNotification(errMessage);
+                                    }
+                                }}>Export Document</Button>
                             </Menu.Target>
 
-                            <Menu.Dropdown>
-                                <Menu.Item onClick={exportDocument}>
+                            {isValid(sequence) && <Menu.Dropdown> 
+                                <Menu.Item onClick={exportDocument}> 
                                     Download SBOL2 {<TbDownload />}
                                 </Menu.Item>
                                 <Menu.Item onClick={() => {
@@ -517,7 +531,7 @@ export default function CurationForm({ }) {
                                            }}>
                                     Upload to SynBioHub {<TbUpload />}
                                 </Menu.Item>
-                            </Menu.Dropdown>
+                            </Menu.Dropdown>}
                         </Menu>
                         {/* <Button onClick={exportDocument} variant="light" rightIcon={<TbDownload />}>
                             Save SBOL
