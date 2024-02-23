@@ -56,6 +56,16 @@ export function showErrorNotification(title, message) {
     });
 }
 
+export function showWarningNotification(title, message) {
+    showNotification({
+        title,
+        color: "orange",
+        message,
+        autoClose: false,
+    });
+}
+
+
 export function showNotificationSuccess(title, message) {
     showNotification({
         title,

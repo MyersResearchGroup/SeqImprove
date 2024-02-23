@@ -2,7 +2,7 @@ import { Box, Button, Center, FileInput, Group, LoadingOverlay, NativeSelect, Se
 import { useForm } from '@mantine/form'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { useStore } from '../modules/store'
-import { showErrorNotification } from '../modules/util'
+import { showErrorNotification, showWarningNotification } from '../modules/util'
 import { fetchConvertGenbankToSBOL2 } from '../modules/api'
 // import { Graph, S2ComponentDefinition, SBOL2GraphView, genbankToSBOL2 } from "sbolgraph"
 
@@ -12,7 +12,7 @@ function parseFasta(fastaContent) {
     // grab first "word" from description line
     const [ first, ...rest ] = descriptionLine.split(' ');
     if (first[0] !== '>') {
-        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, expected '>' on line 1"];
+        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, expected '>' on line 1", null];
     }
     const firstWord = first.slice(1);
     const description = rest.join(' ');
@@ -20,10 +20,13 @@ function parseFasta(fastaContent) {
     const displayId = (firstWord[0].match(/[a-z_]/i) ? firstWord[0] : '_') + firstWord.slice(1).replace(/\W/g, '_');
     // join and validate sequence
     const sequence = sequenceLines.join('');
-    if (sequence.match(/^[actg]+$/i) === null) {
-        return [{ displayId: null, description: null, sequence: null }, "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."];
+    // currently is blocking the upload when include invalid chars
+    // only show the warning without blocking the uploading
+    if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-]+$/i) === null) {
+        //show warning
+        return [{ displayId, description, sequence }, null, "Sequence includes invalid characters."]
     }
-    return [{ displayId, description, sequence }, null]
+    return [{ displayId, description, sequence }, null, null]
 }
 
 function compileFastaToSBOL({ displayId, description, sequence }) {
@@ -56,7 +59,7 @@ async function fetchWithTimeout(resource, options = {}) {
     
     const response = await fetch(resource, {
         ...options,
-        signal: controller.signal  
+        signal: controller.signal 
     });
     clearTimeout(id);
     
@@ -122,11 +125,14 @@ export default function UploadForm() {
                 loadSBOL(await values.file.text());
                 break;
             case "FASTA":
-                const [ fastaDoc, err ] = parseFasta(await values.file.text());
+                const [ fastaDoc, err, warning ] = parseFasta(await values.file.text());
                 if (err) {
                     showErrorNotification(err);
                     return;
-                }                
+                }
+                if (warning) {
+                    showWarningNotification(warning);
+                }               
                 const sbolContent = compileFastaToSBOL(fastaDoc);
                 loadSBOL(sbolContent);
                 break;

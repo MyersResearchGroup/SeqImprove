@@ -21,6 +21,8 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "react-highlight-within-textarea": "^3.2.1"
+  },
   "packageManager": "npm@7.24.0"
 }

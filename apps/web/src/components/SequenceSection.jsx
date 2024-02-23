@@ -1,6 +1,6 @@
-import { useState, useEffect, forwardRef } from "react"
+import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text } from "@mantine/core"
+import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
 import { mutateDocument, mutateSequencePartLibrariesSelected, useAsyncLoader, useStore } from "../modules/store"
@@ -8,7 +8,9 @@ import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
 import { Copy, Check } from "tabler-icons-react"
-import "../index.css"
+import { showErrorNotification } from '../modules/util'
+import "../../public/index.css"
+import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 
 const WORDSIZE = 8;
 
@@ -34,6 +36,17 @@ function insertSpaces(wordSize, sequence) {
     const regex = new RegExp(".{1," + String(wordSize) + "}", "g");
     const matchData = sequence.match(regex);
     return matchData ? sequence.match(regex).join(' ') : sequence;
+}
+
+function isValid(sequence) {
+    if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]+$/i) === null) { // contains invalid char
+        const message = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.";
+        const found = sequence.match(/[^actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]+/i);
+        const start = found.index;
+        const end = start + found[0].length;
+        return [start, end, message];
+    }
+    return [null, null, null];
 }
 
 function reformat(sequenceText) {
@@ -67,9 +80,19 @@ function Sequence({ colors }) {
     }, [annotations]);
 
     const handleEndSequenceEdit = (discard = false) => {
+        const [start, end, err]= isValid(workingSequence); // index
+  
         if (discard) {
             setWorkingSequence(false);
             return;
+        } else {
+            if (err) {
+                showErrorNotification(err);
+                // highlight the errors
+                console.log("start: ", start);
+                console.log("end: ", end);
+                return;
+            }  
         }
 
         setWorkingSequence(false);
@@ -88,12 +111,20 @@ function Sequence({ colors }) {
         });
     }
 
+    const handleChange = (event) => {
+        setWorkingSequence(event);
+    };
+
+    function myBlockStyleFn(contentBlock) {
+        return 'superFancyBlockquote';
+      }
+
     return (
         <FormSection
             key="Sequence"
             title="Sequence"
             rightSection={
-                workingSequence !== false ?
+                workingSequence !== false ? //TODO:if not false, a string, empty strings 
                     <Group spacing={6}>
                         <ActionIcon onClick={() => handleEndSequenceEdit(true)} color="red"><FaTimes /></ActionIcon>
                         <ActionIcon onClick={() => handleEndSequenceEdit(false)} color="green"><FaCheck /></ActionIcon>
@@ -102,21 +133,29 @@ function Sequence({ colors }) {
             }
             style={{ maxWidth: "800px" }}
         >
-            {workingSequence !== false ?
-                    <Textarea
-                        size="md"
-                        minRows={20}
-                        value={workingSequence}
-                        onChange={event => {
-                            const textArea = event.currentTarget;
-                            const start = textArea.selectionStart;
-                            const end = textArea.selectionEnd;
-                            
-                            setWorkingSequence(reformat(textArea.value));                            
-                        }}
-                        styles={{ input: { font: "14px monospace", lineHeight: "1.5em" } }}
-                    /> : sequence &&
-                    <SequenceHighlighter
+            {workingSequence !== false ? //TextArea is the editor // TODO: add highlight in TextArea
+                // <Textarea
+                //     size="md"
+                //     minRows={20}
+                //     value={workingSequence}
+                //     onChange={event => {
+                //         const textArea = event.currentTarget;
+                //         const start = textArea.selectionStart;
+                //         const end = textArea.selectionEnd;
+                //         // isValid?nothing : update the state
+                //         console.log("isInValid: ", start);
+                //         setWorkingSequence(textArea.value);  //value is the value of ACTG, reformat is adding spaces, call validate function                      
+                //     }}
+                //     styles={{ input: { font: "14px monospace", lineHeight: "1.5em", error: true } }}
+                // /> 
+                <HighlightWithinTextarea
+                    value={workingSequence}
+                    highlight={/[^actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]/gi}
+                    onChange={handleChange}
+                    blockStyleFn={myBlockStyleFn}
+                />
+                : sequence && // TODO: add feature in SequenceHiglighter
+                    <SequenceHighlighter 
                     sequence={sequence.toLowerCase()}
                     annotations={annotations.map((anno, i) => ({
                         ...anno,
@@ -127,7 +166,7 @@ function Sequence({ colors }) {
                     isActive={isActive}
                     wordSize={WORDSIZE}
                     />
-            }       
+            }      
         </FormSection>
     )
 }
