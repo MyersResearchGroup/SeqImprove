@@ -9,7 +9,7 @@ import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
 import { Copy, Check } from "tabler-icons-react"
 import { showErrorNotification } from '../modules/util'
-import "../../public/index.css"
+import "../../src/sequence-edit.css"
 import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 
 const WORDSIZE = 8;
