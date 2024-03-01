@@ -150,7 +150,10 @@ function Sequence({ colors }) {
                 // /> 
                 <HighlightWithinTextarea
                     value={workingSequence}
-                    highlight={/[^actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]/gi}
+                    highlight={{
+                        highlight: /[^actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]/gi,
+                        className: 'red',
+                    }}
                     onChange={handleChange}
                     blockStyleFn={myBlockStyleFn}
                 />
