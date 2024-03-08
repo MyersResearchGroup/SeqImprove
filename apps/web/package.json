@@ -17,6 +17,7 @@
     "@mantine/notifications": "^5.8.0",
     "bioterms": "^0.30.0",
     "diff": "^5.1.0",
+    "react-highlight-within-textarea": "^3.2.1",
     "immer": "^9.0.16",
     "js-file-download": "^0.4.12",
     "lodash": "^4.17.21",
