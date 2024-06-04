@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import requests
 import re
+from sequences_to_features import download_sequences
 from sequences_to_features import FeatureLibrary
 from sequences_to_features import FeatureAnnotater
 import subprocess
@@ -41,15 +42,48 @@ def setup():
 
     # read in all feature libraries -- SYNBICT says they support
     # directories, but they actually don't; only lists of files
-    feature_libraries_dir = "./assets/synbict/feature-libraries"
+    feature_libraries_dir = "./assets/synbict/feature-libraries" 
     feature_libraries_paths = asyncio.run(get_feature_libraries_paths(feature_libraries_dir))
-            
+    
+    # read in collections from synbiohub
+    sbh_collections = "https://synbiohub.org/rootcollections"
+    sbhresponse = requests.get(sbh_collections)
+
+    # extract uris from json
+    if sbhresponse.status_code == 200:
+        sbh_str = json.dumps(sbhresponse.json())
+        sbh_data = json.loads(sbh_str)
+        
+        uris = [item['uri'] for item in sbh_data]
+
+        # remove large part libraries that break the http requests
+        uris.remove('https://synbiohub.org/public/bsu/bsu_collection/1')
+        uris.remove('https://synbiohub.org/public/igem/igem_collection/1')
+        uris.remove('https://synbiohub.org/public/iGEMDistributions/iGEMDistributions_collection/1')
+        uris.remove('https://synbiohub.org/public/igem_feature_libraries/igem_feature_libraries_collection/1')
+    else:
+        print(f"Failed to retrieve data from SynBioHub: {sbhresponse.status_code}")
+
+         
     for feature_library_path in feature_libraries_paths:
         print(feature_library_path)
         feature_doc = sbol2.Document()
         feature_doc.read(feature_library_path)
         # FEATURE_LIBRARIES.append([feature_library_path, FeatureLibrary([feature_doc])])
         FEATURE_LIBRARIES[feature_library_path] = FeatureLibrary([feature_doc])
+    
+    # download sequences from sbh using pull and download sequences func, add to FEATURE_LIBRARIES
+    for uri in uris:
+        feature_doc = sbol2.Document() #reinit
+        synbiohub = sbol2.PartShop(uri) #define url with each uri
+        
+        print(f"pulling... uri={uri}")
+        synbiohub.pull(uri, feature_doc)
+        download_sequences(feature_doc, synbiohub)
+        print(f"Feature Doc Summary: {feature_doc}")
+        # for cd in feature_doc.componentDefinitions:
+        #     print(cd)
+        FEATURE_LIBRARIES[uri] = FeatureLibrary([feature_doc])
 
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
@@ -96,7 +130,7 @@ def create_temp_file(content):
 async def get_feature_libraries_paths(feature_libraries_dir) -> str:
     loop = asyncio.get_event_loop()
     feature_files = await loop.run_in_executor(None, os.listdir, feature_libraries_dir)
-    feature_library_paths = [os.path.join(feature_libraries_dir, library_file) for library_file in feature_files]    
+    feature_library_paths = [os.path.join(feature_libraries_dir, library_file) for library_file in feature_files]
     return feature_library_paths
 
 # def run_node_script(script_path, arguments):
@@ -291,7 +325,7 @@ def genbank_to_sbol2():
 def annotate_sequence():
     request_data = request.get_json()
     sbol_content = request_data['completeSbolContent']
-    part_library_file_names = request_data['partLibraries']
+    part_library_file_names = request_data['partLibraries'] # maybe change this approach, use parts out of doc instead of file dir?
 
     print("Running SYNBICT...")
     # Run SYNBICT
