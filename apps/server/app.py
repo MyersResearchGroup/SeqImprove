@@ -106,7 +106,10 @@ def create_app():
 
 # only retrieves feature library that already exists after setup
 # might create a libarary in the future
-def create_feature_library(part_library_file_name):    
+def create_feature_library(part_library_file_name):
+    if part_library_file_name.startswith('https://synbiohub.org'): #if url, return the obj since it is indexed with url
+        return FEATURE_LIBRARIES[part_library_file_name]
+
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
     return FEATURE_LIBRARIES[feature_library_path]

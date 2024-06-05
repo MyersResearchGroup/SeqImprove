@@ -229,6 +229,16 @@ function Annotations({ colors }) {
         { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
         { value: 'Pichia_MoClo_Toolkit_Lu_Lab_collection.xml', label: 'Pichia MoClo Toolkit Lu Lab Collection' },
         { value: 'cello_library.xml', label: 'Cello Library' },
+        { value: 'https://synbiohub.org/public/CnDatabase/CnDatabase_collection/1', label: 'Cryptococcus neoformans Database'},
+        { value: 'https://synbiohub.org/public/free_genes_feature_libraries/free_genes_feature_libraries_collection/1', label: 'Free Genes Feature Libraries'},
+        { value: 'https://synbiohub.org/public/iGEM_2016_interlab/iGEM_2016_interlab_collection/1', label: 'Devices from the iGEM 2016 interlab'},
+        { value: 'https://synbiohub.org/public/Digitalizer/Digitalizer_collection/1', label: 'Digitizer Library'},
+        { value: 'https://synbiohub.org/public/Excel2SBOL/Excel2SBOL_collection/1', label: 'Excel2SBOL Collection'},
+        { value: 'https://synbiohub.org/public/sbksactivities/sbksactivities_collection/1', label: 'SBKS Activities Collection'},
+        { value: 'https://synbiohub.org/public/SEGA/SEGA_collection/1', label: 'SEGA Collecition'},
+        { value: 'https://synbiohub.org/public/Intein_assisted_Bisection_Mapping/Intein_assisted_Bisection_Mapping_collection/1', label: 'Intein Assisted Bisection Mapping Collection'},
+        { value: 'https://synbiohub.org/public/Eco1C1G1T1/Eco1C1G1T1_collection/1', label: 'Cello E. Coli Parts Collection'},
+        { value: 'https://synbiohub.org/public/SBOLCompliantSoftware/SBOLCompliantSoftware_collection/1', label: 'SBOL Compliant Software Collection'},
     ];
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState(sequencePartLibraries);
