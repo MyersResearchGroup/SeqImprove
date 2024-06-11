@@ -32,6 +32,10 @@ body {
     display: none;
 }
 
+.tooltip_link {
+    text-decoration: none;
+}
+
 .tooltip:hover:before {
     display: block;
 }

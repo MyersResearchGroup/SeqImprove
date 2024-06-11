@@ -14,6 +14,15 @@ import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 
 const WORDSIZE = 8;
 
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
 function Copier({ anno, sequence }) {
     const selectionStart = anno.location[0];
     const selectionLength = anno.location[1] - selectionStart;
@@ -202,11 +211,18 @@ function MyAnnotationCheckbox({ title, color, active, onChange, featureLibrary }
 }
 
 function MyToolTip({ featureLibrary }) {    
-    return <span className="tooltip"
+    return isValidUrl(featureLibrary) ? (<a href={featureLibrary} target="_blank" className="tooltip_link"> 
+         <span className="tooltip"
                  data-text={featureLibrary}
            >
                info
-           </span>    
+        </span> 
+    </a>
+    ) : (
+        <span className="tooltip" data-text={featureLibrary}>
+            info
+        </span>
+    );   
 }
 
 function Annotations({ colors }) {
@@ -271,7 +287,9 @@ function Annotations({ colors }) {
 
                     {anno.featureLibrary &&
                      <MyToolTip
-                         featureLibrary={anno.featureLibrary.replace(/_/g, ' ').slice(0, anno.featureLibrary.length)}
+                        featureLibrary={ anno.featureLibrary.endsWith('.xml')
+                            ? anno.featureLibrary.replace(/_/g, ' ').slice(0, -4)
+                            : anno.featureLibrary}
                      >
                      </MyToolTip>}
                     
