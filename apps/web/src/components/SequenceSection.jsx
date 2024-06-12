@@ -14,6 +14,15 @@ import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 
 const WORDSIZE = 8;
 
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
 function Copier({ anno, sequence }) {
     const selectionStart = anno.location[0];
     const selectionLength = anno.location[1] - selectionStart;
@@ -202,11 +211,18 @@ function MyAnnotationCheckbox({ title, color, active, onChange, featureLibrary }
 }
 
 function MyToolTip({ featureLibrary }) {    
-    return <span className="tooltip"
+    return isValidUrl(featureLibrary) ? (<a href={featureLibrary} target="_blank" className="tooltip_link"> 
+         <span className="tooltip"
                  data-text={featureLibrary}
            >
                info
-           </span>    
+        </span> 
+    </a>
+    ) : (
+        <span className="tooltip" data-text={featureLibrary}>
+            info
+        </span>
+    );   
 }
 
 function Annotations({ colors }) {
@@ -220,6 +236,20 @@ function Annotations({ colors }) {
     const sequence = useStore(s => s.document?.root.sequence)?.toLowerCase()
     
     const sequencePartLibraries = [
+        { value: 'local_libraries', label: 'SeqImprove Local Libraries'},
+        { value: 'https://synbiohub.org/public/CnDatabase/CnDatabase_collection/1', label: 'Cryptococcus neoformans Database'},
+        { value: 'https://synbiohub.org/public/free_genes_feature_libraries/free_genes_feature_libraries_collection/1', label: 'Free Genes Feature Libraries'},
+        { value: 'https://synbiohub.org/public/iGEM_2016_interlab/iGEM_2016_interlab_collection/1', label: 'Devices from the iGEM 2016 interlab'},
+        { value: 'https://synbiohub.org/public/Digitalizer/Digitalizer_collection/1', label: 'Digitizer Library'},
+        { value: 'https://synbiohub.org/public/Excel2SBOL/Excel2SBOL_collection/1', label: 'Excel2SBOL Collection'},
+        { value: 'https://synbiohub.org/public/sbksactivities/sbksactivities_collection/1', label: 'SBKS Activities Collection'},
+        { value: 'https://synbiohub.org/public/SEGA/SEGA_collection/1', label: 'SEGA Collecition'},
+        { value: 'https://synbiohub.org/public/Intein_assisted_Bisection_Mapping/Intein_assisted_Bisection_Mapping_collection/1', label: 'Intein Assisted Bisection Mapping Collection'},
+        { value: 'https://synbiohub.org/public/Eco1C1G1T1/Eco1C1G1T1_collection/1', label: 'Cello E. Coli Parts Collection'},
+        { value: 'https://synbiohub.org/public/SBOLCompliantSoftware/SBOLCompliantSoftware_collection/1', label: 'SBOL Compliant Software Collection'},
+    ];
+
+    const localLibraries = [         
         { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
         { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
         { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
@@ -231,13 +261,18 @@ function Annotations({ colors }) {
         { value: 'cello_library.xml', label: 'Cello Library' },
     ];
 
-    const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState(sequencePartLibraries);
+    const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
         <div ref={ref} {...props}>
             <AnnotationCheckbox  {...props} />
         </div>
     ));
+
+    const handleAnalyzeSequenceClick = () => {
+        if (sequencePartLibrariesSelected.length > 0) loadSequenceAnnotations()
+        else showErrorNotification('No libraries selected ', 'Select one or more libraries to continue')
+    }
 
     return (
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
@@ -252,7 +287,9 @@ function Annotations({ colors }) {
 
                     {anno.featureLibrary &&
                      <MyToolTip
-                         featureLibrary={anno.featureLibrary.replace(/_/g, ' ').slice(0, anno.featureLibrary.length - 4)}
+                        featureLibrary={ anno.featureLibrary.endsWith('.xml')
+                            ? anno.featureLibrary.replace(/_/g, ' ').slice(0, -4)
+                            : anno.featureLibrary}
                      >
                      </MyToolTip>}
                     
@@ -270,16 +307,18 @@ function Annotations({ colors }) {
                     const chosenLibraries = sequencePartLibraries.filter(lib => {
                         return librariesSelected[0].includes(lib.value);
                     });
-                    // mutate the libraries Selected in the store                    
-                    if (chosenLibraries.length == 0) {
-                        mutateSequencePartLibrariesSelected(useStore.setState, state => {                        
-                            state.sequencePartLibrariesSelected = sequencePartLibraries;
-                        });
-                    } else {
-                        mutateSequencePartLibrariesSelected(useStore.setState, state => {                        
-                            state.sequencePartLibrariesSelected = chosenLibraries;
-                        });
-                    }
+                    // mutate the libraries Selected in the store                                    
+                    mutateSequencePartLibrariesSelected(useStore.setState, state => {     
+                        if(chosenLibraries.some(item => item.value === 'local_libraries')) {
+                            console.log(true)
+    
+                            state.sequencePartLibrariesSelected = chosenLibraries.filter(item => item.value !== 'local_libraries')
+                            state.sequencePartLibrariesSelected.push(...localLibraries)
+                        }
+                        else state.sequencePartLibrariesSelected = chosenLibraries;
+                    });
+                    
+
                     setSequencePartLibrariesSelected(...librariesSelected);
                 })}               
             />
@@ -294,7 +333,7 @@ function Annotations({ colors }) {
                     variant="subtle"
                     active={true}
                     color="blue"
-                    onClick={loadSequenceAnnotations}
+                    onClick={handleAnalyzeSequenceClick}
                     sx={{ borderRadius: 6 }}
                />}
         </FormSection>
