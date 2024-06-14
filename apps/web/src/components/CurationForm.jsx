@@ -429,9 +429,59 @@ export default function CurationForm({ }) {
             state.loadSBOL(newSBOLcontent);            
         });
     };
+
+    // differentiates ID by adding 1; temporary change to allow reuploading to sbh
+    const cleanDocument = () => {
+        mutateDocument(useStore.setState, state => {
+            // Replace displayId in URIs in xml            
+            let remainingXML = state.document.serializeXML();
+            let xmlChunks = [];
+            let matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+
+            while (matchData) {
+                xmlChunks.push(remainingXML.slice(0,matchData.index));                
+                const uri = matchData[0];
+                const regexp = new RegExp(state.document.root.displayId, 'g');
+                xmlChunks.push(uri.replace(regexp, workingDisplayID + "1"));
+
+                remainingXML = remainingXML.slice(matchData.index + uri.length);                
+                matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+            }
+
+            // Replace displayId property in xml
+            remainingXML = xmlChunks.concat(remainingXML).join('');                      
+            xmlChunks = [];
+            const regexpOpenTag = /\<sbol\:displayId\>/;
+            const regexpCloseTag = /\<\/sbol\:displayId\>/;
+            matchData = remainingXML.match(regexpOpenTag);            
+
+            while(matchData) {
+                xmlChunks.push(remainingXML.slice(0, matchData.index + matchData[0].length));
+                remainingXML = remainingXML.slice(matchData.index + matchData[0].length);
+
+                matchData = remainingXML.match(regexpCloseTag);
+                xmlChunks.push(workingDisplayID + "1");
+
+                remainingXML = remainingXML.slice(remainingXML.match(regexpCloseTag).index);
+                matchData = remainingXML.match(regexpOpenTag);
+            }
+
+            const newSBOLcontent = xmlChunks.concat(remainingXML).join('');
+
+            state.loadSBOL(newSBOLcontent);
+            
+            exportDocument()
+        });
+    };
         
     const logout = useStore(s => s.logout);
-    const [ synBioHubs, setSynBioHubs ] = useState([]);    
+    const [ synBioHubs, setSynBioHubs ] = useState([]);  
+    const [ isChecked, toggleCheckBox ] = useState(false);
+
+    const handleCleanCheckBox = () => {
+        if (isChecked) toggleCheckBox(false)
+        else toggleCheckBox (true)
+    }
 
     const loadSynBioHubs = async () => {
         const response = await fetch("https://wor.synbiohub.org/instances");
@@ -521,15 +571,30 @@ export default function CurationForm({ }) {
                             </Menu.Target>
 
                             {isValid(sequence) && <Menu.Dropdown> 
-                                <Menu.Item onClick={exportDocument}> 
-                                    Download SBOL2 {<TbDownload />}
+                                <Menu.Item>
+                                    <Checkbox label="Clean Document" checked={isChecked} onChange={handleCleanCheckBox}/>
                                 </Menu.Item>
-                                <Menu.Item onClick={() => {
+                                {isChecked && <Menu.Item onClick={cleanDocument}> 
+                                    Download SBOL2 {<TbDownload />}
+                                </Menu.Item>}
+                                {!isChecked && <Menu.Item onClick={exportDocument}> 
+                                    Download SBOL2 {<TbDownload />}
+                                </Menu.Item>}
+                                
+                                {/* different onClick behavior for  */}
+
+                                {isChecked && <Menu.Item onClick={() => {
                                                loadSynBioHubs();
                                                setIsInteractingWithSynBioHub(true);
                                            }}>
                                     Upload to SynBioHub {<TbUpload />}
-                                </Menu.Item>
+                                </Menu.Item>}
+                                {!isChecked && <Menu.Item onClick={() => {
+                                               loadSynBioHubs();
+                                               setIsInteractingWithSynBioHub(true);
+                                           }}>
+                                    Upload to SynBioHub {<TbUpload />}
+                                </Menu.Item>}
                             </Menu.Dropdown>}
                         </Menu>
                         {/* <Button onClick={exportDocument} variant="light" rightIcon={<TbDownload />}>
