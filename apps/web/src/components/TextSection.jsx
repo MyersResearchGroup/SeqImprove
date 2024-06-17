@@ -17,7 +17,7 @@ function Description({ colors }) {
     const annotations = useStore(s => s.textAnnotations)
     const { getAnnotation, editAnnotation, setActive, isActive, removeAnnotation } = useStore(s => s.textAnnotationActions)
 
-    // console.log(annotations)
+    console.log("start: ", annotations)
 
     // make a map of colors for easier access
     const colorMap = useMemo(() => Object.fromEntries(annotations.map((anno, i) => [anno.id, colors[i]])), [colors])
@@ -49,6 +49,8 @@ function Description({ colors }) {
                         draft.forEach(mention => {
                             mention.start = mention.bufferPatch.start
                             mention.end = mention.bufferPatch.end
+                            console.log("mention.start: ", mention.start);
+                            console.log("mention.end: ", mention.end);
                         })
                     })
                 });
@@ -238,7 +240,6 @@ function Description({ colors }) {
                     />
                 }
             </FormSection>
-
             {selection &&
                 <Group position="center" onMouseDown={event => event.preventDefault()}>
                     {annotations.length ?
@@ -252,7 +253,7 @@ function Description({ colors }) {
                                 New Annotation
                             </Button> */}
 
-                            {/* Add to Existing Annotation Select */}
+                            {/* Add to Existing Annotation Select */} 
                             <Select
                                 w={250}
                                 radius="xl"

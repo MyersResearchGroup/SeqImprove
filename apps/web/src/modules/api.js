@@ -145,7 +145,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
 
 export async function fetchAnnotateText(text) {
 
-    console.log("Annotating text...")
+    console.log("Annotating text...", `${import.meta.env.VITE_API_LOCATION}/api/annotateText`);
 
     // Fetch
     try {
