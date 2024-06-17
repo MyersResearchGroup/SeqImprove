@@ -1,5 +1,8 @@
 name: Azure Static Web Apps CI/CD
 
+env:
+  VITE_API_LOCATION: seqimprove-api.internal.victoriouswater-326a4bf8.westcentralus.azurecontainerapps.io
+  
 on:
   push:
     branches:
