@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sbol:Collection rdf:about="https://synbiohub.org/public/Excel2SBOL/AlteredSequenceActivities_collection/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/AlteredSequenceActivities_collection"/>
+    <sbol:displayId>AlteredSequenceActivities_collection</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Altered Sequence Activities</dcterms:title>
+    <dcterms:description>A set of activities to point to ways in which sequences have been altered between source and upload</dcterms:description>
+    <dc:creator>Jeanet Mante</dc:creator>
+    <dcterms:created>2021-02-19T22:30:50.210Z</dcterms:created>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/AlteredSequenceActivities_collection/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/Unknown/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/Truncated/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/reverse_orientation/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/GC_Optimised/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/cut_out_of_plasmid/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/Composite/1"/>
+  </sbol:Collection>
+  <sbol:Collection rdf:about="https://synbiohub.org/public/Excel2SBOL/Excel2SBOL_collection/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/Excel2SBOL_collection"/>
+    <sbol:displayId>Excel2SBOL_collection</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Excel2SBOL</dcterms:title>
+    <dcterms:description>A collection of sbol that is used for the excel2sbol library</dcterms:description>
+    <dc:creator></dc:creator>
+    <dcterms:created>2021-02-19T22:32:56.673Z</dcterms:created>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/Excel2SBOL_collection/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/Unknown/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/Truncated/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/reverse_orientation/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/GC_Optimised/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/cut_out_of_plasmid/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/Composite/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/Excel2SBOL/AlteredSequenceActivities_collection/1"/>
+  </sbol:Collection>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/cut_out_of_plasmid/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/cut_out_of_plasmid"/>
+    <sbol:displayId>cut_out_of_plasmid</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Sequence Cut Out of Plasmid</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence was cut out of the plasmid referenced as the source</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/cut_out_of_plasmid/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/reverse_orientation/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/reverse_orientation"/>
+    <sbol:displayId>reverse_orientation</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Reverse Orientation Sequence Pull</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence's orientation was reversed (e.g. 3' to 5' becomes 5' to 3') after pulling from the source and before submission</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/reverse_orientation/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/Truncated/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/Truncated"/>
+    <sbol:displayId>Truncated</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Truncated Sequence Pull</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence was truncated after pulling from the source and before submission</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/Truncated/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation"/>
+    <sbol:displayId>codon_optimisation</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Codon Optimised Sequence Pull</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence was codon optimised after pulling from the source and before submission</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/codon_optimisation/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/Unknown/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/Unknown"/>
+    <sbol:displayId>Unknown</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Unknown Alteration Sequence Pull</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence alteration was made between the source and the submission but the nature of the alteration is unknown</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/Unknown/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/GC_Optimised/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/GC_Optimised"/>
+    <sbol:displayId>GC_Optimised</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>GC Optimised Sequence Pull</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence was GC optimised after pulling from the source and before submission</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/GC_Optimised/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/Composite/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/Composite"/>
+    <sbol:displayId>Composite</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Composite Sequence Pull</dcterms:title>
+    <dcterms:description>When multiple sources where combined to make a new part.</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/Composite/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/direct/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct"/>
+    <sbol:displayId>direct</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Direct Sequence Pull</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence was pulled directly from a source with no alterations made</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/direct/1"/>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/Excel2SBOL/mutations/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations"/>
+    <sbol:displayId>mutations</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Sequence Pull with Mutations</dcterms:title>
+    <dcterms:description>Used to indicate that a sequence had mutations added after pulling from the source and before submission</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/Excel2SBOL/mutations/1"/>
+  </prov:Activity>
+</rdf:RDF>

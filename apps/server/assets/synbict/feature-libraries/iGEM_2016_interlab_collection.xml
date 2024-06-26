@@ -1,0 +1,1393 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:ns0="http://purl.obolibrary.org/obo/" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sbol:Collection rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/iGEM_2016_interlab_collection/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/iGEM_2016_interlab_collection"/>
+    <sbol:displayId>iGEM_2016_interlab_collection</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>Devices from the iGEM 2016 interlab</dcterms:title>
+    <dcterms:description>This is a collection of devices that were used in the 2016 iGEM interlab study</dcterms:description>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <dc:creator>Jacob Beal</dc:creator>
+    <dcterms:created>2018-05-27T11:11:41.695Z</dcterms:created>
+    <dcterms:created>2018-05-27T11:15:26.791Z</dcterms:created>
+    <dcterms:created>2018-05-27T11:19:48.537Z</dcterms:created>
+    <dcterms:created>2018-05-27T11:20:40.621Z</dcterms:created>
+    <dcterms:created>2020-05-16T03:46:58.048Z</dcterms:created>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/iGEM_2016_interlab_collection/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016InterlabSequence/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016InterlabSequence/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016InterlabSequence/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016InterlabSequence/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016InterlabSequence/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/1"/>
+  </sbol:Collection>
+  <sbol:ComponentDefinition rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab"/>
+    <sbol:displayId>Strong_2016Interlab</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+    <dcterms:title>iGEM interlab 2016 strong device</dcterms:title>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:type rdf:resource="http://identifiers.org/so/SO:0000988"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000804"/>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/RBS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/RBS_Component"/>
+        <sbol:displayId>RBS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0034/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Ter_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Ter_Component"/>
+        <sbol:displayId>Ter_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0015/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/CDS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/CDS_Component"/>
+        <sbol:displayId>CDS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_E0040/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Pro_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Pro_Component"/>
+        <sbol:displayId>Pro_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_J23101/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Cir_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Cir_Component"/>
+        <sbol:displayId>Cir_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/pSB1C3/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceAnnotation</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation/Strong_2016Interlab_SequenceAnnotation_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation/Strong_2016Interlab_SequenceAnnotation_Range"/>
+            <sbol:displayId>Strong_2016Interlab_SequenceAnnotation_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+            <sbol:start>1</sbol:start>
+            <sbol:end>2070</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Cir_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation4/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation4"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceAnnotation4</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation4/Strong_2016Interlab_SequenceAnnotation4_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation4/Strong_2016Interlab_SequenceAnnotation4_Range"/>
+            <sbol:displayId>Strong_2016Interlab_SequenceAnnotation4_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+            <sbol:start>2838</sbol:start>
+            <sbol:end>2966</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation3"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceAnnotation3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation3/Strong_2016Interlab_SequenceAnnotation3_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation3/Strong_2016Interlab_SequenceAnnotation3_Range"/>
+            <sbol:displayId>Strong_2016Interlab_SequenceAnnotation3_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+            <sbol:start>2118</sbol:start>
+            <sbol:end>2837</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation2"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceAnnotation2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation2/Strong_2016Interlab_SequenceAnnotation2_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation2/Strong_2016Interlab_SequenceAnnotation2_Range"/>
+            <sbol:displayId>Strong_2016Interlab_SequenceAnnotation2_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+            <sbol:start>2106</sbol:start>
+            <sbol:end>2117</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation1"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceAnnotation1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation1/Strong_2016Interlab_SequenceAnnotation1_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceAnnotation1/Strong_2016Interlab_SequenceAnnotation1_Range"/>
+            <sbol:displayId>Strong_2016Interlab_SequenceAnnotation1_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+            <sbol:start>2071</sbol:start>
+            <sbol:end>2105</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint1"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceConstraint1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Pro_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint2"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceConstraint2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/RBS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint3"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceConstraint3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/CDS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Strong_2016Interlab_SequenceConstraint"/>
+        <sbol:displayId>Strong_2016Interlab_SequenceConstraint</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Cir_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequence rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016InterlabSequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab"/>
+    <sbol:displayId>Weak_2016Interlab</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+    <dcterms:title>iGEM interlab 2016 weak device</dcterms:title>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:type rdf:resource="http://identifiers.org/so/SO:0000988"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000804"/>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Pro_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Pro_Component"/>
+        <sbol:displayId>Pro_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_J23117/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Cir_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Cir_Component"/>
+        <sbol:displayId>Cir_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/pSB1C3/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/RBS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/RBS_Component"/>
+        <sbol:displayId>RBS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0034/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Ter_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Ter_Component"/>
+        <sbol:displayId>Ter_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0015/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/CDS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/CDS_Component"/>
+        <sbol:displayId>CDS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_E0040/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation3"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceAnnotation3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation3/Weak_2016Interlab_SequenceAnnotation3_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation3/Weak_2016Interlab_SequenceAnnotation3_Range"/>
+            <sbol:displayId>Weak_2016Interlab_SequenceAnnotation3_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+            <sbol:start>2118</sbol:start>
+            <sbol:end>2837</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceAnnotation</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation/Weak_2016Interlab_SequenceAnnotation_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation/Weak_2016Interlab_SequenceAnnotation_Range"/>
+            <sbol:displayId>Weak_2016Interlab_SequenceAnnotation_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+            <sbol:start>1</sbol:start>
+            <sbol:end>2070</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Cir_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation1"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceAnnotation1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation1/Weak_2016Interlab_SequenceAnnotation1_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation1/Weak_2016Interlab_SequenceAnnotation1_Range"/>
+            <sbol:displayId>Weak_2016Interlab_SequenceAnnotation1_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+            <sbol:start>2071</sbol:start>
+            <sbol:end>2105</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation2"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceAnnotation2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation2/Weak_2016Interlab_SequenceAnnotation2_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation2/Weak_2016Interlab_SequenceAnnotation2_Range"/>
+            <sbol:displayId>Weak_2016Interlab_SequenceAnnotation2_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+            <sbol:start>2106</sbol:start>
+            <sbol:end>2117</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation4/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation4"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceAnnotation4</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation4/Weak_2016Interlab_SequenceAnnotation4_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceAnnotation4/Weak_2016Interlab_SequenceAnnotation4_Range"/>
+            <sbol:displayId>Weak_2016Interlab_SequenceAnnotation4_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+            <sbol:start>2838</sbol:start>
+            <sbol:end>2966</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceConstraint</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Cir_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint2"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceConstraint2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/RBS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint1"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceConstraint1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Pro_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Weak_2016Interlab_SequenceConstraint3"/>
+        <sbol:displayId>Weak_2016Interlab_SequenceConstraint3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/CDS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequence rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016InterlabSequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab"/>
+    <sbol:displayId>Negative_2016Interlab</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+    <dcterms:title>iGEM interlab 2016 negative control</dcterms:title>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:type rdf:resource="http://identifiers.org/so/SO:0000988"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000804"/>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Pro_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Pro_Component"/>
+        <sbol:displayId>Pro_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_R0040/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Cir_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Cir_Component"/>
+        <sbol:displayId>Cir_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/pSB1C3/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation1"/>
+        <sbol:displayId>Negative_2016Interlab_SequenceAnnotation1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation1/Negative_2016Interlab_SequenceAnnotation1_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation1/Negative_2016Interlab_SequenceAnnotation1_Range"/>
+            <sbol:displayId>Negative_2016Interlab_SequenceAnnotation1_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+            <sbol:start>2071</sbol:start>
+            <sbol:end>2124</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation"/>
+        <sbol:displayId>Negative_2016Interlab_SequenceAnnotation</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation/Negative_2016Interlab_SequenceAnnotation_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceAnnotation/Negative_2016Interlab_SequenceAnnotation_Range"/>
+            <sbol:displayId>Negative_2016Interlab_SequenceAnnotation_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+            <sbol:start>1</sbol:start>
+            <sbol:end>2070</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Cir_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceConstraint/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Negative_2016Interlab_SequenceConstraint"/>
+        <sbol:displayId>Negative_2016Interlab_SequenceConstraint</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Cir_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequence rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016InterlabSequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab"/>
+    <sbol:displayId>Positive_2016Interlab</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+    <dcterms:title>iGEM interlab 2016 positive control</dcterms:title>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:type rdf:resource="http://identifiers.org/so/SO:0000988"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000804"/>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Cir_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Cir_Component"/>
+        <sbol:displayId>Cir_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/pSB1C3/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Ter_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Ter_Component"/>
+        <sbol:displayId>Ter_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0015/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/CDS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/CDS_Component"/>
+        <sbol:displayId>CDS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_E0040/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/RBS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/RBS_Component"/>
+        <sbol:displayId>RBS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0032/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Pro_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Pro_Component"/>
+        <sbol:displayId>Pro_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_J23151/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceAnnotation</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation/Positive_2016Interlab_SequenceAnnotation_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation/Positive_2016Interlab_SequenceAnnotation_Range"/>
+            <sbol:displayId>Positive_2016Interlab_SequenceAnnotation_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+            <sbol:start>1</sbol:start>
+            <sbol:end>2070</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Cir_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation1"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceAnnotation1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation1/Positive_2016Interlab_SequenceAnnotation1_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation1/Positive_2016Interlab_SequenceAnnotation1_Range"/>
+            <sbol:displayId>Positive_2016Interlab_SequenceAnnotation1_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+            <sbol:start>2071</sbol:start>
+            <sbol:end>2105</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation3"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceAnnotation3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation3/Positive_2016Interlab_SequenceAnnotation3_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation3/Positive_2016Interlab_SequenceAnnotation3_Range"/>
+            <sbol:displayId>Positive_2016Interlab_SequenceAnnotation3_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+            <sbol:start>2119</sbol:start>
+            <sbol:end>2838</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation4/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation4"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceAnnotation4</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation4/Positive_2016Interlab_SequenceAnnotation4_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation4/Positive_2016Interlab_SequenceAnnotation4_Range"/>
+            <sbol:displayId>Positive_2016Interlab_SequenceAnnotation4_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+            <sbol:start>2839</sbol:start>
+            <sbol:end>2967</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation2"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceAnnotation2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation2/Positive_2016Interlab_SequenceAnnotation2_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceAnnotation2/Positive_2016Interlab_SequenceAnnotation2_Range"/>
+            <sbol:displayId>Positive_2016Interlab_SequenceAnnotation2_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+            <sbol:start>2106</sbol:start>
+            <sbol:end>2118</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint2"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceConstraint2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/RBS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint1"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceConstraint1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Pro_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceConstraint</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Cir_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Positive_2016Interlab_SequenceConstraint3"/>
+        <sbol:displayId>Positive_2016Interlab_SequenceConstraint3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/CDS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequence rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016InterlabSequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab"/>
+    <sbol:displayId>Medium_2016Interlab</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <dcterms:title>iGEM interlab 2016 medium device</dcterms:title>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:type rdf:resource="http://identifiers.org/so/SO:0000988"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000804"/>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/CDS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/CDS_Component"/>
+        <sbol:displayId>CDS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_E0040/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Pro_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Pro_Component"/>
+        <sbol:displayId>Pro_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_J23106/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/RBS_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/RBS_Component"/>
+        <sbol:displayId>RBS_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0034/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Ter_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Ter_Component"/>
+        <sbol:displayId>Ter_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/BBa_B0015/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:component>
+      <sbol:Component rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Cir_Component/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Cir_Component"/>
+        <sbol:displayId>Cir_Component</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:access rdf:resource="http://sbols.org/v2#public"/>
+        <sbol:definition rdf:resource="https://synbiohub.org/public/igem/pSB1C3/1"/>
+      </sbol:Component>
+    </sbol:component>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation2"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceAnnotation2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation2/Medium_2016Interlab_SequenceAnnotation2_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation2/Medium_2016Interlab_SequenceAnnotation2_Range"/>
+            <sbol:displayId>Medium_2016Interlab_SequenceAnnotation2_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+            <sbol:start>2106</sbol:start>
+            <sbol:end>2117</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation1"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceAnnotation1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation1/Medium_2016Interlab_SequenceAnnotation1_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation1/Medium_2016Interlab_SequenceAnnotation1_Range"/>
+            <sbol:displayId>Medium_2016Interlab_SequenceAnnotation1_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+            <sbol:start>2071</sbol:start>
+            <sbol:end>2105</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceAnnotation</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation/Medium_2016Interlab_SequenceAnnotation_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation/Medium_2016Interlab_SequenceAnnotation_Range"/>
+            <sbol:displayId>Medium_2016Interlab_SequenceAnnotation_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+            <sbol:start>1</sbol:start>
+            <sbol:end>2070</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Cir_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation4/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation4"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceAnnotation4</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation4/Medium_2016Interlab_SequenceAnnotation4_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation4/Medium_2016Interlab_SequenceAnnotation4_Range"/>
+            <sbol:displayId>Medium_2016Interlab_SequenceAnnotation4_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+            <sbol:start>2838</sbol:start>
+            <sbol:end>2966</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceAnnotation>
+      <sbol:SequenceAnnotation rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation3"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceAnnotation3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:location>
+          <sbol:Range rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation3/Medium_2016Interlab_SequenceAnnotation3_Range/1">
+            <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceAnnotation3/Medium_2016Interlab_SequenceAnnotation3_Range"/>
+            <sbol:displayId>Medium_2016Interlab_SequenceAnnotation3_Range</sbol:displayId>
+            <sbol:version>1</sbol:version>
+            <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+            <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+            <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+            <sbol:start>2118</sbol:start>
+            <sbol:end>2837</sbol:end>
+            <sbol:orientation rdf:resource="http://sbols.org/v2#inline"/>
+          </sbol:Range>
+        </sbol:location>
+        <sbol:component rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceAnnotation>
+    </sbol:sequenceAnnotation>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint3/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint3"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceConstraint3</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/CDS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Ter_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceConstraint</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Cir_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Pro_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint2/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint2"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceConstraint2</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/RBS_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/CDS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequenceConstraint>
+      <sbol:SequenceConstraint rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint1/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Medium_2016Interlab_SequenceConstraint1"/>
+        <sbol:displayId>Medium_2016Interlab_SequenceConstraint1</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/1"/>
+        <sbol:restriction rdf:resource="http://sbols.org/v2#precedes"/>
+        <sbol:subject rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/Pro_Component/1"/>
+        <sbol:object rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab/RBS_Component/1"/>
+      </sbol:SequenceConstraint>
+    </sbol:sequenceConstraint>
+    <sbol:sequence rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016InterlabSequence/1"/>
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016InterlabSequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016InterlabSequence"/>
+    <sbol:displayId>Medium_2016InterlabSequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016InterlabSequence/1"/>
+    <sbol:elements>tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgaggcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagcgagctcgatatcaaattacgccccgccctgccactcatcgcagtactgttgtaattcattaagcattctgccgacatggaagccatcacaaacggcatgatgaacctgaatcgccagcggcatcagcaccttgtcgccttgcgtataatatttgcccatggtgaaaacgggggcgaagaagttgtccatattggccacgtttaaatcaaaactggtgaaactcacccagggattggctgagacgaaaaacatattctcaataaaccctttagggaaataggccaggttttcaccgtaacacgccacatcttgcgaatatatgtgtagaaactgccggaaatcgtcgtggtattcactccagagcgatgaaaacgtttcagtttgctcatggaaaacggtgtaacaagggtgaacactatcccatatcaccagctcaccgtctttcattgccatacgaaattccggatgagcattcatcaggcgggcaagaatgtgaataaaggccggataaaacttgtgcttatttttctttacggtctttaaaaaggccgtaatatccagctgaacggtctggttataggtacattgagcaactgactgaaatgcctcaaaatgttctttacgatgccattgggatatatcaacggtggtatatccagtgatttttttctccattttagcttccttagctcctgaaaatctcgataactcaaaaaatacgcccggtagtgatcttatttcattatggtgaaagttggaacctcttacgtgcccgatcaactcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagagtttacggctagctcagtcctaggtatagtgctagcaaagaggagaaaatgcgtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactttcggttatggtgttcaatgctttgcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaataataaccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttata</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016InterlabSequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016InterlabSequence"/>
+    <sbol:displayId>Positive_2016InterlabSequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/1"/>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016InterlabSequence/1"/>
+    <sbol:elements>tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgaggcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagcgagctcgatatcaaattacgccccgccctgccactcatcgcagtactgttgtaattcattaagcattctgccgacatggaagccatcacaaacggcatgatgaacctgaatcgccagcggcatcagcaccttgtcgccttgcgtataatatttgcccatggtgaaaacgggggcgaagaagttgtccatattggccacgtttaaatcaaaactggtgaaactcacccagggattggctgagacgaaaaacatattctcaataaaccctttagggaaataggccaggttttcaccgtaacacgccacatcttgcgaatatatgtgtagaaactgccggaaatcgtcgtggtattcactccagagcgatgaaaacgtttcagtttgctcatggaaaacggtgtaacaagggtgaacactatcccatatcaccagctcaccgtctttcattgccatacgaaattccggatgagcattcatcaggcgggcaagaatgtgaataaaggccggataaaacttgtgcttatttttctttacggtctttaaaaaggccgtaatatccagctgaacggtctggttataggtacattgagcaactgactgaaatgcctcaaaatgttctttacgatgccattgggatatatcaacggtggtatatccagtgatttttttctccattttagcttccttagctcctgaaaatctcgataactcaaaaaatacgcccggtagtgatcttatttcattatggtgaaagttggaacctcttacgtgcccgatcaactcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagagttgatggctagctcagtcctaggtacaatgctagctcacacaggaaagatgcgtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactttcggttatggtgttcaatgctttgcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaataataaccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttata</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016InterlabSequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016InterlabSequence"/>
+    <sbol:displayId>Weak_2016InterlabSequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/1"/>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016InterlabSequence/1"/>
+    <sbol:elements>tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgaggcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagcgagctcgatatcaaattacgccccgccctgccactcatcgcagtactgttgtaattcattaagcattctgccgacatggaagccatcacaaacggcatgatgaacctgaatcgccagcggcatcagcaccttgtcgccttgcgtataatatttgcccatggtgaaaacgggggcgaagaagttgtccatattggccacgtttaaatcaaaactggtgaaactcacccagggattggctgagacgaaaaacatattctcaataaaccctttagggaaataggccaggttttcaccgtaacacgccacatcttgcgaatatatgtgtagaaactgccggaaatcgtcgtggtattcactccagagcgatgaaaacgtttcagtttgctcatggaaaacggtgtaacaagggtgaacactatcccatatcaccagctcaccgtctttcattgccatacgaaattccggatgagcattcatcaggcgggcaagaatgtgaataaaggccggataaaacttgtgcttatttttctttacggtctttaaaaaggccgtaatatccagctgaacggtctggttataggtacattgagcaactgactgaaatgcctcaaaatgttctttacgatgccattgggatatatcaacggtggtatatccagtgatttttttctccattttagcttccttagctcctgaaaatctcgataactcaaaaaatacgcccggtagtgatcttatttcattatggtgaaagttggaacctcttacgtgcccgatcaactcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagagttgacagctagctcagtcctagggattgtgctagcaaagaggagaaaatgcgtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactttcggttatggtgttcaatgctttgcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaataataaccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttata</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016InterlabSequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016InterlabSequence"/>
+    <sbol:displayId>Negative_2016InterlabSequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/1"/>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016InterlabSequence/1"/>
+    <sbol:elements>tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgaggcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagcgagctcgatatcaaattacgccccgccctgccactcatcgcagtactgttgtaattcattaagcattctgccgacatggaagccatcacaaacggcatgatgaacctgaatcgccagcggcatcagcaccttgtcgccttgcgtataatatttgcccatggtgaaaacgggggcgaagaagttgtccatattggccacgtttaaatcaaaactggtgaaactcacccagggattggctgagacgaaaaacatattctcaataaaccctttagggaaataggccaggttttcaccgtaacacgccacatcttgcgaatatatgtgtagaaactgccggaaatcgtcgtggtattcactccagagcgatgaaaacgtttcagtttgctcatggaaaacggtgtaacaagggtgaacactatcccatatcaccagctcaccgtctttcattgccatacgaaattccggatgagcattcatcaggcgggcaagaatgtgaataaaggccggataaaacttgtgcttatttttctttacggtctttaaaaaggccgtaatatccagctgaacggtctggttataggtacattgagcaactgactgaaatgcctcaaaatgttctttacgatgccattgggatatatcaacggtggtatatccagtgatttttttctccattttagcttccttagctcctgaaaatctcgataactcaaaaaatacgcccggtagtgatcttatttcattatggtgaaagttggaacctcttacgtgcccgatcaactcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagagtccctatcagtgatagagattgacatccctatcagtgatagagatactgagcactcacacaggaaagatgcgtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactttcggttatggtgttcaatgctttgcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaataataaccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttata</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <sbol:Sequence rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016InterlabSequence/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016InterlabSequence"/>
+    <sbol:displayId>Strong_2016InterlabSequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <prov:wasGeneratedBy rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016InterlabSequence/1"/>
+    <sbol:elements>tactagtagcggccgctgcagtccggcaaaaaagggcaaggtgtcaccaccctgccctttttctttaaaaccgaaaagattacttcgcgttatgcaggcttcctcgctcactgactcgctgcgctcggtcgttcggctgcggcgagcggtatcagctcactcaaaggcggtaatacggttatccacagaatcaggggataacgcaggaaagaacatgtgagcaaaaggccagcaaaaggccaggaaccgtaaaaaggccgcgttgctggcgtttttccacaggctccgcccccctgacgagcatcacaaaaatcgacgctcaagtcagaggtggcgaaacccgacaggactataaagataccaggcgtttccccctggaagctccctcgtgcgctctcctgttccgaccctgccgcttaccggatacctgtccgcctttctcccttcgggaagcgtggcgctttctcatagctcacgctgtaggtatctcagttcggtgtaggtcgttcgctccaagctgggctgtgtgcacgaaccccccgttcagcccgaccgctgcgccttatccggtaactatcgtcttgagtccaacccggtaagacacgacttatcgccactggcagcagccactggtaacaggattagcagagcgaggtatgtaggcggtgctacagagttcttgaagtggtggcctaactacggctacactagaagaacagtatttggtatctgcgctctgctgaagccagttaccttcggaaaaagagttggtagctcttgatccggcaaacaaaccaccgctggtagcggtggtttttttgtttgcaagcagcagattacgcgcagaaaaaaaggatctcaagaagatcctttgatcttttctacggggtctgacgctcagtggaacgaaaactcacgttaagggattttggtcatgagattatcaaaaaggatcttcacctagatccttttaaattaaaaatgaagttttaaatcaatctaaagtatatatgagtaaacttggtctgacagctcgaggcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagcgagctcgatatcaaattacgccccgccctgccactcatcgcagtactgttgtaattcattaagcattctgccgacatggaagccatcacaaacggcatgatgaacctgaatcgccagcggcatcagcaccttgtcgccttgcgtataatatttgcccatggtgaaaacgggggcgaagaagttgtccatattggccacgtttaaatcaaaactggtgaaactcacccagggattggctgagacgaaaaacatattctcaataaaccctttagggaaataggccaggttttcaccgtaacacgccacatcttgcgaatatatgtgtagaaactgccggaaatcgtcgtggtattcactccagagcgatgaaaacgtttcagtttgctcatggaaaacggtgtaacaagggtgaacactatcccatatcaccagctcaccgtctttcattgccatacgaaattccggatgagcattcatcaggcgggcaagaatgtgaataaaggccggataaaacttgtgcttatttttctttacggtctttaaaaaggccgtaatatccagctgaacggtctggttataggtacattgagcaactgactgaaatgcctcaaaatgttctttacgatgccattgggatatatcaacggtggtatatccagtgatttttttctccattttagcttccttagctcctgaaaatctcgataactcaaaaaatacgcccggtagtgatcttatttcattatggtgaaagttggaacctcttacgtgcccgatcaactcgagtgccacctgacgtctaagaaaccattattatcatgacattaacctataaaaataggcgtatcacgaggcagaatttcagataaaaaaaatccttagctttcgctaaggatgatttctggaattcgcggccgcttctagagtttacagctagctcagtcctaggtattatgctagcaaagaggagaaaatgcgtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactttcggttatggtgttcaatgctttgcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaataataaccaggcatcaaataaaacgaaaggctcagtcgaaagactgggcctttcgttttatctgttgtttgtcggtgaacgctctctactagagtcacactggctcaccttcgggtgggcctttctgcgtttata</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+  </sbol:Sequence>
+  <prov:Activity rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity"/>
+    <sbol:displayId>Positive_2016Interlab_SBOLDesignerActivity</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <dc:creator>Jacob Beal</dc:creator>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:endedAtTime>2018-05-27T11:18:32.929Z</prov:endedAtTime>
+    <prov:qualifiedAssociation>
+      <prov:Association rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/Association/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/Association"/>
+        <sbol:displayId>Association</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Positive_2016Interlab_SBOLDesignerActivity/1"/>
+        <prov:hadRole rdf:resource="http://sbols.org/v2#sequenceEditor"/>
+        <prov:agent rdf:resource="https://synbiohub.org/public/SBOL_Software/SBOLDesigner/3.0"/>
+      </prov:Association>
+    </prov:qualifiedAssociation>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity"/>
+    <sbol:displayId>Strong_2016Interlab_SBOLDesignerActivity</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <dc:creator>Jacob Beal</dc:creator>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:endedAtTime>2018-05-27T11:13:09.084Z</prov:endedAtTime>
+    <prov:qualifiedAssociation>
+      <prov:Association rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/Association/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/Association"/>
+        <sbol:displayId>Association</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Strong_2016Interlab_SBOLDesignerActivity/1"/>
+        <prov:hadRole rdf:resource="http://sbols.org/v2#sequenceEditor"/>
+        <prov:agent rdf:resource="https://synbiohub.org/public/SBOL_Software/SBOLDesigner/3.0"/>
+      </prov:Association>
+    </prov:qualifiedAssociation>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity"/>
+    <sbol:displayId>Negative_2016Interlab_SBOLDesignerActivity</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <dc:creator>Jacob Beal</dc:creator>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:endedAtTime>2018-05-27T11:19:31.702Z</prov:endedAtTime>
+    <prov:qualifiedAssociation>
+      <prov:Association rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/Association/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/Association"/>
+        <sbol:displayId>Association</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Negative_2016Interlab_SBOLDesignerActivity/1"/>
+        <prov:hadRole rdf:resource="http://sbols.org/v2#sequenceEditor"/>
+        <prov:agent rdf:resource="https://synbiohub.org/public/SBOL_Software/SBOLDesigner/3.0"/>
+      </prov:Association>
+    </prov:qualifiedAssociation>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity"/>
+    <sbol:displayId>Weak_2016Interlab_SBOLDesignerActivity</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <dc:creator>Jacob Beal</dc:creator>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:endedAtTime>2018-05-27T11:16:57.791Z</prov:endedAtTime>
+    <prov:qualifiedAssociation>
+      <prov:Association rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/Association/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/Association"/>
+        <sbol:displayId>Association</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Weak_2016Interlab_SBOLDesignerActivity/1"/>
+        <prov:hadRole rdf:resource="http://sbols.org/v2#sequenceEditor"/>
+        <prov:agent rdf:resource="https://synbiohub.org/public/SBOL_Software/SBOLDesigner/3.0"/>
+      </prov:Association>
+    </prov:qualifiedAssociation>
+  </prov:Activity>
+  <prov:Activity rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity"/>
+    <sbol:displayId>Medium_2016Interlab_SBOLDesignerActivity</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+    <dc:creator>Jacob Beal</dc:creator>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+    <prov:endedAtTime>2018-05-27T11:06:59.843Z</prov:endedAtTime>
+    <prov:qualifiedAssociation>
+      <prov:Association rdf:about="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/Association/1">
+        <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/Association"/>
+        <sbol:displayId>Association</sbol:displayId>
+        <sbol:version>1</sbol:version>
+        <ns0:OBI_0001617>29928012</ns0:OBI_0001617>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/jakebeal"/>
+        <sbh:ownedBy rdf:resource="https://synbiohub.org/user/myers"/>
+        <sbh:topLevel rdf:resource="https://synbiohub.org/public/iGEM_2016_interlab/Medium_2016Interlab_SBOLDesignerActivity/1"/>
+        <prov:hadRole rdf:resource="http://sbols.org/v2#sequenceEditor"/>
+        <prov:agent rdf:resource="https://synbiohub.org/public/SBOL_Software/SBOLDesigner/3.0"/>
+      </prov:Association>
+    </prov:qualifiedAssociation>
+  </prov:Activity>
+</rdf:RDF>

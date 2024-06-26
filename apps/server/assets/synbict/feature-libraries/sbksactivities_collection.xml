@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sbol:Collection rdf:about="https://synbiohub.org/public/sbksactivities/sbksactivities_collection/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/sbksactivities/sbksactivities_collection"/>
+    <sbol:displayId>sbksactivities_collection</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>sbks activities</dcterms:title>
+    <dcterms:description>Activities linked to the SBKS project</dcterms:description>
+    <dc:creator>Jeanet Mante</dc:creator>
+    <dcterms:created>2021-02-24T23:53:05.887Z</dcterms:created>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/sbksactivities/sbksactivities_collection/1"/>
+    <sbol:member rdf:resource="https://synbiohub.org/public/sbksactivities/ACS_Synbio_Generation/1"/>
+  </sbol:Collection>
+  <prov:Activity rdf:about="https://synbiohub.org/public/sbksactivities/ACS_Synbio_Generation/1">
+    <sbol:persistentIdentity rdf:resource="https://synbiohub.org/public/sbksactivities/ACS_Synbio_Generation"/>
+    <sbol:displayId>ACS_Synbio_Generation</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>ACS Synbio Generation</dcterms:title>
+    <dcterms:description>Sequences pulled from the supplementals of the ACS Synthetic Biology journal as part of the SBKS project</dcterms:description>
+    <sbh:ownedBy rdf:resource="https://synbiohub.org/user/JMante"/>
+    <sbh:topLevel rdf:resource="https://synbiohub.org/public/sbksactivities/ACS_Synbio_Generation/1"/>
+  </prov:Activity>
+</rdf:RDF>

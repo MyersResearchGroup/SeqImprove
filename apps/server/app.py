@@ -21,6 +21,9 @@ from waitress import serve
 FEATURE_FILES = 0
 FEATURE_LIBRARY = 1
 
+uris = []
+sbh_file_prefixes = []
+
 FEATURE_LIBRARIES = {}
 # OLD:
 # FEATURE_LIBRARIES = [
@@ -54,13 +57,24 @@ def setup():
         sbh_str = json.dumps(sbhresponse.json())
         sbh_data = json.loads(sbh_str)
         
-        uris = [item['uri'] for item in sbh_data]
+        global uris
+        global sbh_file_prefixes
+
+        uris = [item['uri'] for item in sbh_data]   
+        sbh_file_prefixes = [item['displayId'] for item in sbh_data] 
 
         # remove large part libraries that break the http requests
         uris.remove('https://synbiohub.org/public/bsu/bsu_collection/1')
+        sbh_file_prefixes.remove('bsu_collection')
+
         uris.remove('https://synbiohub.org/public/igem/igem_collection/1')
+        sbh_file_prefixes.remove('igem_collection')
+
         uris.remove('https://synbiohub.org/public/iGEMDistributions/iGEMDistributions_collection/1')
+        sbh_file_prefixes.remove('iGEMDistributions_collection')
+        
         uris.remove('https://synbiohub.org/public/igem_feature_libraries/igem_feature_libraries_collection/1')
+        sbh_file_prefixes.remove('igem_feature_libraries_collection')
     else:
         print(f"Failed to retrieve data from SynBioHub: {sbhresponse.status_code}")
 
@@ -71,19 +85,14 @@ def setup():
         feature_doc.read(feature_library_path)
         # FEATURE_LIBRARIES.append([feature_library_path, FeatureLibrary([feature_doc])])
         FEATURE_LIBRARIES[feature_library_path] = FeatureLibrary([feature_doc])
-    
-    # download sequences from sbh using pull and download sequences func, add to FEATURE_LIBRARIES
-    for uri in uris:
-        feature_doc = sbol2.Document() #reinit
-        synbiohub = sbol2.PartShop(uri) #define url with each uri
-        
-        print(f"pulling... uri={uri}")
-        synbiohub.pull(uri, feature_doc)
-        download_sequences(feature_doc, synbiohub)
-        print(f"Feature Doc Summary: {feature_doc}")
-        # for cd in feature_doc.componentDefinitions:
-        #     print(cd)
-        FEATURE_LIBRARIES[uri] = FeatureLibrary([feature_doc])
+
+    # check for new libraries in synbiohub.org/rootcollections, pull if any exist
+    #
+    # for index, file_name in enumerate(sbh_file_prefixes):
+    #     if("./assets/synbict/feature-libraries/"+file_name+".xml" not in feature_libraries_paths): 
+    #         print(f"library {file_name} missing...")
+            # print(f"fetching from: {uris[index]}")
+            # FEATURE_LIBRARIES[file_name] = sbh_pull_library(uris[index])
 
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
@@ -107,12 +116,27 @@ def create_app():
 # only retrieves feature library that already exists after setup
 # might create a libarary in the future
 def create_feature_library(part_library_file_name):
-    if part_library_file_name.startswith('https://synbiohub.org'): #if url, return the obj since it is indexed with url
-        return FEATURE_LIBRARIES[part_library_file_name]
+    if part_library_file_name.startswith('https://synbiohub.org'): #if url, return the obj if indexed with url(sbh downloads only)
+        if part_library_file_name in FEATURE_LIBRARIES:
+            return FEATURE_LIBRARIES[part_library_file_name]
+        else: #for locally stored sbh collections(indexed with file name for annotation)
+            if part_library_file_name in uris:
+                uri_index = uris.index(part_library_file_name)
+                part_library_file_name = sbh_file_prefixes[uri_index] + '.xml'
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
     return FEATURE_LIBRARIES[feature_library_path]
+
+def sbh_pull_library(uri):
+    feature_doc = sbol2.Document() #reinit
+    synbiohub = sbol2.PartShop(uri) #define url with each uri
+    
+    synbiohub.pull(uri, feature_doc)
+    download_sequences(feature_doc, synbiohub)
+    print(f"Feature Doc Summary: {feature_doc}")
+    
+    return feature_doc
 
 def create_temp_file(content):
     try:
@@ -328,7 +352,7 @@ def genbank_to_sbol2():
 def annotate_sequence():
     request_data = request.get_json()
     sbol_content = request_data['completeSbolContent']
-    part_library_file_names = request_data['partLibraries'] # maybe change this approach, use parts out of doc instead of file dir?
+    part_library_file_names = request_data['partLibraries'] 
 
     print("Running SYNBICT...")
     # Run SYNBICT
