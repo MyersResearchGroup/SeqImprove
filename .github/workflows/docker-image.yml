@@ -1,0 +1,25 @@
+name: Docker Image CI
+
+defaults:
+  run:
+    working-directory: ./apps/server
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: |
+        docker build -t synbiosuite/seqimprove-api:latest .
+    - name: Publish to DockerHub
+      run: |
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker push synbiosuite/seqimprove-api:latest
