@@ -126,6 +126,8 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
             const annDoc = new SBOL2GraphView(new Graph());
             await annDoc.loadString(sbolAnnotated);
             
+            // console.log("annDoc rootcomponentdefinitions: " + annDoc.rootComponentDefinitions[0].sequenceAnnotations[1].component.displayName)
+
             // concatenate new annotations to result
             annotations = annotations.concat(annDoc.rootComponentDefinitions[0].sequenceAnnotations
                                              // filter annotations already in original document
@@ -135,6 +137,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
                                                  name: sa.displayName,
                                                  id: sa.persistentIdentity,
                                                  location: [sa.rangeMin, sa.rangeMax],
+                                                 componentInstance: sa.component,
                                                  featureLibrary: partLibrary,
                                              })));
         })();

@@ -1,5 +1,5 @@
 import { set } from "lodash"
-import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
+import { Graph, S2ComponentDefinition, S2ComponentInstance, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
 import { mutateDocument, useAsyncLoader, useStore } from "./store"
 
@@ -157,13 +157,21 @@ export function hasSequenceAnnotation(componentDefinition, annotationId) {
  *      id: string,
  *      name: string,
  *      location: number[],
+ *      componentInstance: S2ComponentInstance,
  * }} annoInfo
  */
 export function addSequenceAnnotation(componentDefinition, annoInfo) {
+    console.log("annoInfo:" + annoInfo.componentInstance.displayName)
+    
     if (hasSequenceAnnotation(componentDefinition, annoInfo.id))
         return
 
-    const sa = componentDefinition.annotateRange(annoInfo.location[0], annoInfo.location[1], annoInfo.name)
+    // const sa = componentDefinition.annotateRange(annoInfo.location[0], annoInfo.location[1], annoInfo.name)
+    // sa.persistentIdentity = annoInfo.id
+    // sa.name = annoInfo.name  
+
+
+    const sa = componentDefinition.addSequenceAnnotationForComponent(annoInfo.componentInstance)
     sa.persistentIdentity = annoInfo.id
     sa.name = annoInfo.name  
 }
