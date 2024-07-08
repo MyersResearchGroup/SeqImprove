@@ -263,6 +263,11 @@ function Annotations({ colors }) {
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
 
+    // check all anno boxes by default
+    useEffect(() => {
+        annotations.forEach(anno => setActive(anno.id, true));
+    }, [annotations, setActive]);
+
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
         <div ref={ref} {...props}>
             <AnnotationCheckbox  {...props} />
