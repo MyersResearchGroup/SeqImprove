@@ -119,14 +119,14 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
           .map(sa => sa.persistentIdentity);
     
     let annotations = [];  
+    const annDoc = new SBOL2GraphView(new Graph());
 
     await Promise.all(annoLibsAssoc.map(([ sbolAnnotated, partLibrary ]) => {
         return (async () => {
             // create and load annotated doc
-            const annDoc = new SBOL2GraphView(new Graph());
+            // const annDoc = new SBOL2GraphView(new Graph());
             await annDoc.loadString(sbolAnnotated);
             
-            // console.log("annDoc rootcomponentdefinitions: " + annDoc.rootComponentDefinitions[0].sequenceAnnotations[1].component.displayName)
 
             // concatenate new annotations to result
             annotations = annotations.concat(annDoc.rootComponentDefinitions[0].sequenceAnnotations
@@ -139,11 +139,12 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
                                                  location: [sa.rangeMin, sa.rangeMax],
                                                  componentInstance: sa.component,
                                                  featureLibrary: partLibrary,
+                                                 enabled: true,
                                              })));
         })();
     }));
 
-    return annotations;            
+    return { fetchedAnnotations: annotations, synbictDoc: annDoc };            
 }
 
 export async function fetchAnnotateText(text) {

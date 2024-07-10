@@ -188,10 +188,12 @@ export const useStore = create((set, get) => ({
         set({ loadingSequenceAnnotations: true });
 
         try {
-            const fetchedAnnotations = await fetchAnnotateSequence({
+            const result = await fetchAnnotateSequence({
                 sbolContent: get().document.serializeXML(),
                 selectedLibraryFileNames: get().sequencePartLibrariesSelected.map(lib => lib.value),
             }) ?? [];
+
+            let { fetchedAnnotations, synbictDoc } = result;
 
             set({             
                 sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
@@ -202,7 +204,8 @@ export const useStore = create((set, get) => ({
                         }
                     });
                 }),
-                loadingSequenceAnnotations: false
+                loadingSequenceAnnotations: false, 
+                document: synbictDoc,
             });
         } catch (err) {
             showErrorNotification("Load Error", "Could not load sequence annotations");
@@ -230,34 +233,34 @@ export const useStore = create((set, get) => ({
 
     sequenceAnnotationActions: createAnnotationActions(set, get, state => state.sequenceAnnotations, {
         test: hasSequenceAnnotation,
-        add: async (...args) => {
-            addSequenceAnnotation(...args);
+        add: (...args) => {
+            const index = addSequenceAnnotation(...args);
 
-            let xml = get().document.serializeXML();
-            let xmlChunks = [];
-            let matchData = xml.match(/\=\"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//= ]*)"/);
-
-            while (matchData) {
-                xmlChunks.push(xml.slice(0, matchData.index));
-                const uri = matchData[0];
-                const validURI = uri.replace(/ /g, '') 
-                xmlChunks.push(validURI);
-
-                xml = xml.slice(matchData.index + uri.length);
-                matchData = xml.match(/\=\"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//= ]*)"/);
-            }
-            xml = xmlChunks.concat(xml).join('');
-            const sequenceAnnotations = get().sequenceAnnotations;
- 
-            try {
-                var document = await createSBOLDocument(xml);
-            } catch (err) {
-                console.error(err);            
-                throw err;
-            }
-            set({ document });
+            set({
+                sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
+                    args[0].forEach(anno => {
+                        if (!draft.find(a => a.id == anno.id)) {
+                            draft.push(anno)
+                        }
+                    });
+                    draft[index].enabled = true
+                }),
+            });
         },
-        remove: removeSequenceAnnotation,
+        remove: (...args) => {
+            const index = removeSequenceAnnotation(...args);
+            
+                set({
+                    sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
+                        args[0].forEach(anno => {
+                            if (!draft.find(a => a.id == anno.id)) {
+                                draft.push(anno)
+                            }
+                        });
+                        draft[index].enabled = false
+                    }),
+                });
+        },
     }),
 
 
@@ -470,10 +473,11 @@ function createAnnotationActions(set, get, selector, { test, add, remove } = {})
 
     const getAnnotation = id => selector(get()).find(anno => anno.id == id)
 
-    const isActive = id => test(get().document.root, id)
+    const isActive = id => test(get().sequenceAnnotations, id)
     const setActive = (id, value) => {
         mutateDocument(set, state => {
-            (value ? add : remove)(state.document.root, getAnnotation(id))
+            // (value ? add : remove)(state.document.root, getAnnotation(id))
+            (value ? add : remove)(get().sequenceAnnotations, id)
         })
     }
 

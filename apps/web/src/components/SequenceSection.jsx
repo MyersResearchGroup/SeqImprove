@@ -263,10 +263,6 @@ function Annotations({ colors }) {
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
 
-    // check all anno boxes by default
-    useEffect(() => {
-        annotations.forEach(anno => setActive(anno.id, true));
-    }, [annotations, setActive]);
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
         <div ref={ref} {...props}>
@@ -315,8 +311,6 @@ function Annotations({ colors }) {
                     // mutate the libraries Selected in the store                                    
                     mutateSequencePartLibrariesSelected(useStore.setState, state => {     
                         if(chosenLibraries.some(item => item.value === 'local_libraries')) {
-                            console.log(true)
-    
                             state.sequencePartLibrariesSelected = chosenLibraries.filter(item => item.value !== 'local_libraries')
                             state.sequencePartLibrariesSelected.push(...localLibraries)
                         }
