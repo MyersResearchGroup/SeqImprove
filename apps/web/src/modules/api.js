@@ -116,7 +116,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
     
     // make a list of persistentIds to avoid
     const originalAnnotations = originalDoc.rootComponentDefinitions[0].sequenceAnnotations
-          .map(sa => sa.persistentIdentity);
+        .map(sa => sa.persistentIdentity.slice(0, -2)) //synbict increments a number at the end of the persistent identities, so we cut off the last 2 chars to compare
     
     let annotations = [];  
     const annDoc = new SBOL2GraphView(new Graph());
@@ -131,7 +131,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
             // concatenate new annotations to result
             annotations = annotations.concat(annDoc.rootComponentDefinitions[0].sequenceAnnotations
                                              // filter annotations already in original document
-                                             .filter(sa => !originalAnnotations.includes(sa.persistentIdentity))
+                                            .filter(sa => !originalAnnotations.includes(sa.persistentIdentity.slice(0, -2)))
                                              // just return the info we need
                                              .map(sa => ({
                                                  name: sa.displayName,
