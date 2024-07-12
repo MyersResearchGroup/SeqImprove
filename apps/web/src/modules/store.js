@@ -2,7 +2,7 @@ import _, { remove } from "lodash"
 import create from "zustand"
 import produce from "immer"
 import { getSearchParams, showErrorNotification } from "./util"
-import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
+import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
 import { SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
@@ -146,6 +146,26 @@ export const useStore = create((set, get) => ({
     //     }
     // }),
     exportDocument: (download = true) => {
+        const annotations = get().sequenceAnnotations
+
+        //remove duplicate annotation and component instance
+        for (const rootAnno of get().document.root.sequenceAnnotations) {
+            console.log(rootAnno.persistentIdentity)
+            for (const anno of annotations) {
+                if (rootAnno.persistentIdentity && (anno.id.slice(0, -2) === rootAnno.persistentIdentity.slice(0, -2) && rootAnno.persistentIdentity.slice(-1) >= 2)) { //potential bug: persistentIdentities may match but locations are different. The second instance will be removed if the part appears multiple times in the sequence
+                    console.log("duplicate: " + rootAnno.persistentIdentity)
+                    removeDuplicateComponentAnnotation(get().document.root, rootAnno.persistentIdentity)
+                }
+            }
+        }
+
+
+        //if disabled(in annos array but enabled=false), REMOVE: component & sequence annotation (children of root component definition), component definition, associated sequence
+        for (const anno of annotations) {
+            console.log(anno.id + " enabled=" + anno.enabled)
+            if (!anno.enabled) removeAnnotationWithDefinition(get().document.root, anno.id)
+        }
+
         const xml = get().document.serializeXML();
         
         if (download) {
