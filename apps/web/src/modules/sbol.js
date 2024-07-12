@@ -184,7 +184,7 @@ export function removeSequenceAnnotation(sequenceAnnotations, annotationId) {
  * Return the active status of any annotation in the sequenceAnnotations array
  *
  * @export
- * @param {array} sequenceAnnotations
+ * @param {S2ComponentDefinition} componentDefinition
  * @param {string} annotationId
  * @return {boolean} 
  */
