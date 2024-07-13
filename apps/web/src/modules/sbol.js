@@ -1,5 +1,5 @@
 import { set } from "lodash"
-import { Graph, S2ComponentDefinition, SBOL2GraphView } from "sbolgraph"
+import { Graph, S2ComponentDefinition, S2ComponentInstance, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
 import { mutateDocument, useAsyncLoader, useStore } from "./store"
 
@@ -123,7 +123,7 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
  * @return {SBOL2GraphView} 
  */
 export async function createSBOLDocument(sbolContent) {
-    const document = new SBOL2GraphView(new Graph());
+    let document = new SBOL2GraphView(new Graph());
     await document.loadString(sbolContent);
 
     // initialize rich description as regular description if one doesn't exist
@@ -135,55 +135,105 @@ export async function createSBOLDocument(sbolContent) {
 }
 
 /**
- * Checks if the passed ComponentDefinition contains the sequence annotation specified
- * by the passed annotation ID.
+ * Return the active status of any annotation in the sequenceAnnotations array
+ *
+ * @export
+ * @param {array} sequenceAnnotations
+ * @param {string} annotationId
+ * @return {boolean} 
+ */
+export function hasSequenceAnnotation(sequenceAnnotations, annotationId) {
+    const anno = sequenceAnnotations.find((sa) => sa.id == annotationId)
+
+    return anno.enabled
+}
+
+/**
+ * Returns the index of an annotation with the specified id
+ * 
+ * @export
+ * @param {array} sequenceAnnotations
+ * @param {string} annotationId
+ * @return {boolean} 
+ */
+export function addSequenceAnnotation(sequenceAnnotations, annotationId) {
+    if (hasSequenceAnnotation(sequenceAnnotations, annotationId)) return
+
+    let annoIndex = sequenceAnnotations.findIndex((sa) => sa.id == annotationId)
+    
+    return annoIndex
+}
+
+/**
+ * Returns the index of an annotation with the specified id
+ * 
+ * @export
+ * @param {array} sequenceAnnotations
+ * @param {string} annotationId
+ * @return {boolean} 
+ */
+export function removeSequenceAnnotation(sequenceAnnotations, annotationId) {
+    if (!hasSequenceAnnotation(sequenceAnnotations, annotationId)) return
+
+    let annoIndex = sequenceAnnotations.findIndex((sa) => sa.id == annotationId)
+    
+    return annoIndex
+}
+
+/**
+ * Return the active status of any annotation in the sequenceAnnotations array
  *
  * @export
  * @param {S2ComponentDefinition} componentDefinition
  * @param {string} annotationId
  * @return {boolean} 
  */
-export function hasSequenceAnnotation(componentDefinition, annotationId) {
+export function hasSequenceAnnotationSBOL(componentDefinition, annotationId) {
     return !!componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == annotationId)
 }
 
 /**
- * Adds a sequence annotation with the information from the passed annotation object
- * to the passed ComponentDefinition.
+ * Removes any duplicate annotation and its associated component instance from SBOL document
  *
  * @export
- * @param {S2ComponentDefinition} componentDefinition
- * @param {{
- *      id: string,
- *      name: string,
- *      location: number[],
- * }} annoInfo
+  * @param {S2ComponentDefinition} componentDefinition
+  * @param {array} sequenceAnnotations
  */
-export function addSequenceAnnotation(componentDefinition, annoInfo) {
-    if (hasSequenceAnnotation(componentDefinition, annoInfo.id))
+export function removeDuplicateComponentAnnotation(componentDefinition, id) {
+    console.log(id)
+    if (!hasSequenceAnnotationSBOL(componentDefinition, id))
         return
 
-    const sa = componentDefinition.annotateRange(annoInfo.location[0], annoInfo.location[1], annoInfo.name)
-    sa.persistentIdentity = annoInfo.id
-    sa.name = annoInfo.name  
+
+    const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
+    const associatedComponent = annotation.component
+
+    annotation.destroy()
+    associatedComponent.destroy()
 }
 
 /**
- * Removes the sequence annotation matching the passed annotation ID from the passed
- * ComponentDefinition.
+ * Removes annotation, component instance, component definition, and associated sequence from SBOL document
  *
  * @export
- * @param {S2ComponentDefinition} componentDefinition
- * @param {{string}} id
+  * @param {S2ComponentDefinition} componentDefinition
+  * @param {array} sequenceAnnotations
  */
-export function removeSequenceAnnotation(componentDefinition, { id }) {
-    if (!hasSequenceAnnotation(componentDefinition, id))
+export function removeAnnotationWithDefinition(componentDefinition, id) {
+    console.log(id)
+    if (!hasSequenceAnnotationSBOL(componentDefinition, id))
         return
 
     const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
-    annotation.destroy()
-}
+    const associatedComponent = annotation.component
+    const definition = associatedComponent.definition
+    const sequences = definition.sequences
 
+    sequences[0].destroy()
+    annotation.destroy()
+    associatedComponent.destroy()
+    definition.destroy()
+}
 
 /**
  * Finds existing SequenceAnnotations on a ComponentDefinition and returns

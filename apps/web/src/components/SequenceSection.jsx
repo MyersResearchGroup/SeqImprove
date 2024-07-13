@@ -263,6 +263,7 @@ function Annotations({ colors }) {
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
 
+
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
         <div ref={ref} {...props}>
             <AnnotationCheckbox  {...props} />
@@ -310,8 +311,6 @@ function Annotations({ colors }) {
                     // mutate the libraries Selected in the store                                    
                     mutateSequencePartLibrariesSelected(useStore.setState, state => {     
                         if(chosenLibraries.some(item => item.value === 'local_libraries')) {
-                            console.log(true)
-    
                             state.sequencePartLibrariesSelected = chosenLibraries.filter(item => item.value !== 'local_libraries')
                             state.sequencePartLibrariesSelected.push(...localLibraries)
                         }
