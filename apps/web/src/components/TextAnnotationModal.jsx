@@ -1,7 +1,9 @@
 import { Button, Group, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { useState } from "react"
 import { useStore } from '../modules/store'
-
+import { fetchSuggestions } from '../modules/api'
+import MultiRowSelect from './MultiRowSelect'
 
 export default function TextAnnotationModal({ id, context, innerProps: { editing = false, label, identifier, uri } }) {
 
@@ -49,6 +51,9 @@ export default function TextAnnotationModal({ id, context, innerProps: { editing
         context.closeModal(id)
     }
 
+    const organisms = [];
+    const [searchOptions, setSearchOptions] = useState();
+
 
     return (
         <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -59,11 +64,24 @@ export default function TextAnnotationModal({ id, context, innerProps: { editing
                 mb={6}
             />
 
-            <TextInput
-                label="Identifier"
+            {/* <TextInput // TODO: to MultiRowSelect
+                label="Identifier" 
                 placeholder="Search ontologies or enter custom identifier"
                 {...form.getInputProps("identifier")}
                 mb={6}
+            /> */}
+
+            <MultiRowSelect
+                items={organisms} //empty
+                //addItem={handleAdd}
+                //removeItem={handleRemove}
+                search={fetchSuggestions}
+                //itemComponent={OrganismItem}
+                //searchItemComponent={OrganismSearchItem}
+                messages={{ initial: "Type something to search", nothingFound: "Nothing found in Taxonomy" }}
+                pluralLabel="organisms"
+                debounce={800}
+                placeholder="Search ontologies or enter custom identifie"
             />
 
             <TextInput
@@ -79,3 +97,42 @@ export default function TextAnnotationModal({ id, context, innerProps: { editing
         </form>
     )
 }
+
+/**
+ * Component for a selected item
+ */
+// const OrganismItem = forwardRef(({ id, name, commonName, uri, onRemove }, ref) =>
+//     <a href={uri} target="_blank">
+//         <Tooltip label="View in Taxonomy" withArrow position="bottom">
+//             <Group noWrap ref={ref} spacing="xs" sx={theme => ({
+//                 padding: "8px 12px",
+//                 margin: 8,
+//                 border: "1px solid " + theme.colors.gray[3],
+//                 borderRadius: 24,
+//                 display: "inline-flex",
+//                 "&:hover": {
+//                     borderColor: theme.colors.gray[5],
+//                 }
+//             })}>
+//                 <Text size="sm" color="dark">{name}</Text>
+//                 <Text size="sm" color="dimmed">{commonName}</Text>
+//                 <ActionIcon color="red" onClick={event => {
+//                     event.preventDefault()
+//                     onRemove()
+//                 }}><FaTimes /></ActionIcon>
+//             </Group>
+//         </Tooltip>
+//     </a>
+// )
+
+/**
+ * Component for an item appearing in the search
+ */
+// const OrganismSearchItem = forwardRef(({ label, name, commonName, ...others }, ref) =>
+//     <div ref={ref} {...others}>
+//         <Group noWrap position="apart">
+//             <Text>{name}</Text>
+//             <Text color="dimmed">{commonName}</Text>
+//         </Group>
+//     </div>
+// )

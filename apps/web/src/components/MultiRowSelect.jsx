@@ -8,6 +8,13 @@ export default function MultiRowSelect({ items, addItem, removeItem, search, ite
     // states
     const [query, setQuery] = useState("")
     const [debouncedQuery] = useDebouncedValue(query, debounce)
+    console.log("items", items);
+    console.log("query", query);
+    console.log("searchItemComponent", searchItemComponent);
+    console.log("items", items);
+    console.log("search", search);
+    //console.log("itemComponent:", itemComponent);
+
     const [searchResults, setSearchResults] = useState([])
     const [searchLoading, setSearchLoading] = useState(false)
 
@@ -26,8 +33,9 @@ export default function MultiRowSelect({ items, addItem, removeItem, search, ite
     useEffect(() => {
         if (debouncedQuery)
             search(debouncedQuery).then(results => {
+                console.log("search result", results)
                 setSearchResults(
-                    results.slice(0, 20).map(result => ({
+                    results.slice(0, 20).map(result => ({ // show top 20 hits
                         ...result,
                         label: result.name,
                         value: result.id,

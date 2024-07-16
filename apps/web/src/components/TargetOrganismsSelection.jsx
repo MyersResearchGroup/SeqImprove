@@ -90,9 +90,10 @@ export default function TargetOrganismsSelection() {
     }, [organismUris])
 
     return (
+        
         <FormSection title="Target Organisms">
             <MultiRowSelect
-                items={organisms}
+                items={organisms} //empty
                 addItem={handleAdd}
                 removeItem={handleRemove}
                 search={searchOptions.prioritizeParents ? searchWithParent : searchUniprot}

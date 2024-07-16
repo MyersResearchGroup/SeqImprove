@@ -230,3 +230,26 @@ async function fetchWithTimeout(resource, options = {}) {
   
     return response;
 }
+
+export async function fetchSuggestions(text) {
+    const url = `https://www.ebi.ac.uk/ols4/api/suggest?q=${text}&rows=20&start=0`;
+ 
+    const response2 = await fetch(url, {                
+        method: "GET"
+    });          
+
+    const suggestions = await response2.json();
+   
+    console.log("suggestions: ", suggestions.response.docs);
+    console.log("type", typeof suggestions.response.docs);
+    const results = suggestions.response.docs;
+    results.forEach((item, i) => {
+        item.id = i + 1;
+      });
+    const result2 = results.slice(0, 20).map(result => ({ // show top 20 hits
+        name: result.autosuggest,
+        id: result.id,
+    }))
+    console.log("result2", result2);
+    return result2;
+}
