@@ -251,7 +251,7 @@ export const useStore = create((set, get) => ({
     //     };
     // }),
 
-    sequenceAnnotationActions: createAnnotationActions(set, get, state => state.sequenceAnnotations, {
+    sequenceAnnotationActions: createSequenceAnnotationActions(set, get, state => state.sequenceAnnotations, {
         test: hasSequenceAnnotation,
         add: (...args) => {
             const index = addSequenceAnnotation(...args);
@@ -328,7 +328,7 @@ export const useStore = create((set, get) => ({
         return { textAnnotations: newAnnotations }
     }),
 
-    textAnnotationActions: createAnnotationActions(set, get, state => state.textAnnotations, {
+    textAnnotationActions: createTextAnnotationActions(set, get, state => state.textAnnotations, {
         test: hasTextAnnotation,
         add: addTextAnnotation,
         remove: removeTextAnnotation,
@@ -489,7 +489,7 @@ export function useAsyncLoader(propertySuffix) {
  *      setActive: (id: string, value, boolean) => void,
  * }}  An object containing annotation actions intended to be kept in the store
  */
-function createAnnotationActions(set, get, selector, { test, add, remove } = {}) {
+function createSequenceAnnotationActions(set, get, selector, { test, add, remove } = {}) {
 
     const getAnnotation = id => selector(get()).find(anno => anno.id == id)
 
@@ -498,6 +498,47 @@ function createAnnotationActions(set, get, selector, { test, add, remove } = {})
         mutateDocument(set, state => {
             // (value ? add : remove)(state.document.root, getAnnotation(id))
             (value ? add : remove)(get().sequenceAnnotations, id)
+        })
+    }
+
+    return {
+        getAnnotation,
+        editAnnotation: (id, changes) => {
+            // if it's active, we'll temporarily disable it
+            const active = isActive(id)
+            active && setActive(id, false)
+
+            set(produce(draft => {
+                const item = selector(draft).find(anno => anno.id == id)
+
+                Object.keys(changes).forEach(key => {
+                    item[key] = changes[key]
+                })
+            }))
+
+            // then set it back as active after
+            active && setActive(changes.id ?? id, true)
+        },
+        addAnnotation: newAnno => set(produce(draft => {
+            selector(draft).push(newAnno)
+        })),
+        removeAnnotation: id => set(produce(draft => {
+            const annoArr = selector(draft)
+            annoArr.splice(annoArr.findIndex(anno => anno.id == id), 1)
+        })),
+        isActive,
+        setActive,
+    }
+}
+
+function createTextAnnotationActions(set, get, selector, { test, add, remove } = {}) {
+
+    const getAnnotation = id => selector(get()).find(anno => anno.id == id)
+
+    const isActive = id => test(get().document.root, id)
+    const setActive = (id, value) => {
+        mutateDocument(set, state => {
+            (value ? add : remove)(state.document.root, getAnnotation(id))
         })
     }
 
