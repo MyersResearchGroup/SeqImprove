@@ -6,9 +6,9 @@ defaults:
 
 on:
   pull_request:
-      types: [opened, synchronize, reopened, closed]
-      branches:
-        - final
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
 
 jobs:
   build:
