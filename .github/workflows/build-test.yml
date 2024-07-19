@@ -5,10 +5,10 @@ defaults:
     working-directory: ./apps/server
 
 on:
-    pull_request:
-        types: [opened, synchronize, reopened, closed]
-        branches:
-          - final
+  pull_request:
+      types: [opened, synchronize, reopened, closed]
+      branches:
+        - final
 
 jobs:
   build:
