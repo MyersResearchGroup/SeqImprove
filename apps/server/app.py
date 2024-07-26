@@ -302,6 +302,32 @@ def convert_genbank_to_sbol2(genbank_content, uri_prefix):
     
     return result_sbol_content
 
+def run_synbio2easy(sbol_content):
+    namespace = 'https://seqimprove.synbiohub.org'
+
+    try:
+        with tempfile.NamedTemporaryFile() as input_file:
+            input_file.write(bytes(sbol_content, 'utf-8'))
+            input_file.flush()
+            with tempfile.NamedTemporaryFile() as output_file:
+
+                command = [
+                    'java', '-jar', 'SynBio2Easy.jar', 'clean',
+                    f'--input-file={input_file.name}',
+                    f'--output-file={output_file.name}',
+                    f'--namespace={namespace}',
+                    f'--remove-collections=Y'
+                ]
+                print(command)
+                output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
+                print(output)
+                cleaned_data = output_file.read().decode('utf-8')
+                return cleaned_data
+    
+    except Exception as e:
+        print(e)
+        return sbol_content
+
 #  _______  _______ _________     _______  _______          _________ _______  _______ 
 # (  ___  )(  ____ )\__   __/    (  ____ )(  ___  )|\     /|\__   __/(  ____ \(  ____ \
 # | (   ) || (    )|   ) (       | (    )|| (   ) || )   ( |   ) (   | (    \/| (    \/
@@ -353,6 +379,8 @@ def annotate_sequence():
     request_data = request.get_json()
     sbol_content = request_data['completeSbolContent']
     part_library_file_names = request_data['partLibraries'] 
+
+    sbol_content = run_synbio2easy(sbol_content)
 
     print("Running SYNBICT...")
     # Run SYNBICT
