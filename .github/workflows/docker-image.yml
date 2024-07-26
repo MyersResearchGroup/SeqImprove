@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Deploy Docker Image CI
 
 defaults:
   run:
@@ -6,9 +6,8 @@ defaults:
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
