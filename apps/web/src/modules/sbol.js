@@ -236,7 +236,7 @@ export function removeAnnotationWithDefinition(componentDefinition, id) {
     definition.destroy()
 }
 
-export function cleanDownload(componentDefinition) {
+export function incrementVersion(componentDefinition) {
     const version = Number(componentDefinition.version)
     // console.log("version = " + version)
 
