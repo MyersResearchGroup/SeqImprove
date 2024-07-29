@@ -1,5 +1,6 @@
 import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
+import { Checkbox } from '@mantine/core';
 import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
@@ -262,6 +263,9 @@ function Annotations({ colors }) {
     ];
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
+    const isChecked = useStore((state) => state.isChecked);
+    const toggleCleanCheckbox = useStore((state) => state.toggleChecked);
+    const fromSynBioHub = useStore(s => s.fromSynBioHub)
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -321,6 +325,9 @@ function Annotations({ colors }) {
                     setSequencePartLibrariesSelected(...librariesSelected);
                 })}               
             />
+            { fromSynBioHub &&
+                <Checkbox label="Clean SynBioHub URIs" checked={isChecked} onChange={toggleCleanCheckbox} style={{ margin: '10px 10px 5px 5px' }}/>
+            }
 
             {loading ?
                 <Center>
@@ -334,7 +341,8 @@ function Annotations({ colors }) {
                     color="blue"
                     onClick={handleAnalyzeSequenceClick}
                     sx={{ borderRadius: 6 }}
-               />}
+               />
+            }
         </FormSection>
     )
 }

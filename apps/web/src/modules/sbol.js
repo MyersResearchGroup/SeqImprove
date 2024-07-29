@@ -135,6 +135,10 @@ export async function createSBOLDocument(sbolContent) {
     return document
 }
 
+export function isfromSynBioHub(componentDefinition) {
+    if (componentDefinition.uriChain.includes('https://synbiohub.org')) return true
+}
+
 /**
  * Return the active status of any annotation in the sequenceAnnotations array
  *

@@ -379,8 +379,9 @@ def annotate_sequence():
     request_data = request.get_json()
     sbol_content = request_data['completeSbolContent']
     part_library_file_names = request_data['partLibraries'] 
+    clean_uris = request_data['cleanURIs']
 
-    sbol_content = run_synbio2easy(sbol_content)
+    if clean_uris: sbol_content = run_synbio2easy(sbol_content)
 
     print("Running SYNBICT...")
     # Run SYNBICT
