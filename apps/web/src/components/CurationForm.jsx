@@ -231,6 +231,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                          }}                         
                          error={inputError != false}
                      />
+                     <Checkbox checked={overwrite} label="Overwrite?" description="Overwrite if submission exists" onChange={(event) => setOverwrite(event.currentTarget.checked)} />
                      <Button onClick={async () => {
                                  if (inputErrorID || inputErrorVersion) {
                                      showErrorNotification("Invalid Input", "Please address the issue and then submit.");
