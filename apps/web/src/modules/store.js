@@ -150,10 +150,8 @@ export const useStore = create((set, get) => ({
 
         //remove duplicate annotation and component instance
         for (const rootAnno of get().document.root.sequenceAnnotations) {
-            console.log(rootAnno.persistentIdentity)
             for (const anno of annotations) {
                 if (rootAnno.persistentIdentity && (anno.id.slice(0, -2) === rootAnno.persistentIdentity.slice(0, -2) && rootAnno.persistentIdentity.slice(-1) >= 2)) { //potential bug: persistentIdentities may match but locations are different. The second instance will be removed if the part appears multiple times in the sequence
-                    console.log("duplicate: " + rootAnno.persistentIdentity)
                     removeDuplicateComponentAnnotation(get().document.root, rootAnno.persistentIdentity)
                 }
             }
@@ -162,7 +160,6 @@ export const useStore = create((set, get) => ({
 
         //if disabled(in annos array but enabled=false), REMOVE: component & sequence annotation (children of root component definition), component definition, associated sequence
         for (const anno of annotations) {
-            console.log(anno.id + " enabled=" + anno.enabled)
             if (!anno.enabled) removeAnnotationWithDefinition(get().document.root, anno.id)
         }
 

@@ -200,16 +200,20 @@ export function hasSequenceAnnotationSBOL(componentDefinition, annotationId) {
   * @param {array} sequenceAnnotations
  */
 export function removeDuplicateComponentAnnotation(componentDefinition, id) {
-    console.log(id)
     if (!hasSequenceAnnotationSBOL(componentDefinition, id))
         return
 
+    const duplicateAnnotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
+    const associatedComponent = duplicateAnnotation.component
 
-    const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
-    const associatedComponent = annotation.component
+    const origIdNum = Number(id.slice(-1)) - 1 
+    const originalAnnotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id.slice(0, -1) + origIdNum)
 
-    annotation.destroy()
-    associatedComponent.destroy()
+    if (originalAnnotation.rangeMax === duplicateAnnotation.rangeMax && originalAnnotation.rangeMin === duplicateAnnotation.rangeMin) {
+        console.log("removing duplicate annotation: " + duplicateAnnotation.displayId)
+        duplicateAnnotation.destroy()
+        associatedComponent.destroy()
+    }
 }
 
 /**
