@@ -137,6 +137,8 @@ export async function createSBOLDocument(sbolContent) {
 
 export function isfromSynBioHub(componentDefinition) {
     if (componentDefinition.uriChain.includes('https://synbiohub.org')) return true
+
+    return false
 }
 
 /**

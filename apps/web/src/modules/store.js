@@ -156,7 +156,7 @@ export const useStore = create((set, get) => ({
         }
 
         //change version
-        incrementVersion(get().document.root)
+        if (get().fromSynBioHub) incrementVersion(get().document.root)
 
         const xml = get().document.serializeXML();
         
