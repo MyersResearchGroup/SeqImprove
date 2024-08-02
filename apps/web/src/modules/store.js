@@ -2,7 +2,7 @@ import _, { remove } from "lodash"
 import create from "zustand"
 import produce from "immer"
 import { getSearchParams, showErrorNotification } from "./util"
-import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
+import { addSequenceAnnotation, addTextAnnotation, incrementVersion, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation, isfromSynBioHub } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
 import { SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
@@ -15,20 +15,6 @@ export const useStore = create((set, get) => ({
      * SBOL URI
      * @type {string | undefined} */
     uri: undefined,
-
-    /**
-     * Sequence part libraries selected */
-    sequencePartLibrariesSelected: [
-        // { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
-        // { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
-        // { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
-        // { value: 'EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml', label: 'EcoFlex Moclo Toolkit Freemont Lab Collection' },
-        // { value: 'Itaconic_Acid_Pathway_Voigt_Lab_collection.xml', label: 'Itaconic Acid Pathway Voigt Lab Collection' },
-        // { value: 'MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml', label: 'MoClo Yeast Toolkit Dueber Lab Colletion' },
-        // { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
-        // { value: 'Pichia_MoClo_Toolkit_Lu_Lab_collection.xml', label: 'Pichia MoClo Toolkit Lu Lab Collection' },
-        // { value: 'cello_library.xml', label: 'Cello Library' },
-    ],
 
     // setSequencePartLibrariesSelectedFrom: (availableLibraries) => {
     //     return (selectedLibraryFileNames) => {
@@ -88,6 +74,8 @@ export const useStore = create((set, get) => ({
             // set roles to be the same as from document
             const roles = document.root.roles;            
             
+            const fromSynBioHub = isfromSynBioHub(document.root); 
+            
             set({
                 // ...result,
                 sbolContent,
@@ -97,10 +85,12 @@ export const useStore = create((set, get) => ({
                 richDescriptionBuffer,
                 textAnnotations,
                 sequenceAnnotations,
+                fromSynBioHub,
                 loadingSBOL: false
             });
         } catch (err) {
             showErrorNotification("Upload Error", "Could not interpret file as SBOL document");
+            console.log(err)
         } finally {
             set({ loadingSBOL: false });
         }
@@ -150,7 +140,6 @@ export const useStore = create((set, get) => ({
 
         //remove duplicate annotation and component instance
         for (const rootAnno of get().document.root.sequenceAnnotations) {
-            console.log(rootAnno.persistentIdentity)
             for (const anno of annotations) {
                 if (rootAnno.persistentIdentity && (anno.id.slice(0, -2) === rootAnno.persistentIdentity.slice(0, -2) && rootAnno.persistentIdentity.slice(-1) >= 2)) { //potential bug: persistentIdentities may match but locations are different. The second instance will be removed if the part appears multiple times in the sequence
                     console.log("duplicate: " + rootAnno.persistentIdentity)
@@ -165,6 +154,9 @@ export const useStore = create((set, get) => ({
             console.log(anno.id + " enabled=" + anno.enabled)
             if (!anno.enabled) removeAnnotationWithDefinition(get().document.root, anno.id)
         }
+
+        //change version
+        if (get().fromSynBioHub) incrementVersion(get().document.root)
 
         const xml = get().document.serializeXML();
         
@@ -197,7 +189,12 @@ export const useStore = create((set, get) => ({
             isLoggedInToSomeSynBioHub: true,
             synBioHubUrlPrefix: urlPrefix,
         });        
-    },        
+    },       
+
+
+    //clean synbiohub checkbox
+    isChecked: false,
+    toggleChecked: () => set((state) => ({ isChecked: !state.isChecked})),
     
     // Sequence Annotations
     sequenceAnnotations: [],
@@ -208,9 +205,11 @@ export const useStore = create((set, get) => ({
         set({ loadingSequenceAnnotations: true });
 
         try {
+            console.log(get().isChecked)
             const result = await fetchAnnotateSequence({
                 sbolContent: get().document.serializeXML(),
                 selectedLibraryFileNames: get().sequencePartLibrariesSelected.map(lib => lib.value),
+                isChecked: get().isChecked,
             }) ?? [];
 
             let { fetchedAnnotations, synbictDoc } = result;
