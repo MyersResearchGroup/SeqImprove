@@ -17,6 +17,8 @@ import References from './References'
 import { FaHome, FaPencilAlt, FaTimes, FaCheck } from 'react-icons/fa'
 import { useState } from "react"
 import { showErrorNotification, showNotificationSuccess } from "../modules/util"
+import { Graph, SBOL2GraphView } from "sbolgraph"
+import { createSBOLDocument } from '../modules/sbol'
 
 function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
@@ -375,7 +377,7 @@ export default function CurationForm({ }) {
         setIsEditingDisplayID(true);
         setWorkingDisplayID(displayId);
     };
-
+    
     const handleEndDisplayIDEdit = (cancelled = false) => {
         if (cancelled) {
             setIsEditingDisplayID(false);
@@ -389,7 +391,7 @@ export default function CurationForm({ }) {
 
         setIsEditingDisplayID(false);       
 
-        mutateDocument(useStore.setState, state => {
+        mutateDocument(useStore.setState, async state => {
             // updateChildURIDisplayIDs(workingDisplayID, state.document.root.displayId, state.document);
 
             // Replace displayId in URIs in xml            
@@ -427,7 +429,7 @@ export default function CurationForm({ }) {
 
             const newSBOLcontent = xmlChunks.concat(remainingXML).join('');
 
-            state.loadSBOL(newSBOLcontent);            
+            await state.replaceDocument(newSBOLcontent);      
         });
     };
         

@@ -136,6 +136,7 @@ export async function createSBOLDocument(sbolContent) {
 }
 
 export function isfromSynBioHub(componentDefinition) {
+    //expand to include every sbh instance
     if (componentDefinition.uriChain.includes('https://synbiohub.org')) return true
 
     return false
@@ -244,7 +245,6 @@ export function removeAnnotationWithDefinition(componentDefinition, id) {
 
 export function incrementVersion(componentDefinition) {
     const version = Number(componentDefinition.version)
-    // console.log("version = " + version)
 
     componentDefinition.version = version + 1
 }

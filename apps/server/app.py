@@ -371,7 +371,13 @@ def genbank_to_sbol2():
             
         return {"sbol2_content": "", "err": error_message };
     
-    
+@app.post("/api/cleanSBOL")
+def clean_SBOL():
+    request_data = request.get_json()
+    sbol_content = request_data['completeSbolContent']
+
+    return {"sbol": run_synbio2easy(sbol_content)}
+
     
 
 @app.post("/api/annotateSequence")
@@ -379,9 +385,10 @@ def annotate_sequence():
     request_data = request.get_json()
     sbol_content = request_data['completeSbolContent']
     part_library_file_names = request_data['partLibraries'] 
-    clean_uris = request_data['cleanURIs']
+    clean_document = request_data['cleanDocument']
 
-    if clean_uris: sbol_content = run_synbio2easy(sbol_content)
+    if clean_document: 
+        sbol_content = run_synbio2easy(sbol_content)
 
     print("Running SYNBICT...")
     # Run SYNBICT
@@ -401,7 +408,6 @@ def annotate_sequence():
         print(str(e))
         return {"sbol": sbol_content}, status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
-        # return {"annotations": annotations}
         return {"annotations": anno_lib_assoc}
 
 @app.post("/api/findSimilarParts")

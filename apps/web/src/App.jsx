@@ -12,12 +12,34 @@ export default function App() {
     bootAPIserver();
     const loadSBOL = useStore(s => s.loadSBOL)
     const documentLoaded = useStore(s => !!s.document)
+    const isFileEdited = useStore((s) => s.isFileEdited);
+    const cleanSBOLDocument = useStore((s) => s.cleanSBOLDocument);
+    const isUriCleaned = useStore((s => s.isUriCleaned))
+    const isDocumentUpdated = useStore((s => s.document))
+    //add variable to keep track of name change
 
-    // load SBOL into store if we have a complete_sbol parameter
     useEffect(() => {
+        // && !nameChanged
+        if (isFileEdited && !isUriCleaned) {
+            cleanSBOLDocument();
+        }
         const paramsUri = getSearchParams().complete_sbol
         paramsUri && loadSBOL(paramsUri)
-    }, [])
+    }, [isFileEdited]);
+
+    //name change effect
+    useEffect(() => {
+        if (isFileEdited && !isUriCleaned) {
+            cleanSBOLDocument();
+        }
+    }, [isDocumentUpdated])
+
+
+    // load SBOL into store if we have a complete_sbol parameter
+    // useEffect(() => {
+    //     const paramsUri = getSearchParams().complete_sbol
+    //     paramsUri && loadSBOL(paramsUri)
+    // }, [])
 
     return (
         <MantineProvider theme={theme} withNormalizeCSS withGlobalStyles>

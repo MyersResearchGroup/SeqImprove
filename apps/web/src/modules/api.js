@@ -71,7 +71,41 @@ export async function fetchSBOL(url) {
     }
 }
 
-export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNames, isChecked }) {
+export async function cleanSBOL(sbolContent) {
+    try {
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/cleanSBOL`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                completeSbolContent: sbolContent,
+            }),
+            timeout: 120000,
+        });
+    }
+    catch (err) {
+        console.error("Failed to fetch.");
+        showServerErrorNotification();
+        return;
+    }
+
+    try {
+        var result = await response.json();
+    }
+    catch (err) {
+        console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return;
+    }
+
+    if (response.status == 200) {
+        console.log("Clean SBOL fetched.");
+        return result.sbol
+    }
+}
+
+export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNames, isUriCleaned }) {
     console.log("Annotating sequence...")
 
     // Fetch
@@ -84,7 +118,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
             body: JSON.stringify({
                 completeSbolContent: sbolContent,
                 partLibraries: selectedLibraryFileNames,
-                cleanURIs: isChecked,
+                cleanDocument: !isUriCleaned,
             }),
             timeout: 120000,
         });

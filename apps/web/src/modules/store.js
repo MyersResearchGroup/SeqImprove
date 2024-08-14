@@ -3,8 +3,8 @@ import create from "zustand"
 import produce from "immer"
 import { getSearchParams, showErrorNotification } from "./util"
 import { addSequenceAnnotation, addTextAnnotation, incrementVersion, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation, isfromSynBioHub } from "./sbol"
-import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
-import { SBOL2GraphView } from "sbolgraph"
+import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL } from "./api"
+import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
 
 
@@ -16,16 +16,6 @@ export const useStore = create((set, get) => ({
      * @type {string | undefined} */
     uri: undefined,
 
-    // setSequencePartLibrariesSelectedFrom: (availableLibraries) => {
-    //     return (selectedLibraryFileNames) => {
-    //         console.log(selectedLibraryFileNames);
-    //         const chosenSequencePartLibraries = get().sequencePartLibrariesSelected.filter(lib => {            
-    //             return availableLibraries.includes(lib.value);
-    //         })
-    //         console.log(chosenSequencePartLibraries);
-    //         set({ sequencePartLibrariesSelected: chosenSequencePartLibraries });
-    //     };
-    // },
 
     /** 
      * Raw SBOL content
@@ -74,10 +64,13 @@ export const useStore = create((set, get) => ({
             // set roles to be the same as from document
             const roles = document.root.roles;            
             
-            const fromSynBioHub = isfromSynBioHub(document.root); 
-            
+            let isFileEdited = false
+            let isUriCleaned = false
+
             set({
                 // ...result,
+                isFileEdited,
+                isUriCleaned,
                 sbolContent,
                 document,
                 roles,
@@ -85,7 +78,6 @@ export const useStore = create((set, get) => ({
                 richDescriptionBuffer,
                 textAnnotations,
                 sequenceAnnotations,
-                fromSynBioHub,
                 loadingSBOL: false
             });
         } catch (err) {
@@ -95,46 +87,13 @@ export const useStore = create((set, get) => ({
             set({ loadingSBOL: false });
         }
     },
+
+    replaceDocument: async (newSBOLcontent) => {
+      const newDoc = await createSBOLDocument(newSBOLcontent);  
+
+      set ({ document: newDoc,  sbolContent: newSBOLcontent });
+    },
     
-    
-    // ...createAsyncAdapter(set, "SBOL", async sbol => {
-    //     // try to form a URL out of the input argument
-    //     try {
-    //         var sbolUrl = new URL(sbol)
-    //     }
-    //     catch (err) {}
-
-    //     // if it's a URL, fetch it; otherwise, just use it as the content
-    //     const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
-    //     try {
-    //         var document = await createSBOLDocument(sbolContent);
-    //     } catch (err) {
-    //         console.error(err);            
-    //         throw err;
-    //     }
-
-    //     // parse out existing text annotations
-    //     const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
-
-    //     // get existing sequence annotations
-    //     const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
-
-    //     // set description as rich description text
-    //     document.root.description = richDescriptionBuffer.originalText
-
-    //     // set roles to be the same as from document
-    //     const roles = document.root.roles;
-
-    //     return {
-    //         sbolContent,
-    //         document,
-    //         roles,
-    //         uri: sbolUrl?.href,
-    //         richDescriptionBuffer,
-    //         textAnnotations,
-    //         sequenceAnnotations,
-    //     }
-    // }),
     exportDocument: (download = true) => {
         const annotations = get().sequenceAnnotations
 
@@ -192,10 +151,6 @@ export const useStore = create((set, get) => ({
     },       
 
 
-    //clean synbiohub checkbox
-    isChecked: false,
-    toggleChecked: () => set((state) => ({ isChecked: !state.isChecked})),
-    
     // Sequence Annotations
     sequenceAnnotations: [],
 
@@ -205,11 +160,10 @@ export const useStore = create((set, get) => ({
         set({ loadingSequenceAnnotations: true });
 
         try {
-            console.log(get().isChecked)
             const result = await fetchAnnotateSequence({
                 sbolContent: get().document.serializeXML(),
                 selectedLibraryFileNames: get().sequencePartLibrariesSelected.map(lib => lib.value),
-                isChecked: get().isChecked,
+                isUriCleaned: get().isUriCleaned,
             }) ?? [];
 
             let { fetchedAnnotations, synbictDoc } = result;
@@ -225,6 +179,7 @@ export const useStore = create((set, get) => ({
                 }),
                 loadingSequenceAnnotations: false, 
                 document: synbictDoc,
+                isUriCleaned: true,
             });
         } catch (err) {
             showErrorNotification("Load Error", "Could not load sequence annotations");
@@ -314,7 +269,7 @@ export const useStore = create((set, get) => ({
                         existingAnno.mentions.push(mention)
                 })
             })
-
+ 
             // make sure each mention has a buffer patch
             draft.forEach(anno => {
                 anno.mentions.forEach(mention => {
@@ -368,6 +323,19 @@ export const useStore = create((set, get) => ({
             state.document.root.removeReference(uri)
         })
     },
+
+    cleanSBOLDocument: async () => {
+        //call clean doc
+        const cleanedSBOL = await cleanSBOL(get().document.serializeXML())
+        set ({ sbolContent: cleanedSBOL });
+        
+        // const cleanedDoc = new SBOL2GraphView(new Graph());
+        // cleanedDoc.loadString(cleanedSBOL);
+        var cleanedDoc = await createSBOLDocument(cleanedSBOL);
+
+        set ({ document: cleanedDoc });
+        set ({ isUriCleaned: true })
+    }
 }))
 
 
@@ -397,7 +365,9 @@ function setRootProperty(set, path, value) {
  */
 export function mutateDocument(set, mutator) {
     set(state => {
+        //upon mutation, clean doc of old uris and set edited to true
         mutator?.(state);
+        if (!state.isFileEdited) state.isFileEdited = true;
         return { document: state.document };
     });
 }
@@ -468,7 +438,6 @@ export function useAsyncLoader(propertySuffix) {
     const loading = useStore(s => s["loading" + propertySuffix])
     return [load, loading]
 }
-
 
 /**
  * Creates a standard set of actions useful for manipulating annotations
