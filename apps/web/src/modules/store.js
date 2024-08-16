@@ -2,7 +2,7 @@ import _, { remove } from "lodash"
 import create from "zustand"
 import produce from "immer"
 import { getSearchParams, showErrorNotification } from "./util"
-import { addSequenceAnnotation, addTextAnnotation, incrementVersion, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation, isfromSynBioHub } from "./sbol"
+import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation, isfromSynBioHub } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL } from "./api"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
@@ -64,13 +64,16 @@ export const useStore = create((set, get) => ({
             // set roles to be the same as from document
             const roles = document.root.roles;            
             
+            const fromSynBioHub = isfromSynBioHub(document.root); 
             let isFileEdited = false
             let isUriCleaned = false
+            let nameChanged = false
 
             set({
                 // ...result,
                 isFileEdited,
                 isUriCleaned,
+                nameChanged,
                 sbolContent,
                 document,
                 roles,
@@ -78,6 +81,7 @@ export const useStore = create((set, get) => ({
                 richDescriptionBuffer,
                 textAnnotations,
                 sequenceAnnotations,
+                isfromSynBioHub,
                 loadingSBOL: false
             });
         } catch (err) {
@@ -88,10 +92,10 @@ export const useStore = create((set, get) => ({
         }
     },
 
-    replaceDocument: async (newSBOLcontent) => {
-      const newDoc = await createSBOLDocument(newSBOLcontent);  
+    replaceDocumentForIDChange: async (newSBOLcontent) => {
+      const newDoc = await createSBOLDocument(newSBOLcontent);
 
-      set ({ document: newDoc,  sbolContent: newSBOLcontent });
+      set ({ document: newDoc,  sbolContent: newSBOLcontent, nameChanged: true });
     },
     
     exportDocument: (download = true) => {
@@ -114,8 +118,6 @@ export const useStore = create((set, get) => ({
             if (!anno.enabled) removeAnnotationWithDefinition(get().document.root, anno.id)
         }
 
-        //change version
-        if (get().fromSynBioHub) incrementVersion(get().document.root)
 
         const xml = get().document.serializeXML();
         
@@ -329,8 +331,6 @@ export const useStore = create((set, get) => ({
         const cleanedSBOL = await cleanSBOL(get().document.serializeXML())
         set ({ sbolContent: cleanedSBOL });
         
-        // const cleanedDoc = new SBOL2GraphView(new Graph());
-        // cleanedDoc.loadString(cleanedSBOL);
         var cleanedDoc = await createSBOLDocument(cleanedSBOL);
 
         set ({ document: cleanedDoc });
@@ -368,6 +368,13 @@ export function mutateDocument(set, mutator) {
         //upon mutation, clean doc of old uris and set edited to true
         mutator?.(state);
         if (!state.isFileEdited) state.isFileEdited = true;
+        return { document: state.document };
+    });
+}
+
+export function mutateDocumentForDisplayID(set, mutator) {
+    set(state => {
+        mutator?.(state);
         return { document: state.document };
     });
 }

@@ -15,7 +15,8 @@ export default function App() {
     const isFileEdited = useStore((s) => s.isFileEdited);
     const cleanSBOLDocument = useStore((s) => s.cleanSBOLDocument);
     const isUriCleaned = useStore((s => s.isUriCleaned))
-    const isDocumentUpdated = useStore((s => s.document))
+    const nameChanged = useStore((s => s.nameChanged))
+    
     //add variable to keep track of name change
 
     useEffect(() => {
@@ -29,10 +30,10 @@ export default function App() {
 
     //name change effect
     useEffect(() => {
-        if (isFileEdited && !isUriCleaned) {
+        if (nameChanged && !isUriCleaned) {
             cleanSBOLDocument();
         }
-    }, [isDocumentUpdated])
+    }, [nameChanged])
 
 
     // load SBOL into store if we have a complete_sbol parameter

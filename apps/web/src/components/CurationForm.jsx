@@ -1,5 +1,5 @@
 import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea, Menu, Modal, TextInput, PasswordInput, Loader, Center, Select, SegmentedControl, Checkbox } from '@mantine/core'
-import { useStore, mutateDocument } from '../modules/store'
+import { useStore, mutateDocument, mutateDocumentForDisplayID } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
@@ -391,7 +391,7 @@ export default function CurationForm({ }) {
 
         setIsEditingDisplayID(false);       
 
-        mutateDocument(useStore.setState, async state => {
+        mutateDocumentForDisplayID(useStore.setState, async state => {
             // updateChildURIDisplayIDs(workingDisplayID, state.document.root.displayId, state.document);
 
             // Replace displayId in URIs in xml            
@@ -429,7 +429,7 @@ export default function CurationForm({ }) {
 
             const newSBOLcontent = xmlChunks.concat(remainingXML).join('');
 
-            await state.replaceDocument(newSBOLcontent);      
+            await state.replaceDocumentForIDChange(newSBOLcontent);      
         });
     };
         

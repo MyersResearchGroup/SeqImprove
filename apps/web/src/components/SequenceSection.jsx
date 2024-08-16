@@ -263,9 +263,6 @@ function Annotations({ colors }) {
     ];
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
-    const isChecked = useStore((state) => state.isChecked);
-    const toggleCleanCheckbox = useStore((state) => state.toggleChecked);
-    const fromSynBioHub = useStore(s => s.fromSynBioHub)
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -325,10 +322,7 @@ function Annotations({ colors }) {
                     setSequencePartLibrariesSelected(...librariesSelected);
                 })}               
             />
-            { fromSynBioHub &&
-                <Checkbox label="Clean SynBioHub URIs" checked={isChecked} onChange={toggleCleanCheckbox} style={{ margin: '10px 10px 5px 5px' }}/>
-            }
-
+            
             {loading ?
                 <Center>
                     <Loader my={30} size="sm" variant="dots" /> :
