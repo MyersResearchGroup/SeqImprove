@@ -3,6 +3,7 @@ import { Graph, S2ComponentDefinition, S2ComponentInstance, SBOL2GraphView } fro
 import { TextBuffer } from "text-ranger"
 import { mutateDocument, useAsyncLoader, useStore } from "./store"
 
+//change to seqimprove.synbiohub.org?
 const Prefix = "https://seqimprove.org/"
 
 const Predicates = {
@@ -134,6 +135,13 @@ export async function createSBOLDocument(sbolContent) {
     return document
 }
 
+export function isfromSynBioHub(componentDefinition) {
+    //expand to include every sbh instance
+    if (componentDefinition.uriChain.includes('https://synbiohub.org')) return true
+
+    return false
+}
+
 /**
  * Return the active status of any annotation in the sequenceAnnotations array
  *
@@ -237,6 +245,12 @@ export function removeAnnotationWithDefinition(componentDefinition, id) {
     annotation.destroy()
     associatedComponent.destroy()
     definition.destroy()
+}
+
+export function incrementVersion(componentDefinition) {
+    const version = Number(componentDefinition.version)
+
+    componentDefinition.version = version + 1
 }
 
 /**

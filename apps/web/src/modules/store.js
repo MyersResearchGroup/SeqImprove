@@ -2,9 +2,9 @@ import _, { remove } from "lodash"
 import create from "zustand"
 import produce from "immer"
 import { getSearchParams, showErrorNotification } from "./util"
-import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation } from "./sbol"
-import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL } from "./api"
-import { SBOL2GraphView } from "sbolgraph"
+import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation, isfromSynBioHub } from "./sbol"
+import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL } from "./api"
+import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
 
 
@@ -16,30 +16,6 @@ export const useStore = create((set, get) => ({
      * @type {string | undefined} */
     uri: undefined,
 
-    /**
-     * Sequence part libraries selected */
-    sequencePartLibrariesSelected: [
-        // { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
-        // { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
-        // { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
-        // { value: 'EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml', label: 'EcoFlex Moclo Toolkit Freemont Lab Collection' },
-        // { value: 'Itaconic_Acid_Pathway_Voigt_Lab_collection.xml', label: 'Itaconic Acid Pathway Voigt Lab Collection' },
-        // { value: 'MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml', label: 'MoClo Yeast Toolkit Dueber Lab Colletion' },
-        // { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
-        // { value: 'Pichia_MoClo_Toolkit_Lu_Lab_collection.xml', label: 'Pichia MoClo Toolkit Lu Lab Collection' },
-        // { value: 'cello_library.xml', label: 'Cello Library' },
-    ],
-
-    // setSequencePartLibrariesSelectedFrom: (availableLibraries) => {
-    //     return (selectedLibraryFileNames) => {
-    //         console.log(selectedLibraryFileNames);
-    //         const chosenSequencePartLibraries = get().sequencePartLibrariesSelected.filter(lib => {            
-    //             return availableLibraries.includes(lib.value);
-    //         })
-    //         console.log(chosenSequencePartLibraries);
-    //         set({ sequencePartLibrariesSelected: chosenSequencePartLibraries });
-    //     };
-    // },
 
     /** 
      * Raw SBOL content
@@ -88,8 +64,16 @@ export const useStore = create((set, get) => ({
             // set roles to be the same as from document
             const roles = document.root.roles;            
             
+            const fromSynBioHub = isfromSynBioHub(document.root); 
+            let isFileEdited = false
+            let isUriCleaned = false
+            let nameChanged = false
+
             set({
                 // ...result,
+                isFileEdited,
+                isUriCleaned,
+                nameChanged,
                 sbolContent,
                 document,
                 roles,
@@ -97,54 +81,23 @@ export const useStore = create((set, get) => ({
                 richDescriptionBuffer,
                 textAnnotations,
                 sequenceAnnotations,
+                isfromSynBioHub,
                 loadingSBOL: false
             });
         } catch (err) {
             showErrorNotification("Upload Error", "Could not interpret file as SBOL document");
+            console.log(err)
         } finally {
             set({ loadingSBOL: false });
         }
     },
+
+    replaceDocumentForIDChange: async (newSBOLcontent) => {
+      const newDoc = await createSBOLDocument(newSBOLcontent);
+
+      set ({ document: newDoc,  sbolContent: newSBOLcontent, nameChanged: true });
+    },
     
-    
-    // ...createAsyncAdapter(set, "SBOL", async sbol => {
-    //     // try to form a URL out of the input argument
-    //     try {
-    //         var sbolUrl = new URL(sbol)
-    //     }
-    //     catch (err) {}
-
-    //     // if it's a URL, fetch it; otherwise, just use it as the content
-    //     const sbolContent = sbolUrl ? await fetchSBOL(sbolUrl.href) : sbol
-    //     try {
-    //         var document = await createSBOLDocument(sbolContent);
-    //     } catch (err) {
-    //         console.error(err);            
-    //         throw err;
-    //     }
-
-    //     // parse out existing text annotations
-    //     const { buffer: richDescriptionBuffer, annotations: textAnnotations } = parseTextAnnotations(document.root.richDescription)
-
-    //     // get existing sequence annotations
-    //     const sequenceAnnotations = getExistingSequenceAnnotations(document.root)
-
-    //     // set description as rich description text
-    //     document.root.description = richDescriptionBuffer.originalText
-
-    //     // set roles to be the same as from document
-    //     const roles = document.root.roles;
-
-    //     return {
-    //         sbolContent,
-    //         document,
-    //         roles,
-    //         uri: sbolUrl?.href,
-    //         richDescriptionBuffer,
-    //         textAnnotations,
-    //         sequenceAnnotations,
-    //     }
-    // }),
     exportDocument: (download = true) => {
         const annotations = get().sequenceAnnotations
 
@@ -162,6 +115,7 @@ export const useStore = create((set, get) => ({
         for (const anno of annotations) {
             if (!anno.enabled) removeAnnotationWithDefinition(get().document.root, anno.id)
         }
+
 
         const xml = get().document.serializeXML();
         
@@ -194,8 +148,9 @@ export const useStore = create((set, get) => ({
             isLoggedInToSomeSynBioHub: true,
             synBioHubUrlPrefix: urlPrefix,
         });        
-    },        
-    
+    },       
+
+
     // Sequence Annotations
     sequenceAnnotations: [],
 
@@ -208,6 +163,7 @@ export const useStore = create((set, get) => ({
             const result = await fetchAnnotateSequence({
                 sbolContent: get().document.serializeXML(),
                 selectedLibraryFileNames: get().sequencePartLibrariesSelected.map(lib => lib.value),
+                isUriCleaned: get().isUriCleaned,
             }) ?? [];
 
             let { fetchedAnnotations, synbictDoc } = result;
@@ -223,6 +179,7 @@ export const useStore = create((set, get) => ({
                 }),
                 loadingSequenceAnnotations: false, 
                 document: synbictDoc,
+                isUriCleaned: true,
             });
         } catch (err) {
             showErrorNotification("Load Error", "Could not load sequence annotations");
@@ -312,7 +269,7 @@ export const useStore = create((set, get) => ({
                         existingAnno.mentions.push(mention)
                 })
             })
-
+ 
             // make sure each mention has a buffer patch
             draft.forEach(anno => {
                 anno.mentions.forEach(mention => {
@@ -366,6 +323,17 @@ export const useStore = create((set, get) => ({
             state.document.root.removeReference(uri)
         })
     },
+
+    cleanSBOLDocument: async () => {
+        //call clean doc
+        const cleanedSBOL = await cleanSBOL(get().document.serializeXML())
+        set ({ sbolContent: cleanedSBOL });
+        
+        var cleanedDoc = await createSBOLDocument(cleanedSBOL);
+
+        set ({ document: cleanedDoc });
+        set ({ isUriCleaned: true })
+    }
 }))
 
 
@@ -394,6 +362,15 @@ function setRootProperty(set, path, value) {
  * @param {(state) => void} mutator  Function that mutates the document
  */
 export function mutateDocument(set, mutator) {
+    set(state => {
+        //upon mutation, clean doc of old uris and set edited to true
+        mutator?.(state);
+        if (!state.isFileEdited) state.isFileEdited = true;
+        return { document: state.document };
+    });
+}
+
+export function mutateDocumentForDisplayID(set, mutator) {
     set(state => {
         mutator?.(state);
         return { document: state.document };
@@ -466,7 +443,6 @@ export function useAsyncLoader(propertySuffix) {
     const loading = useStore(s => s["loading" + propertySuffix])
     return [load, loading]
 }
-
 
 /**
  * Creates a standard set of actions useful for manipulating annotations

@@ -1,5 +1,5 @@
 import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea, Menu, Modal, TextInput, PasswordInput, Loader, Center, Select, SegmentedControl, Checkbox } from '@mantine/core'
-import { useStore, mutateDocument } from '../modules/store'
+import { useStore, mutateDocument, mutateDocumentForDisplayID } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
@@ -17,6 +17,8 @@ import References from './References'
 import { FaHome, FaPencilAlt, FaTimes, FaCheck } from 'react-icons/fa'
 import { useState } from "react"
 import { showErrorNotification, showNotificationSuccess } from "../modules/util"
+import { Graph, SBOL2GraphView } from "sbolgraph"
+import { createSBOLDocument } from '../modules/sbol'
 
 function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
@@ -231,6 +233,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                          }}                         
                          error={inputError != false}
                      />
+                     <Checkbox checked={overwrite} label="Overwrite?" description="Overwrite if submission exists" onChange={(event) => setOverwrite(event.currentTarget.checked)} />
                      <Button onClick={async () => {
                                  if (inputErrorID || inputErrorVersion) {
                                      showErrorNotification("Invalid Input", "Please address the issue and then submit.");
@@ -374,7 +377,7 @@ export default function CurationForm({ }) {
         setIsEditingDisplayID(true);
         setWorkingDisplayID(displayId);
     };
-
+    
     const handleEndDisplayIDEdit = (cancelled = false) => {
         if (cancelled) {
             setIsEditingDisplayID(false);
@@ -388,7 +391,7 @@ export default function CurationForm({ }) {
 
         setIsEditingDisplayID(false);       
 
-        mutateDocument(useStore.setState, state => {
+        mutateDocumentForDisplayID(useStore.setState, async state => {
             // updateChildURIDisplayIDs(workingDisplayID, state.document.root.displayId, state.document);
 
             // Replace displayId in URIs in xml            
@@ -426,7 +429,7 @@ export default function CurationForm({ }) {
 
             const newSBOLcontent = xmlChunks.concat(remainingXML).join('');
 
-            state.loadSBOL(newSBOLcontent);            
+            await state.replaceDocumentForIDChange(newSBOLcontent);      
         });
     };
         

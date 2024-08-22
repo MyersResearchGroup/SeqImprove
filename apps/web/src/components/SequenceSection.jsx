@@ -1,5 +1,6 @@
 import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
+import { Checkbox } from '@mantine/core';
 import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
@@ -321,7 +322,7 @@ function Annotations({ colors }) {
                     setSequencePartLibrariesSelected(...librariesSelected);
                 })}               
             />
-
+            
             {loading ?
                 <Center>
                     <Loader my={30} size="sm" variant="dots" /> :
@@ -334,7 +335,8 @@ function Annotations({ colors }) {
                     color="blue"
                     onClick={handleAnalyzeSequenceClick}
                     sx={{ borderRadius: 6 }}
-               />}
+               />
+            }
         </FormSection>
     )
 }
