@@ -89,7 +89,7 @@ function Role({ idx }) {
                     styles={selectStyles}
                     sx={{ flexGrow: 1, }}
                 />
-                <CloseButton iconSize={20} onClick={removeRole} />
+                {/* <CloseButton iconSize={20} onClick={removeRole} /> */}
             </Group>
             <Space h="lg" />
         </div>
@@ -104,7 +104,7 @@ export default function RoleSelection() {
     };
     
     return roles.map((_, idx) =>
-        <Role key={idx} idx={idx} />).concat(<Button key={'a'} onClick={addRoleHandler}>Add Role</Button>);
+        <Role key={idx} idx={idx} />);
 }
 
 const RoleItem = forwardRef(({ label, shortId, ...others }, ref) =>

@@ -62,12 +62,16 @@ export const useStore = create((set, get) => ({
             document.root.description = richDescriptionBuffer.originalText;
 
             // set roles to be the same as from document
-            const roles = document.root.roles;            
+            if(document.root.roles.length < 1) document.root.roles = ["http://identifiers.org/so/SO:0000804"] //default to engineered region
+            const roles = document.root.roles;   
+            
             
             const fromSynBioHub = isfromSynBioHub(document.root); 
             let isFileEdited = false
             let isUriCleaned = false
             let nameChanged = false
+
+            if (document.root.uriChain.includes("https://seqimprove.synbiohub.org")) isUriCleaned = true
 
             set({
                 // ...result,
