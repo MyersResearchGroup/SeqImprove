@@ -115,8 +115,9 @@ function colorFromAnnotations(annotations, isActive) {
         document.body.appendChild(dummyElement);
 
         // Get the computed RGB values
-        const computedColor = window.getComputedStyle(dummyElement).color;
-        const rgbValues = computedColor.match(/\d+/g).map(Number);  
+        let computedColor = window.getComputedStyle(dummyElement).color;
+        if (color == "grape") computedColor = "rgb(90, 75, 219)" 
+        const rgbValues = computedColor.match(/\d+/g).map(Number);
 
         rgbCollection.push(rgbValues);
 
