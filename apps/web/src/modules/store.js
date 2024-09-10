@@ -26,6 +26,7 @@ export const useStore = create((set, get) => ({
      * roles used in SBOL document for curation form
      * @type {string[]} */
     roles: [],
+    types: [],
 
     /** 
      * Parsed SBOL document
@@ -63,7 +64,8 @@ export const useStore = create((set, get) => ({
 
             // set roles to be the same as from document
             if(document.root.roles.length < 1) document.root.roles = ["http://identifiers.org/so/SO:0000804"] //default to engineered region
-            const roles = document.root.roles;   
+            const roles = document.root.roles;
+            const types = document.root.types;   
             
             
             const fromSynBioHub = isfromSynBioHub(document.root); 
@@ -81,6 +83,7 @@ export const useStore = create((set, get) => ({
                 sbolContent,
                 document,
                 roles,
+                types,
                 uri: sbolUrl?.href,
                 richDescriptionBuffer,
                 textAnnotations,

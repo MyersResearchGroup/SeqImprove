@@ -1,8 +1,9 @@
-import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea, Menu, Modal, TextInput, PasswordInput, Loader, Center, Select, SegmentedControl, Checkbox } from '@mantine/core'
+import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea, Menu, Modal, TextInput, PasswordInput, Loader, Center, Select, SegmentedControl, Checkbox, TypographyStylesProvider } from '@mantine/core'
 import { useStore, mutateDocument, mutateDocumentForDisplayID } from '../modules/store'
 import { useCyclicalColors } from "../hooks/misc"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
+import TypeSelection from "./TypeSelection"
 import ProteinSelection from './ProteinSelection'
 import SplitPanel from "./SplitPanel"
 import TargetOrganismsSelection from './TargetOrganismsSelection'
@@ -559,8 +560,8 @@ export default function CurationForm({ }) {
                                                   </ReactMarkdown>
                                               </Text>
                                               <Space h={20} />
-                                              <Title order={3}>Roles</Title>    
                                               <RoleSelection />
+                                              <TypeSelection />
                                               <Space h={40} />
                                               <TargetOrganismsSelection />
                                               <Space h={40} />
