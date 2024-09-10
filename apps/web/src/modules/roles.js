@@ -1,6 +1,6 @@
 
 
-export function decodeRoleURI(uri) {    
+export function decodeRoleURI(uri) { 
     return uri.match(/SO[:_]\d+$/)?.[0].replace("_", ":")
 }
 
