@@ -51,8 +51,8 @@ export default function App() {
                     <UploadForm />}
                     <Center>
                         <Box sx={_ => { padding: "0 0 10px 0" }}>
-                            <Text fz="xs" align="center">&copy; 2023 Genetic Logic Lab at the University of Colorado, Boulder</Text>
-                            <Text fz="xs" align="center"><a target="_blank" href="https://github.com/MyersResearchGroup/SeqImprove">View Source on Github</a> | <a target="_blank" href="https://github.com/MyersResearchGroup/SeqImprove/issues/new">Report an Issue</a> | v0.2.0</Text>
+                            <Text fz="xs" align="center">&copy; 2024 Genetic Logic Lab at the University of Colorado, Boulder</Text>
+                            <Text fz="xs" align="center"><a target="_blank" href="https://github.com/MyersResearchGroup/SeqImprove">View Source on Github</a> | <a target="_blank" href="https://github.com/MyersResearchGroup/SeqImprove/issues/new">Report an Issue</a> | v1.0.0</Text>
                             <Space h="lg" />
                         </Box>                        
                     </Center>
