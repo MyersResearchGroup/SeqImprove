@@ -71,6 +71,36 @@ export async function fetchSBOL(url) {
     }
 }
 
+export async function importLibrary(synBioHubSessionToken, requestURL) {
+    try {
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                sessionToken: synBioHubSessionToken,
+                url: requestURL
+            }),
+            timeout: 120000,
+        });
+    }
+    catch (err) {
+        console.error("Failed to fetch.");
+        showServerErrorNotification();
+        return;
+    }
+
+    try {
+        var result = await response.json();
+    }
+    catch (err) {
+        console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return;
+    }
+}
+
 export async function cleanSBOL(sbolContent) {
     try {
         var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/cleanSBOL`, {
@@ -173,7 +203,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
                                                  id: sa.persistentIdentity,
                                                  location: [sa.rangeMin, sa.rangeMax],
                                                  componentInstance: sa.component,
-                                                 featureLibrary: partLibrary,
+                                                 featureLibrary: sa.component.definition.persistentIdentity,
                                                  enabled: true,
                                              })));
         })();

@@ -200,6 +200,7 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 target_library = FeatureLibrary([target_doc])
                 # feature_library = FEATURE_LIBRARIES[0]
                 feature_library = create_feature_library(part_lib_f_name)
+                print(f"feature library for {part_lib_f_name}: {feature_library}")
                 min_feature_length = 10
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
                 min_target_length = 10                
@@ -422,6 +423,33 @@ def annotate_text():
     free_text = request.get_json()['text']
     biobert_result = run_biobert(free_text)
     return {"text": free_text, "annotations": biobert_result}
+
+@app.post("/api/importUserLibrary")
+def import_library():
+    request_data = request.get_json()
+    SBHSessionToken = request_data['sessionToken']
+    collectionURL = request_data['url']
+    
+    headers = {
+        "Accept": "text/plain",
+        "X-authorization": SBHSessionToken
+    }
+
+    response = requests.get(collectionURL, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        print("Request successful")
+        feature_doc = sbol2.Document()
+        feature_doc.readString(response.text)
+        FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
+        print(f"Feature Doc Summary for{collectionURL}: \n{feature_doc}")
+        
+        return {"response": response.text}
+    else:
+        print(f"Request failed with status code: {response.status_code}")
+        return {"response": response.text}
+
 
 # if __name__ == '__main__':
 #     app.run(debug=True,host='0.0.0.0',port=5000)

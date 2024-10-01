@@ -1,7 +1,7 @@
 import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Checkbox } from '@mantine/core';
-import { Button, Center, Group, Loader, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
+import { Checkbox, SegmentedControl, Select, Title } from '@mantine/core';
+import { Button, Center, Group, Stack, Loader, Modal, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
 import { mutateDocument, mutateSequencePartLibrariesSelected, useAsyncLoader, useStore } from "../modules/store"
@@ -9,9 +9,12 @@ import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
 import SequenceHighlighter from "./SequenceHighlighter"
 import { Copy, Check } from "tabler-icons-react"
-import { showErrorNotification } from '../modules/util'
+import { showErrorNotification, showNotificationSuccess } from "../modules/util"
 import "../../src/sequence-edit.css"
 import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
+import { openConfirmModal, openContextModal } from "@mantine/modals"
+import { SynBioHubClientLogin } from "./CurationForm";
+import { importLibrary } from "../modules/api";
 
 const WORDSIZE = 8;
 
@@ -143,21 +146,7 @@ function Sequence({ colors }) {
             }
             style={{ maxWidth: "800px" }}
         >
-            {workingSequence !== false ? //TextArea is the editor // TODO: add highlight in TextArea
-                // <Textarea
-                //     size="md"
-                //     minRows={20}
-                //     value={workingSequence}
-                //     onChange={event => {
-                //         const textArea = event.currentTarget;
-                //         const start = textArea.selectionStart;
-                //         const end = textArea.selectionEnd;
-                //         // isValid?nothing : update the state
-                //         console.log("isInValid: ", start);
-                //         setWorkingSequence(textArea.value);  //value is the value of ACTG, reformat is adding spaces, call validate function                      
-                //     }}
-                //     styles={{ input: { font: "14px monospace", lineHeight: "1.5em", error: true } }}
-                // /> 
+            {workingSequence !== false ? 
                 <HighlightWithinTextarea
                     value={workingSequence}
                     highlight={{
@@ -235,6 +224,19 @@ function Annotations({ colors }) {
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
     const sequence = useStore(s => s.document?.root.sequence)?.toLowerCase()
+
+    const libraryImported = useStore(s => s.libraryImported)
+    const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
+    const [ isInteractingWithSynBioHub, setIsInteractingWithSynBioHub ] = useState(false);
+    const [ synBioHubs, setSynBioHubs ] = useState([]);    
+
+    useStore(s => s.libraryImported);
+
+    const loadSynBioHubs = async () => {
+        const response = await fetch("https://wor.synbiohub.org/instances");
+        const registries = await response.json();
+        setSynBioHubs(registries.map(r => r.uriPrefix));
+    };
     
     const sequencePartLibraries = [
         { value: 'local_libraries', label: 'SeqImprove Local Libraries'},
@@ -263,6 +265,8 @@ function Annotations({ colors }) {
     ];
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
+    const importedLibraries = useStore(s => s.importedLibraries)
+    const toggleLibrary = useStore(s => s.toggleImportedLibraries)
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -272,7 +276,11 @@ function Annotations({ colors }) {
     ));
 
     const handleAnalyzeSequenceClick = () => {
-        if (sequencePartLibrariesSelected.length > 0) loadSequenceAnnotations()
+        if (sequencePartLibrariesSelected.length > 0) {
+            const libs = importedLibraries.filter((lib) =>
+                lib.enabled == true)
+            loadSequenceAnnotations(libs)
+        }
         else showErrorNotification('No libraries selected ', 'Select one or more libraries to continue')
     }
 
@@ -323,6 +331,40 @@ function Annotations({ colors }) {
                 })}               
             />
             
+
+            {libraryImported && <Stack mt="sm" gap="xs">
+                {importedLibraries.map((library, index) => (
+                    <Checkbox 
+                        label={library.label}
+                        checked={library.enabled}
+                        onChange={() => toggleLibrary(index)}
+                        key={index}
+                    />
+                ))}
+                </Stack>
+            }
+
+            <NavLink
+                label="Import Library"
+                icon={<FaPlus />}
+                variant="subtle"
+                active={true}
+                color="blue"
+                onClick={() => {
+                    loadSynBioHubs();
+                    setIsInteractingWithSynBioHub(true);
+                }}
+                sx={{ borderRadius: 6 }}
+            />
+
+            <SynBioHubClient
+                opened={isInteractingWithSynBioHub}
+                setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub}
+                onClose={() => setIsInteractingWithSynBioHub(false)}
+                setOpened={setIsInteractingWithSynBioHub}                            
+                synBioHubs={synBioHubs}
+            />
+            
             {loading ?
                 <Center>
                     <Loader my={30} size="sm" variant="dots" /> :
@@ -341,6 +383,120 @@ function Annotations({ colors }) {
     )
 }
 
+function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs}) {     
+    const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
+
+    return (
+        <Modal
+            title="SynBioHub"
+            opened={opened}
+            onClose={onClose}
+            size={"auto"}
+        >
+            {isLoggedInToSynBioHub ?
+             <SynBioHubClientSelect setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} /> :
+             <SynBioHubClientLogin synBioHubs={synBioHubs} />
+            }            
+        </Modal>
+    );
+}
+
+function SynBioHubClientSelect({ setIsInteractingWithSynBioHub }) {        
+    const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
+    const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
+    const [inputError, setInputError] = useState(false);
+    const [ isLoading, setIsLoading ] = useState(false);
+    const libraryImported = useStore(s => s.libraryImported);
+    const [ id, setID ] = useState("collection_id");
+    const [ rootCollectionsLoaded, setRootCollectionsLoaded ] = useState(false);
+    const [ rootCollectionsIDs, setRootCollectionsIDs ] = useState([]);
+    const [ rootCollections, setRootCollections ] = useState([]);
+    const [ rootCollectionURI, setRootCollectionURI ] = useState('');
+    const [ selectedCollectionID, selectCollectionID ] = useState('');
+
+    const xml = useStore(s => s.serializeXML());        
+
+    (async () => {        
+        if (!rootCollectionsLoaded) { // curl -X GET -H "Accept: text/plain" -H "X-authorization: 5ab3af6e-2ddd-4ac2-af76-d4285d2ffe03" https://synbiohub.org/rootCollections
+            console.log(synBioHubSessionToken);
+            const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {                
+                method: "GET",
+                headers: {
+                    "Accept": "text/plain",
+                    "X-authorization": synBioHubSessionToken,
+                },
+            });            
+
+            const _rootCollections = await response2.json();
+            
+            let regex = RegExp(synBioHubUrlPrefix + "/user/*");
+            const userRootCollections = _rootCollections.filter(collection => collection.uri.match(regex));
+            setRootCollections(userRootCollections);
+            setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
+            setRootCollectionsLoaded(true);
+        }           
+    })();
+
+    const [ inputErrorID, setInputErrorID ] = useState(false);
+    const importedLibraries = useStore(s => s.importedLibraries)
+    const addLibrary = useStore(s => s.addImportedLibrary)
+
+    return (                        
+        <Group>
+            <Title order={3}>Download from SynBioHub</Title>
+            <Group>
+                 <Group>
+                     {!rootCollectionsLoaded ?
+                      <Center>
+                          <Loader my={30} size="sm" variant="dots" />
+                      </Center> :
+                      <Select
+                          label="Root Collection"
+                          placeholder="Pick one"
+                          data={rootCollectionsIDs}                      
+                          onChange={(v) => {                          
+                                setRootCollectionURI(rootCollections.find(collection => collection.displayId == v).uri)
+                                selectCollectionID(v)
+                          }}
+                          searchable
+                      />
+                     }
+
+                     {isLoading ? 
+                      <Center>
+                          <Loader my={30} size="sm" variant="dots" />
+                      </Center> :
+                      <Button onClick={async () => {                                                                  
+                                const params = new FormData();       
+                                //send to backend                                                                                                                                                                                                                                                                                
+                                params.append('rootCollections', rootCollectionURI);
+                                // Create a Blob from the text
+
+                                setIsLoading(true);
+                                const response = importLibrary(synBioHubSessionToken, rootCollectionURI)
+                                setIsLoading(false);                             
+
+                                if (response) {
+                                    setInputError(false);
+                                    setIsInteractingWithSynBioHub(false);
+                                    showNotificationSuccess("Success!", "Imported Library: " + selectedCollectionID + ".");
+                                    mutateDocument(useStore.setState, state => {state.libraryImported = true});
+                                    // importedLibraries.push({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
+                                    addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
+                                } else if (response.status == 401) {                                                                                                                            
+                                    showErrorNotification("Failure.", "SynBioHub did not accept the request");
+                                } else {                                          
+                                    showErrorNotification("Failure.", "SynBioHub did not accept the request");
+                                }
+                              }}>
+                          Submit
+                      </Button>
+                     }
+                 </Group>          
+            </Group>
+        </Group> 
+    )
+}
 
 export default {
     Sequence, Annotations

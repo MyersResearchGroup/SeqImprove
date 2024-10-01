@@ -43,7 +43,7 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
     );
 }
 
-function SynBioHubClientLogin({ synBioHubs }) {       
+export function SynBioHubClientLogin({ synBioHubs }) {       
     const [email, setEmail] = useState('');    
     const [password, setPassword] = useState('');
     const [inputError, setInputError] = useState(false);
@@ -62,7 +62,8 @@ function SynBioHubClientLogin({ synBioHubs }) {
                     data={synBioHubs}                      
                     onChange={(v) => {                          
                         setWorkingSynBioHubUrlPrefix(v);
-                    }}                        
+                    }}
+                    searchable                        
                 />
                 <TextInput                   
                     label="Email"
@@ -87,7 +88,7 @@ function SynBioHubClientLogin({ synBioHubs }) {
                              const params = new URLSearchParams();
                              params.append('email', email);
                              params.append('password', password);
-                             const synbiohub_url_login = "https:/" + "/synbiohub.org/login";
+                             const synbiohub_url_login = workingSynBioHubUrlPrefix + "/login";
                              setIsLoading(true);
                              const response = await fetch(synbiohub_url_login, {
                                  method: "POST",
