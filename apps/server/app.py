@@ -64,21 +64,22 @@ def setup():
         sbh_file_prefixes = [item['displayId'] for item in sbh_data] 
 
         # remove large part libraries that break the http requests
-        uris.remove('https://synbiohub.org/public/bsu/bsu_collection/1')
-        sbh_file_prefixes.remove('bsu_collection')
+        for uri in ['https://synbiohub.org/public/bsu/bsu_collection/1',
+              'https://synbiohub.org/public/igem/igem_collection/1',
+              'https://synbiohub.org/public/iGEMDistributions/iGEMDistributions_collection/1',
+              'https://synbiohub.org/public/igem_feature_libraries/igem_feature_libraries_collection/1']:
+            if uri in uris:
+                uris.remove(uri)
 
-        uris.remove('https://synbiohub.org/public/igem/igem_collection/1')
-        sbh_file_prefixes.remove('igem_collection')
-
-        uris.remove('https://synbiohub.org/public/iGEMDistributions/iGEMDistributions_collection/1')
-        sbh_file_prefixes.remove('iGEMDistributions_collection')
-        
-        uris.remove('https://synbiohub.org/public/igem_feature_libraries/igem_feature_libraries_collection/1')
-        sbh_file_prefixes.remove('igem_feature_libraries_collection')
+        for sbh_file_prefix in ['bsu_collection',
+                                'igem_collection',
+                                'iGEMDistributions_collection',
+                                'igem_feature_libraries_collection']:
+            if sbh_file_prefix in sbh_file_prefixes:
+                sbh_file_prefixes.remove(sbh_file_prefix)
     else:
         print(f"Failed to retrieve data from SynBioHub: {sbhresponse.status_code}")
 
-         
     for feature_library_path in feature_libraries_paths:
         print(feature_library_path)
         feature_doc = sbol2.Document()
