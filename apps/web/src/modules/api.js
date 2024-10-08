@@ -120,7 +120,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
                 partLibraries: selectedLibraryFileNames,
                 cleanDocument: !isUriCleaned,
             }),
-            timeout: 120000,
+            timeout: 320000,
         });
     }
     catch (err) {
