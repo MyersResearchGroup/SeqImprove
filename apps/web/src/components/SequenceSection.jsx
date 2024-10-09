@@ -305,6 +305,7 @@ function Annotations({ colors }) {
                 placeholder="Choose the libraries to annotate against"
                 value={sequencePartLibrariesSelected}
                 searchable
+                maxSelectedValues={3} // <-- NOTE: There is a bug on deployment where the backend doesn't respond when many part libraries are selected. We're not able to reproduce it locally, but this makes it a non issue.
                 onChange={((...librariesSelected) => {
                     const chosenLibraries = sequencePartLibraries.filter(lib => {
                         return librariesSelected[0].includes(lib.value);
