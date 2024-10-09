@@ -235,7 +235,8 @@ function Annotations({ colors }) {
     const loadSynBioHubs = async () => {
         const response = await fetch("https://wor.synbiohub.org/instances");
         const registries = await response.json();
-        setSynBioHubs(registries.map(r => r.uriPrefix));
+        if (localStorage.getItem("synBioHubs")) setSynBioHubs(JSON.parse(localStorage.getItem("synBioHubs")))
+        else setSynBioHubs(registries.map(r => r.uriPrefix));
     };
     
     const sequencePartLibraries = [
