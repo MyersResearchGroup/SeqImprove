@@ -430,7 +430,7 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub }) {
 
             const _rootCollections = await response2.json();
             
-            let regex = RegExp(synBioHubUrlPrefix + "/user/*");
+            let regex = RegExp(synBioHubUrlPrefix.replace(/^https?/, 'https?') + "/user/.*");
             const userRootCollections = _rootCollections.filter(collection => collection.uri.match(regex));
             setRootCollections(userRootCollections);
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
