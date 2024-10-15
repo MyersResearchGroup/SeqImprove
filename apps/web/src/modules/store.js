@@ -3,7 +3,7 @@ import create from "zustand"
 import produce from "immer"
 import { getSearchParams, showErrorNotification } from "./util"
 import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation, isfromSynBioHub } from "./sbol"
-import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL } from "./api"
+import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL, deleteLibrary } from "./api"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
 
@@ -33,6 +33,7 @@ export const useStore = create((set, get) => ({
      * @type {SBOL2GraphView} */
     document: null,
     loadingSBOL: false,
+    libraryImported: false,
     loadSBOL: async(sbol) => {
         set({ loadingSBOL: true });
 
@@ -160,16 +161,20 @@ export const useStore = create((set, get) => ({
 
     // Sequence Annotations
     sequenceAnnotations: [],
+    importedLibraries: [],
 
     loadingSequenceAnnotations: false,
        
     loadSequenceAnnotations: async (...args) => {
         set({ loadingSequenceAnnotations: true });
+        let allLibraries = []
+        if (get().sequencePartLibrariesSelected) allLibraries = get().sequencePartLibrariesSelected.concat(args[0])
+            else allLibraries = allLibraries.concat(args[0])
 
         try {
             const result = await fetchAnnotateSequence({
                 sbolContent: get().document.serializeXML(),
-                selectedLibraryFileNames: get().sequencePartLibrariesSelected.map(lib => lib.value),
+                selectedLibraryFileNames: allLibraries.map(lib => lib.value),
                 isUriCleaned: get().isUriCleaned,
             }) ?? [];
 
@@ -294,6 +299,26 @@ export const useStore = create((set, get) => ({
         add: addTextAnnotation,
         remove: removeTextAnnotation,
     }),
+
+    toggleImportedLibraries: index => {
+        // set(state.importedLibraries[index].enabled = !state.importedLibraries[index].enabled);  
+        set(produce(state => {
+            state.importedLibraries[index].enabled = !state.importedLibraries[index].enabled;
+        }));
+    },
+
+    addImportedLibrary: library => {
+        set(produce(state => {
+            state.importedLibraries.push(library)
+        }));
+    },
+
+    removeImportedLibrary: library => {
+        set(produce(state => {
+            state.importedLibraries = state.importedLibraries.filter(lib => lib.value !== library.value);
+        }));
+        deleteLibrary(library.value)
+    },
 
     // Target Organisms
     addTargetOrganism: uri => {

@@ -43,7 +43,7 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
     );
 }
 
-function SynBioHubClientLogin({ synBioHubs }) {       
+export function SynBioHubClientLogin({ synBioHubs }) {       
     const [email, setEmail] = useState('');    
     const [password, setPassword] = useState('');
     const [inputError, setInputError] = useState(false);
@@ -62,7 +62,15 @@ function SynBioHubClientLogin({ synBioHubs }) {
                     data={synBioHubs}                      
                     onChange={(v) => {                          
                         setWorkingSynBioHubUrlPrefix(v);
-                    }}                        
+                    }}
+                    searchable                        
+                    creatable
+                    getCreateLabel={(query) => `Custom SBH: ${query}`}
+                    onCreate={(query) => {
+                    const item = { value: query, label: query };
+                        synBioHubs.push(query)
+                        return item;
+                    }}
                 />
                 <TextInput                   
                     label="Email"
@@ -87,7 +95,7 @@ function SynBioHubClientLogin({ synBioHubs }) {
                              const params = new URLSearchParams();
                              params.append('email', email);
                              params.append('password', password);
-                             const synbiohub_url_login = "https:/" + "/synbiohub.org/login";
+                             const synbiohub_url_login = workingSynBioHubUrlPrefix + "/login";
                              setIsLoading(true);
                              const response = await fetch(synbiohub_url_login, {
                                  method: "POST",
@@ -99,7 +107,7 @@ function SynBioHubClientLogin({ synBioHubs }) {
                              if (response.ok) {
                                  setInputError(false);
                                  const session_token = await response.text();
-                                 // setSynBioHubSessionToken(session_token);                                 
+                                localStorage.setItem("synBioHubs", JSON.stringify(synBioHubs))
                                  loginToSynBioHubFn(session_token, workingSynBioHubUrlPrefix);
                                  
                              } else if (response.status == 401) {
@@ -440,7 +448,8 @@ export default function CurationForm({ }) {
     const loadSynBioHubs = async () => {
         const response = await fetch("https://wor.synbiohub.org/instances");
         const registries = await response.json();
-        setSynBioHubs(registries.map(r => r.uriPrefix));
+        if (localStorage.getItem("synBioHubs")) setSynBioHubs(JSON.parse(localStorage.getItem("synBioHubs")))
+        else setSynBioHubs(registries.map(r => r.uriPrefix));
     };
 
     function isValid(sequence) {
