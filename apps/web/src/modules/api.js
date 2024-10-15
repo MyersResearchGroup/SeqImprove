@@ -1,4 +1,4 @@
-import { showServerErrorNotification } from "./util"
+import { showNotificationSuccess, showServerErrorNotification } from "./util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 
 export async function bootAPIserver() {
@@ -96,6 +96,37 @@ export async function importLibrary(synBioHubSessionToken, requestURL) {
     }
     catch (err) {
         console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return;
+    }
+}
+
+export async function deleteLibrary(libraryURL) {
+    try {
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/deleteUserLibrary`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                url: libraryURL
+            }),
+            timeout: 120000,
+        });
+    }
+    catch (err) {
+        console.error("Failed to fetch.");
+        showServerErrorNotification();
+        return;
+    }
+
+    try {
+        var result = await response.json();
+        showNotificationSuccess("Success!", result.response);
+        console.log(result)
+    }
+    catch (err) {
+        console.error("Error deleting library from memory: " + err);
         showServerErrorNotification();
         return;
     }
@@ -281,7 +312,7 @@ export async function fetchSimilarParts(topLevelUri) {
         return
     }
     
-    console.log("Successfully annotated.")
+    console.log("Successfully fetched similar parts.")
     return result.similarParts
 }
 

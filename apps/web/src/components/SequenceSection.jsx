@@ -1,6 +1,6 @@
 import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Checkbox, SegmentedControl, Select, Title } from '@mantine/core';
+import { Checkbox, CloseButton, Flex, Grid, SegmentedControl, Select, Title } from '@mantine/core';
 import { Button, Center, Group, Stack, Loader, Modal, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
@@ -268,6 +268,7 @@ function Annotations({ colors }) {
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
     const importedLibraries = useStore(s => s.importedLibraries)
     const toggleLibrary = useStore(s => s.toggleImportedLibraries)
+    const removeLibrary = useStore(s => s.removeImportedLibrary)
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -277,13 +278,15 @@ function Annotations({ colors }) {
     ));
 
     const handleAnalyzeSequenceClick = () => {
-        if (sequencePartLibrariesSelected.length > 0) {
-            const libs = importedLibraries.filter((lib) =>
+        const libs = importedLibraries.filter((lib) =>
                 lib.enabled == true)
+        if (sequencePartLibrariesSelected.length > 0 || libs.length > 0) {
             loadSequenceAnnotations(libs)
         }
         else showErrorNotification('No libraries selected ', 'Select one or more libraries to continue')
     }
+
+    const handleClose = (library) => {removeLibrary(library)};
 
     return (
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
@@ -335,12 +338,23 @@ function Annotations({ colors }) {
 
             {libraryImported && <Stack mt="sm" gap="xs">
                 {importedLibraries.map((library, index) => (
-                    <Checkbox 
-                        label={library.label}
-                        checked={library.enabled}
-                        onChange={() => toggleLibrary(index)}
-                        key={index}
-                    />
+                    <Grid key={index}>
+                        <Grid.Col span={10}>
+                            <Checkbox
+                                label={library.label}
+                                checked={library.enabled}
+                                onChange={() => toggleLibrary(index)}
+                                key={index} 
+                            />
+                        </Grid.Col>
+                        <Grid.Col span={2}>
+                            <Tooltip label="Delete from server memory">
+                                <CloseButton 
+                                    onClick={() => handleClose(library)}
+                                />
+                            </Tooltip>
+                        </Grid.Col>
+                    </Grid>
                 ))}
                 </Stack>
             }

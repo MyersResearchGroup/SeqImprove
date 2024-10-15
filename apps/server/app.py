@@ -439,17 +439,27 @@ def import_library():
 
     # Check if the request was successful
     if response.status_code == 200:
-        print("Request successful")
         feature_doc = sbol2.Document()
         feature_doc.readString(response.text)
         FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
-        print(f"Feature Doc Summary for{collectionURL}: \n{feature_doc}")
+        print(f"all libraries: {FEATURE_LIBRARIES.keys()}")
         
         return {"response": response.text}
     else:
         print(f"Request failed with status code: {response.status_code}")
         return {"response": response.text}
 
+@app.post("/api/deleteUserLibrary")
+def remove_library():
+    request_data = request.get_json()
+    collectionURL = request_data['url']
+
+    if FEATURE_LIBRARIES[collectionURL]: del FEATURE_LIBRARIES[collectionURL]
+    else: return {"response": "Library does not exist"}
+
+    print(f"\nupdated libraries: {FEATURE_LIBRARIES.keys()}")
+
+    return {"response": "Library successfully deleted"}
 
 # if __name__ == '__main__':
 #     app.run(debug=True,host='0.0.0.0',port=5000)
