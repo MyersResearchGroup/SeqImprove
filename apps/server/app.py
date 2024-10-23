@@ -117,7 +117,7 @@ def create_app():
 # only retrieves feature library that already exists after setup
 # might create a libarary in the future
 def create_feature_library(part_library_file_name):
-    if part_library_file_name.startswith('https://synbiohub.org'): #if url, return the obj if indexed with url(sbh downloads only)
+    if ('synbiohub.org' in part_library_file_name): #if url, return the obj if indexed with url(sbh downloads only)
         if part_library_file_name in FEATURE_LIBRARIES:
             return FEATURE_LIBRARIES[part_library_file_name]
         else: #for locally stored sbh collections(indexed with file name for annotation)
@@ -201,6 +201,7 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 target_library = FeatureLibrary([target_doc])
                 # feature_library = FEATURE_LIBRARIES[0]
                 feature_library = create_feature_library(part_lib_f_name)
+                print(f"feature library for {part_lib_f_name}: {feature_library}")
                 min_feature_length = 10
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
                 min_target_length = 10                
@@ -423,6 +424,43 @@ def annotate_text():
     free_text = request.get_json()['text']
     biobert_result = run_biobert(free_text)
     return {"text": free_text, "annotations": biobert_result}
+
+@app.post("/api/importUserLibrary")
+def import_library():
+    request_data = request.get_json()
+    SBHSessionToken = request_data['sessionToken']
+    collectionURL = request_data['url']
+    
+    headers = {
+        "Accept": "text/plain",
+        "X-authorization": SBHSessionToken
+    }
+
+    response = requests.get(collectionURL, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        feature_doc = sbol2.Document()
+        feature_doc.readString(response.text)
+        FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
+        print(f"all libraries: {FEATURE_LIBRARIES.keys()}")
+        
+        return {"response": response.text}
+    else:
+        print(f"Request failed with status code: {response.status_code}")
+        return {"response": response.text}
+
+@app.post("/api/deleteUserLibrary")
+def remove_library():
+    request_data = request.get_json()
+    collectionURL = request_data['url']
+
+    if FEATURE_LIBRARIES[collectionURL]: del FEATURE_LIBRARIES[collectionURL]
+    else: return {"response": "Library does not exist"}
+
+    print(f"\nupdated libraries: {FEATURE_LIBRARIES.keys()}")
+
+    return {"response": "Library successfully deleted"}
 
 # if __name__ == '__main__':
 #     app.run(debug=True,host='0.0.0.0',port=5000)

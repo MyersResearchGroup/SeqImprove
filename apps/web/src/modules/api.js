@@ -1,4 +1,4 @@
-import { showServerErrorNotification } from "./util"
+import { showNotificationSuccess, showServerErrorNotification } from "./util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 
 export async function bootAPIserver() {
@@ -68,6 +68,71 @@ export async function fetchSBOL(url) {
             title: "Failed to load SBOL from URL",
             color: "red",
         })
+    }
+}
+
+export async function importLibrary(synBioHubSessionToken, requestURL, setIsImportingLibrary) {
+    try {
+        setIsImportingLibrary(true);
+        
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                sessionToken: synBioHubSessionToken,
+                url: requestURL
+            }),
+            timeout: 120000,
+        });
+    }
+    catch (err) {
+        console.error("Failed to fetch.");
+        showServerErrorNotification();
+        return;
+    }
+
+    try {
+        var result = await response.json();
+    }
+    catch (err) {
+        console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return;
+    } finally {
+        setIsImportingLibrary(false);
+    }
+}
+
+export async function deleteLibrary(libraryURL) {
+    try {
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/deleteUserLibrary`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                url: libraryURL
+            }),
+            timeout: 120000,
+        });
+    }
+    catch (err) {
+        console.error("Failed to fetch.");
+        showServerErrorNotification();
+        return;
+    }
+
+    try {
+        var result = await response.json();
+        showNotificationSuccess("Success!", result.response);
+        console.log(result)
+    }
+    catch (err) {
+        console.error("Error deleting library from memory: " + err);
+        showServerErrorNotification();
+        return;
     }
 }
 
@@ -173,7 +238,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
                                                  id: sa.persistentIdentity,
                                                  location: [sa.rangeMin, sa.rangeMax],
                                                  componentInstance: sa.component,
-                                                 featureLibrary: partLibrary,
+                                                 featureLibrary: sa.component.definition.persistentIdentity,
                                                  enabled: true,
                                              })));
         })();
@@ -251,7 +316,7 @@ export async function fetchSimilarParts(topLevelUri) {
         return
     }
     
-    console.log("Successfully annotated.")
+    console.log("Successfully fetched similar parts.")
     return result.similarParts
 }
 
