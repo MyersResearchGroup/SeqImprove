@@ -116,7 +116,7 @@ def create_app():
 # only retrieves feature library that already exists after setup
 # might create a libarary in the future
 def create_feature_library(part_library_file_name):
-    if part_library_file_name.startswith('https://synbiohub.org'): #if url, return the obj if indexed with url(sbh downloads only)
+    if ('synbiohub.org' in part_library_file_name): #if url, return the obj if indexed with url(sbh downloads only)
         if part_library_file_name in FEATURE_LIBRARIES:
             return FEATURE_LIBRARIES[part_library_file_name]
         else: #for locally stored sbh collections(indexed with file name for annotation)

@@ -71,8 +71,10 @@ export async function fetchSBOL(url) {
     }
 }
 
-export async function importLibrary(synBioHubSessionToken, requestURL) {
+export async function importLibrary(synBioHubSessionToken, requestURL, setIsImportingLibrary) {
     try {
+        setIsImportingLibrary(true);
+        
         var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
             method: "POST",
             headers: {
@@ -98,6 +100,8 @@ export async function importLibrary(synBioHubSessionToken, requestURL) {
         console.error("Couldn't parse JSON.");
         showServerErrorNotification();
         return;
+    } finally {
+        setIsImportingLibrary(false);
     }
 }
 

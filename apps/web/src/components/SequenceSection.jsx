@@ -228,6 +228,7 @@ function Annotations({ colors }) {
     const libraryImported = useStore(s => s.libraryImported)
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
     const [ isInteractingWithSynBioHub, setIsInteractingWithSynBioHub ] = useState(false);
+    const [ isImportingLibrary, setIsImportingLibrary ] = useState(false);
     const [ synBioHubs, setSynBioHubs ] = useState([]);    
 
     useStore(s => s.libraryImported);
@@ -378,6 +379,7 @@ function Annotations({ colors }) {
                 onClose={() => setIsInteractingWithSynBioHub(false)}
                 setOpened={setIsInteractingWithSynBioHub}                            
                 synBioHubs={synBioHubs}
+                setIsImportingLibrary={setIsImportingLibrary}
             />
             
             {loading ?
@@ -390,6 +392,7 @@ function Annotations({ colors }) {
                     variant="subtle"
                     active={true}
                     color="blue"
+                    disabled={isImportingLibrary}
                     onClick={handleAnalyzeSequenceClick}
                     sx={{ borderRadius: 6 }}
                />
@@ -398,7 +401,7 @@ function Annotations({ colors }) {
     )
 }
 
-function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs}) {     
+function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs, setIsImportingLibrary}) {     
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
 
     return (
@@ -409,14 +412,14 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
             size={"auto"}
         >
             {isLoggedInToSynBioHub ?
-             <SynBioHubClientSelect setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} /> :
+             <SynBioHubClientSelect setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} setIsImportingLibrary={setIsImportingLibrary}/> :
              <SynBioHubClientLogin synBioHubs={synBioHubs} />
             }            
         </Modal>
     );
 }
 
-function SynBioHubClientSelect({ setIsInteractingWithSynBioHub }) {        
+function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLibrary }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
     const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
     const [inputError, setInputError] = useState(false);
@@ -482,28 +485,23 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub }) {
                           <Loader my={30} size="sm" variant="dots" />
                       </Center> :
                       <Button onClick={async () => {                                                                  
-                                const params = new FormData();       
-                                //send to backend                                                                                                                                                                                                                                                                                
-                                params.append('rootCollections', rootCollectionURI);
-                                // Create a Blob from the text
+                            const params = new FormData();       
+                            //send to backend                                                                                                                                                                                                                                                                                
+                            params.append('rootCollections', rootCollectionURI);
+                            // Create a Blob from the text
+                            setIsLoading(true);
+                            const response = importLibrary(synBioHubSessionToken, rootCollectionURI, setIsImportingLibrary)                         
 
-                                setIsLoading(true);
-                                const response = importLibrary(synBioHubSessionToken, rootCollectionURI)
-                                setIsLoading(false);                             
-
-                                if (response) {
-                                    setInputError(false);
-                                    setIsInteractingWithSynBioHub(false);
-                                    showNotificationSuccess("Success!", "Imported Library: " + selectedCollectionID + ".");
-                                    mutateDocument(useStore.setState, state => {state.libraryImported = true});
-                                    // importedLibraries.push({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
-                                    addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
-                                } else if (response.status == 401) {                                                                                                                            
-                                    showErrorNotification("Failure.", "SynBioHub did not accept the request");
-                                } else {                                          
-                                    showErrorNotification("Failure.", "SynBioHub did not accept the request");
-                                }
-                              }}>
+                            if (response) {
+                                setInputError(false);
+                                setIsInteractingWithSynBioHub(false);
+                                showNotificationSuccess("Success!", "Imported Library: " + selectedCollectionID + ".");
+                                mutateDocument(useStore.setState, state => {state.libraryImported = true});
+                                addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})                                                                                                           
+                            } else {                                          
+                                showErrorNotification("Failure.", "SynBioHub did not accept the request");
+                            }
+                        }}>
                           Submit
                       </Button>
                      }
