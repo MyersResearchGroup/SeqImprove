@@ -83,11 +83,11 @@ However, if you are working on the backend, this method will force you to rebuil
 6.  Once the container finishes building, open a terminal in VS Code
 7.  In the terminal, you should be given a prompt like this: `root@b8e4efb3fc3b:/workspaces/SeqImprove/apps/server#`. Look at the `CMD` in the last line of `SeqImprove/apps/server/Dockerfile`. Enter the command in the terminal:
     
-        waitress-serve --port=5000 --call app:create_app
+        waitress-serve --port=5001 --call app:create_app
 
 Now the backend is running. When you make changes, you do not need to rebuild the container. If the backend crashes because of an error, you can restart it the same way you started it:
 
-    waitress-serve --port=5000 --call app:create_app
+    waitress-serve --port=5001 --call app:create_app
 
 
 <a id="org41a114d"></a>
