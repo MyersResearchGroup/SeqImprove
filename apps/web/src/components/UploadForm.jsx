@@ -4,6 +4,7 @@ import { MdOutlineFileUpload } from 'react-icons/md'
 import { useStore } from '../modules/store'
 import { showErrorNotification, showWarningNotification } from '../modules/util'
 import { fetchConvertGenbankToSBOL2 } from '../modules/api'
+import { FILE_TYPES } from '../modules/fileTypes'
 // import { Graph, S2ComponentDefinition, SBOL2GraphView, genbankToSBOL2 } from "sbolgraph"
 
 function parseFasta(fastaContent) {
@@ -122,7 +123,7 @@ export default function UploadForm() {
 
             switch (values.file_t) {
             case "SBOL2":
-                loadSBOL(await values.file.text());
+                loadSBOL(await values.file.text(), FILE_TYPES.SBOL2);
                 break;
             case "FASTA":
                 const [ fastaDoc, err, warning ] = parseFasta(await values.file.text());
@@ -134,13 +135,13 @@ export default function UploadForm() {
                     showWarningNotification(warning);
                 }               
                 const sbolContent = compileFastaToSBOL(fastaDoc);
-                loadSBOL(sbolContent);
+                loadSBOL(sbolContent, FILE_TYPES.FASTA);
                 break;
             case "GenBank":
                 const genbank_text = await values.file.text();                
                 const { sbol2_content, err1 } = await fetchConvertGenbankToSBOL2(genbank_text);
                 if (!err1) {
-                    loadSBOL(sbol2_content);    
+                    loadSBOL(sbol2_content, FILE_TYPES.GENBANK);    
                 } else {
                     console.error(err1);
                     switch (err1) {
