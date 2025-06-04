@@ -28,7 +28,7 @@ const FilePathOriginal = process.argv[3];
         .map(sa => ({
             name: sa.displayName,
             id: sa.persistentIdentity,
-            location: [sa.rangeMin, sa.rangeMax],
+            location: [sa.rangeMin - 1, sa.rangeMax], // convert to 0 based indexing to match javascript array indices
         }))));
 })();
 

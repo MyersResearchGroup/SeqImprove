@@ -265,7 +265,7 @@ export function getExistingSequenceAnnotations(componentDefinition) {
     return componentDefinition.sequenceAnnotations.map(sa => ({
         id: sa.persistentIdentity,
         name: sa.displayName,
-        location: [sa.locations[0].start, sa.locations[0].end],
+        location: [sa.locations[0].start - 1, sa.locations[0].end], // convert to 0 based indexing to match javascript array indices
     }))
 }
 
