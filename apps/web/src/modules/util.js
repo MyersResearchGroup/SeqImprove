@@ -1,4 +1,6 @@
 import { showNotification } from "@mantine/notifications"
+import { Text, List } from "@mantine/core"
+import React from "react"
 
 export function getSearchParams() {
     return new Proxy(
@@ -48,10 +50,34 @@ const colorCycle = ["pink", "yellow", "teal", "indigo", "red", "lime", "cyan", "
 // Error handling
 
 export function showErrorNotification(title, message) {
+    // handle array messages by converting them to a formatted React component
+    const formattedMessage = Array.isArray(message) 
+        ? React.createElement('div', null, 
+            message.map((line, index) => {
+                if (line === "") {
+                    return React.createElement('div', { 
+                        key: index, 
+                        style: { marginBottom: "8px" } 
+                    });
+                } else if (line.startsWith("• ")) {
+                    return React.createElement(Text, { 
+                        key: index, 
+                        style: { marginLeft: "16px", marginBottom: "4px" } 
+                    }, line);
+                } else {
+                    return React.createElement(Text, { 
+                        key: index, 
+                        style: { marginBottom: "4px" } 
+                    }, line);
+                }
+            })
+        )
+        : message;
+
     showNotification({
         title,
         color: "red",
-        message,
+        message: formattedMessage,
         autoClose: false,
     });
 }

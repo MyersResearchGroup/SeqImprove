@@ -99,20 +99,23 @@ export const useStore = create((set, get) => ({
             // print detailed error messages with instructions & things to verify - specified for each file type.
             switch(fileType){
                 case FILE_TYPES.GENBANK:
-                    showErrorNotification("GenBank Processing Error",
-                        "The converted SBOL document is invalid. This may be due to:\n" +
-                        "• Complex GenBank features that don't convert properly\n" +
-                        "• Missing required sequence information\n" +
-                        "• Unsupported annotation types\n\n" +
-                        "Try simplifying your GenBank file or use the format help guide.");
+                    showErrorNotification("GenBank Processing Error", [
+                        "The converted SBOL document is invalid. This may be due to:",
+                        "• Complex GenBank features that don't convert properly",
+                        "• Missing required sequence information", 
+                        "• Unsupported annotation types",
+                        "",
+                        "Try simplifying your GenBank file or use the format help guide."
+                    ]);
                     break;
 
                 case FILE_TYPES.FASTA:
-                    showErrorNotification("FASTA Processing Error", 
-                        "Could not create a valid SBOL document from the FASTA file. Please check:\n" +
-                        "• Sequence contains only valid DNA characters (A, T, G, C)\n" +
-                        "• FASTA header format is correct\n" +
-                        "• File is not corrupted");
+                    showErrorNotification("FASTA Processing Error", [
+                        "Could not create a valid SBOL document from the FASTA file. Please check:",
+                        "• Sequence contains only valid DNA characters (A, T, G, C)",
+                        "• FASTA header format is correct",
+                        "• File is not corrupted"
+                    ]);
                     break;
 
                 case FILE_TYPES.FROM_SCRATCH:
@@ -127,11 +130,12 @@ export const useStore = create((set, get) => ({
 
                 case FILE_TYPES.SBOL2:
                 default:
-                    showErrorNotification("SBOL Format Error", 
-                        "Could not interpret the file as a valid SBOL document. Please ensure:\n" +
-                        "• File is properly formatted SBOL2 XML\n" +
-                        "• File is not corrupted or truncated\n" +
-                        "• XML structure is valid");
+                    showErrorNotification("SBOL Format Error", [
+                        "Could not interpret the file as a valid SBOL document. Please ensure:",
+                        "• File is properly formatted SBOL2 XML",
+                        "• File is not corrupted or truncated",
+                        "• XML structure is valid"
+                    ]);
                     break;
             }
         } finally {
