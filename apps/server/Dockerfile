@@ -8,7 +8,7 @@ RUN apt update
 RUN apt install default-jdk -y
 
 # clone SYNBICT at root & install deps
-RUN pip install sbol2==1.3
+RUN pip install numpy==1.26.4 sbol2==1.3
 RUN git clone https://github.com/SD2E/SYNBICT
 WORKDIR /SYNBICT
 RUN python3 setup.py install
@@ -33,4 +33,4 @@ WORKDIR /docker-flask-api
 # define the command to start the container
 # CMD ["python3","app.py"]
 # waitress-serve --port=5001 --call app:create_app
-CMD ["waitress-serve", "--port=5000", "--call", "app:create_app"]
+CMD ["waitress-serve", "--port=5001", "--call", "app:create_app"]
