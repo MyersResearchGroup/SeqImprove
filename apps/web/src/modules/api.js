@@ -28,7 +28,7 @@ export async function fetchConvertGenbankToSBOL2(genbankContent) {
                 },
                 body: JSON.stringify({
                     GenBankContent: genbankContent,
-                    uriPrefix: "https://seqimprove.synbiohub.org",
+                    uriPrefix: sessionStorage.getItem("synBioHubUrlPrefix"), // dynamic url prefix
                 }),
                 timeout: count * 1000,
             });

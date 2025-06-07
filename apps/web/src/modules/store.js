@@ -74,7 +74,7 @@ export const useStore = create((set, get) => ({
             let isUriCleaned = false
             let nameChanged = false
 
-            if (document.root.uriChain.includes("https://seqimprove.synbiohub.org")) isUriCleaned = true
+            if (document.root.uriChain.includes("https://seqimprove.synbiohub.org") || document.root.uriChain.includes("https://charmme.synbiohub.org")) isUriCleaned = true
 
             set({
                 // ...result,
