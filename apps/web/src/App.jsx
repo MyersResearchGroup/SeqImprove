@@ -6,6 +6,7 @@ import UploadForm from './components/UploadForm'
 import { MantineProvider, Center, Box, Text, Space } from '@mantine/core'
 import { getSearchParams } from './modules/util'
 import { bootAPIserver } from "./modules/api"
+import { FILE_TYPES } from "./modules/fileTypes"
 
 export default function App() {
 
@@ -25,7 +26,7 @@ export default function App() {
             cleanSBOLDocument();
         }
         const paramsUri = getSearchParams().complete_sbol
-        paramsUri && loadSBOL(paramsUri)
+        paramsUri && loadSBOL(paramsUri, FILE_TYPES.URL)
     }, [isFileEdited]);
 
     //name change effect

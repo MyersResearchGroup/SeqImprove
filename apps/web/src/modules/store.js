@@ -6,6 +6,7 @@ import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExisti
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL, deleteLibrary } from "./api"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
+import { FILE_TYPES } from "./fileTypes"
 
 
 // create store
@@ -34,7 +35,7 @@ export const useStore = create((set, get) => ({
     document: null,
     loadingSBOL: false,
     libraryImported: false,
-    loadSBOL: async(sbol) => {
+    loadSBOL: async(sbol, fileType = FILE_TYPES.SBOL2) => {
         set({ loadingSBOL: true });
 
         try {
@@ -93,8 +94,50 @@ export const useStore = create((set, get) => ({
                 loadingSBOL: false
             });
         } catch (err) {
-            showErrorNotification("Upload Error", "Could not interpret file as SBOL document");
-            console.log(err)
+            console.log(`${fileType} loading error:`, err)
+            
+            // print detailed error messages with instructions & things to verify - specified for each file type.
+            switch(fileType){
+                case FILE_TYPES.GENBANK:
+                    showErrorNotification("GenBank Processing Error", [
+                        "The converted SBOL document is invalid. This may be due to:",
+                        "• Complex GenBank features that don't convert properly",
+                        "• Missing required sequence information", 
+                        "• Unsupported annotation types",
+                        "",
+                        "Try simplifying your GenBank file or use the format help guide."
+                    ]);
+                    break;
+
+                case FILE_TYPES.FASTA:
+                    showErrorNotification("FASTA Processing Error", [
+                        "Could not create a valid SBOL document from the FASTA file. Please check:",
+                        "• Sequence contains only valid DNA characters (A, T, G, C)",
+                        "• FASTA header format is correct",
+                        "• File is not corrupted"
+                    ]);
+                    break;
+
+                case FILE_TYPES.FROM_SCRATCH:
+                    showErrorNotification("Template Loading Error", 
+                        "Could not load the blank template. This is likely a server issue. Please try refreshing the page.");
+                    break;
+
+                case FILE_TYPES.TEST_FILE:
+                    showErrorNotification("Test File Error", 
+                        "Could not load the test file. This is likely a server issue. Please try uploading your own file instead.");
+                    break; 
+
+                case FILE_TYPES.SBOL2:
+                default:
+                    showErrorNotification("SBOL Format Error", [
+                        "Could not interpret the file as a valid SBOL document. Please ensure:",
+                        "• File is properly formatted SBOL2 XML",
+                        "• File is not corrupted or truncated",
+                        "• XML structure is valid"
+                    ]);
+                    break;
+            }
         } finally {
             set({ loadingSBOL: false });
         }
