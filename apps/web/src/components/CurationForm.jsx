@@ -191,10 +191,10 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                          onChange={(e) => {
                              const str = e.currentTarget.value;
                              setID(e.currentTarget.value);
-                             if (str.match(/^\w+$/)) {                                     
+                             if (str.match(/^[a-zA-Z_]\w*$/)) {                                     
                                  setInputErrorID(false);
                              } else {
-                                 setInputErrorID("Invalid id");
+                                 setInputErrorID("Invalid id - must start with letter or underscore");
                              }                                 
                          }}
                          withAsterisk
@@ -258,7 +258,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                                      // Create a Blob from the text
                                      const blob = new Blob([xml], { type: 'text/plain' });
                                      params.append('file', blob, 'file.txt');
-                                     const url = "https:/" + "/synbiohub.org/submit";
+                                     const url = synBioHubUrlPrefix + "/submit"; // submit to dynamic url prefix
 
                                      setIsLoading(true);
                                      const response = await fetch(url, {
@@ -314,7 +314,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                                   // Create a Blob from the text
                                   const blob = new Blob([xml], { type: 'text/plain' });
                                   params.append('file', blob, 'example.txt');
-                                  const url = "https:/" + "/synbiohub.org/submit";
+                                  const url = synBioHubUrlPrefix + "/submit"; // submit to dynamic url prefix
 
                                   setIsLoading(true);
                                   const response = await fetch(url, {
