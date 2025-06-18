@@ -269,6 +269,7 @@ def run_biobert(text):
             accum[id] = {
                 'id': find_ontology_link(id),
                 'displayId': id,
+                'title': anno['title'],
                 'mentions': mentions + [{
                     'text': anno['mention'],
                     'confidence': anno['prob'],

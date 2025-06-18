@@ -350,6 +350,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
 export default function CurationForm({ }) {
 
     const displayId = useStore(s => s.document?.root.displayId)
+    const name = useStore(s => s.document?.root.title || s.document?.root.displayId)
     const richDescription = useStore(s => s.document?.root.richDescription)
 
     // colors for annotations
@@ -378,18 +379,25 @@ export default function CurationForm({ }) {
     //     })
     // }, [])
 
-    const [ isEditingDisplayID, setIsEditingDisplayID ] = useState(false);
+    const [ isEditingName, setIsEditingName ] = useState(false);
+    const [ workingName, setWorkingName ] = useState(name);
     const [ workingDisplayID, setWorkingDisplayID ] = useState(displayId);
-    const [ displayIDisReadOnly, setDisplayIDisReadOnly ] = useState(false);
+    const [ nameIsReadOnly, setNameIsReadOnly ] = useState(false);
 
-    const handleStartDisplayIDEdit = _ => {
-        setIsEditingDisplayID(true);
+    const handleStartNameEdit = () => {
+        setIsEditingName(true);
+        setWorkingName(name);
         setWorkingDisplayID(displayId);
     };
     
-    const handleEndDisplayIDEdit = (cancelled = false) => {
+    const handleEndNameEdit = (cancelled = false) => {
         if (cancelled) {
-            setIsEditingDisplayID(false);
+            setIsEditingName(false);
+            return;
+        }
+
+        if (!workingName || workingName.trim().length === 0) {
+            showErrorNotification("Name cannot be empty.", "Please provide a valid name.");
             return;
         }
 
@@ -398,24 +406,69 @@ export default function CurationForm({ }) {
             return;
         }
 
-        setIsEditingDisplayID(false);       
+        setIsEditingName(false);       
 
         mutateDocumentForDisplayID(useStore.setState, async state => {
-            // updateChildURIDisplayIDs(workingDisplayID, state.document.root.displayId, state.document);
-
-            // Replace displayId in URIs in xml            
+            // handle dcterms:title in XML
             let remainingXML = state.document.serializeXML();
             let xmlChunks = [];
-            let matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+            
+            // check if dcterms:title exists and replace it, or create it if it doesn't exist
+            const regexpOpenTitleTag = /\<dcterms\:title\>/;
+            const regexpCloseTitleTag = /\<\/dcterms\:title\>/;
+            let matchData = remainingXML.match(regexpOpenTitleTag);            
 
-            while (matchData) {
-                xmlChunks.push(remainingXML.slice(0,matchData.index));                
-                const uri = matchData[0];
+            if (matchData) {
+                // dcterms:title exists, replace it
+                while(matchData) {
+                    xmlChunks.push(remainingXML.slice(0, matchData.index + matchData[0].length));
+                    remainingXML = remainingXML.slice(matchData.index + matchData[0].length);
+
+                    const closeMatch = remainingXML.match(regexpCloseTitleTag);
+                    xmlChunks.push(workingName);
+
+                    remainingXML = remainingXML.slice(closeMatch.index);
+                    matchData = remainingXML.match(regexpOpenTitleTag);
+                }
+            } else {
+                // dcterms:title doesn't exist, create it after <sbol:version>
+                const versionTagRegex = /(\<sbol\:version\>.*?\<\/sbol\:version\>)/;
+                const versionMatch = remainingXML.match(versionTagRegex);
+                
+                if (versionMatch) {
+                    const insertIndex = versionMatch.index + versionMatch[0].length;
+                    xmlChunks.push(remainingXML.slice(0, insertIndex));
+                    xmlChunks.push(`\n    <dcterms:title>${workingName}</dcterms:title>`);
+                    remainingXML = remainingXML.slice(insertIndex);
+                } else {
+                    // fallback: insert after displayId if version not found
+                    const displayIdTagRegex = /(\<sbol\:displayId\>.*?\<\/sbol\:displayId\>)/;
+                    const displayIdMatch = remainingXML.match(displayIdTagRegex);
+                    
+                    if (displayIdMatch) {
+                        const insertIndex = displayIdMatch.index + displayIdMatch[0].length;
+                        xmlChunks.push(remainingXML.slice(0, insertIndex));
+                        xmlChunks.push(`\n    <dcterms:title>${workingName}</dcterms:title>`);
+                        remainingXML = remainingXML.slice(insertIndex);
+                    }
+                }
+            }
+
+            // handle displayID changes in the combined XML
+            remainingXML = xmlChunks.concat(remainingXML).join('');
+            xmlChunks = [];
+            
+            // replace displayId in URIs in xml            
+            let matchDataURI = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+
+            while (matchDataURI) {
+                xmlChunks.push(remainingXML.slice(0,matchDataURI.index));                
+                const uri = matchDataURI[0];
                 const regexp = new RegExp(state.document.root.displayId, 'g');
                 xmlChunks.push(uri.replace(regexp, workingDisplayID));
 
-                remainingXML = remainingXML.slice(matchData.index + uri.length);                
-                matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
+                remainingXML = remainingXML.slice(matchDataURI.index + uri.length);                
+                matchDataURI = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
             }
 
             // Replace displayId property in xml
@@ -471,83 +524,98 @@ export default function CurationForm({ }) {
                                 </ActionIcon>
                             </Tooltip>
                             <Group>
-                                {isEditingDisplayID ?
-                                 <Textarea
-                                     autosize
-                                     macrows={1}
-                                     value={workingDisplayID}
-                                     onChange={event => {
-                                         setWorkingDisplayID(event.currentTarget.value);
-                                     }}
-                                     styles={{ input: { font: "22px monospace" } }}
-                                 /> :
-                                 <Title order={3}>{displayId}</Title>
+                                {isEditingName ?
+                                 <Group direction="column" spacing={12}>
+                                     <Group spacing={0} align="flex-start">
+                                         <Text size="xs" color="dimmed" mb={4}>Name</Text>
+                                     </Group>
+                                     <Textarea
+                                         autosize
+                                         maxrows={1}
+                                         value={workingName}
+                                         onChange={event => {
+                                             setWorkingName(event.currentTarget.value);
+                                         }}
+                                         styles={{ input: { font: "18px monospace" } }}
+                                         placeholder="Document name"
+                                     />
+                                     <Group spacing={0} align="flex-start">
+                                         <Text size="xs" color="dimmed" mb={4}>Display ID</Text>
+                                     </Group>
+                                     <Textarea
+                                         autosize
+                                         maxrows={1}
+                                         value={workingDisplayID}
+                                         onChange={event => {
+                                             setWorkingDisplayID(event.currentTarget.value);
+                                         }}
+                                         styles={{ input: { font: "18px monospace" } }}
+                                     />
+                                 </Group> :
+                                 <Title order={3}>{name}</Title>
                                 }                                
-                                {isEditingDisplayID ? 
+                                {isEditingName ? 
                                  <Group spacing={6}>
-                                     <ActionIcon onClick={() => handleEndDisplayIDEdit(true)} color="red"><FaTimes /></ActionIcon>
-                                     <ActionIcon onClick={() => handleEndDisplayIDEdit(false)} color="green"><FaCheck /></ActionIcon>
-                                 </Group> : !displayIDisReadOnly &&
-                                 <ActionIcon onClick={handleStartDisplayIDEdit}><FaPencilAlt /></ActionIcon>} 
+                                     <ActionIcon onClick={() => handleEndNameEdit(true)} color="red"><FaTimes /></ActionIcon>
+                                     <ActionIcon onClick={() => handleEndNameEdit(false)} color="green"><FaCheck /></ActionIcon>
+                                 </Group> : !nameIsReadOnly &&
+                                 <ActionIcon onClick={handleStartNameEdit}><FaPencilAlt /></ActionIcon>} 
                             </Group>
                             <Tabs.List>
                                 <Tabs.Tab value="overview" onClick={() => {
-                                              setDisplayIDisReadOnly(false);                                              
+                                              setNameIsReadOnly(false);                                              
                                           }}>Overview</Tabs.Tab>
                                 <Tabs.Tab value="sequence" onClick={() => {
-                                              if (isEditingDisplayID) {
-                                                  handleEndDisplayIDEdit(true);
+                                              if (isEditingName) {
+                                                  handleEndNameEdit(true);
                                               }
-                                              setDisplayIDisReadOnly(true);
+                                              setNameIsReadOnly(true);
                                           }}>Sequence</Tabs.Tab>
                                 <Tabs.Tab value="text" onClick={() => {
-                                              if (isEditingDisplayID) {
-                                                  handleEndDisplayIDEdit(true);                                              
+                                              if (isEditingName) {
+                                                  handleEndNameEdit(true);                                              
                                               }
-                                              setDisplayIDisReadOnly(true);
+                                              setNameIsReadOnly(true);
                                           }}>Text</Tabs.Tab>
                                 <Tabs.Tab value="proteins" onClick={() => {
-                                              if (isEditingDisplayID) {
-                                                  handleEndDisplayIDEdit(true);                                                  
+                                              if (isEditingName) {
+                                                  handleEndNameEdit(true);                                                  
                                               }
-                                              setDisplayIDisReadOnly(true);
+                                              setNameIsReadOnly(true);
                                           }}>Proteins</Tabs.Tab>
                             </Tabs.List>
-                        </Group>
-                        {isLoggedInToSynBioHub ?
-                         <Button variant="subtle"
-                                 onClick={logout}
-                         >
-                             Log out
-                         </Button> :
-                         <p></p>
-                        }                        
-                        <Menu shadow="md" width={200}>
-                            <Menu.Target>
-                                <Button onClick={()=>{
-                                    if(!isValid(sequence)){
-                                        //showMessage if inValid
-                                        const errMessage = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."
-                                        showErrorNotification(errMessage);
-                                    }
-                                }}>Export Document</Button>
-                            </Menu.Target>
+                            {isLoggedInToSynBioHub ?
+                             <Button variant="subtle"
+                                     onClick={logout}
+                             >
+                                 Log out
+                             </Button> :
+                             <p></p>
+                            }                        
+                            <Menu shadow="md" width={200}>
+                                <Menu.Target>
+                                    <Button onClick={()=>{
+                                        if(!isValid(sequence)){
+                                            // showMessage if invalid
+                                            const errMessage = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."
+                                            showErrorNotification(errMessage);
+                                        }
+                                    }}>Export Document</Button>
+                                </Menu.Target>
 
-                            {isValid(sequence) && <Menu.Dropdown> 
-                                <Menu.Item onClick={exportDocument}> 
-                                    Download SBOL2 {<TbDownload />}
-                                </Menu.Item>
-                                <Menu.Item onClick={() => {
-                                               loadSynBioHubs();
-                                               setIsInteractingWithSynBioHub(true);
-                                           }}>
-                                    Upload to SynBioHub {<TbUpload />}
-                                </Menu.Item>
-                            </Menu.Dropdown>}
-                        </Menu>
-                        {/* <Button onClick={exportDocument} variant="light" rightIcon={<TbDownload />}>
-                            Save SBOL
-                            </Button> */}
+                                {isValid(sequence) && <Menu.Dropdown> 
+                                    <Menu.Item onClick={exportDocument}> 
+                                        Download SBOL2 {<TbDownload />}
+                                    </Menu.Item>
+                                    <Menu.Item onClick={() => {
+                                                   loadSynBioHubs();
+                                                   setIsInteractingWithSynBioHub(true);
+                                               }}>
+                                        Upload to SynBioHub {<TbUpload />}
+                                    </Menu.Item>
+                                </Menu.Dropdown>}
+                            </Menu>
+                        </Group>
                         </Group>
                         </Container>
                         </Header>
