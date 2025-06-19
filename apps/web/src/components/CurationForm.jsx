@@ -20,6 +20,7 @@ import { useState } from "react"
 import { showErrorNotification, showNotificationSuccess } from "../modules/util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import { createSBOLDocument } from '../modules/sbol'
+import { updateDocumentProperties } from '../modules/api'
 
 function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
@@ -390,7 +391,7 @@ export default function CurationForm({ }) {
         setWorkingDisplayID(displayId);
     };
     
-    const handleEndNameEdit = (cancelled = false) => {
+    const handleEndNameEdit = async (cancelled = false) => {
         if (cancelled) {
             setIsEditingName(false);
             return;
@@ -408,90 +409,18 @@ export default function CurationForm({ }) {
 
         setIsEditingName(false);       
 
+        // use Python sbol2 library via API
+        const sbolContent = useStore.getState().sbolContent;
+        const result = await updateDocumentProperties(sbolContent, workingName, workingDisplayID);
+        
+        if (result.error) {
+            showErrorNotification("Failed to update document", result.error);
+            return;
+        }
+
+        // Update the document with the new SBOL content
         mutateDocumentForDisplayID(useStore.setState, async state => {
-            // handle dcterms:title in XML
-            let remainingXML = state.document.serializeXML();
-            let xmlChunks = [];
-            
-            // check if dcterms:title exists and replace it, or create it if it doesn't exist
-            const regexpOpenTitleTag = /\<dcterms\:title\>/;
-            const regexpCloseTitleTag = /\<\/dcterms\:title\>/;
-            let matchData = remainingXML.match(regexpOpenTitleTag);            
-
-            if (matchData) {
-                // dcterms:title exists, replace it
-                while(matchData) {
-                    xmlChunks.push(remainingXML.slice(0, matchData.index + matchData[0].length));
-                    remainingXML = remainingXML.slice(matchData.index + matchData[0].length);
-
-                    const closeMatch = remainingXML.match(regexpCloseTitleTag);
-                    xmlChunks.push(workingName);
-
-                    remainingXML = remainingXML.slice(closeMatch.index);
-                    matchData = remainingXML.match(regexpOpenTitleTag);
-                }
-            } else {
-                // dcterms:title doesn't exist, create it after <sbol:version>
-                const versionTagRegex = /(\<sbol\:version\>.*?\<\/sbol\:version\>)/;
-                const versionMatch = remainingXML.match(versionTagRegex);
-                
-                if (versionMatch) {
-                    const insertIndex = versionMatch.index + versionMatch[0].length;
-                    xmlChunks.push(remainingXML.slice(0, insertIndex));
-                    xmlChunks.push(`\n    <dcterms:title>${workingName}</dcterms:title>`);
-                    remainingXML = remainingXML.slice(insertIndex);
-                } else {
-                    // fallback: insert after displayId if version not found
-                    const displayIdTagRegex = /(\<sbol\:displayId\>.*?\<\/sbol\:displayId\>)/;
-                    const displayIdMatch = remainingXML.match(displayIdTagRegex);
-                    
-                    if (displayIdMatch) {
-                        const insertIndex = displayIdMatch.index + displayIdMatch[0].length;
-                        xmlChunks.push(remainingXML.slice(0, insertIndex));
-                        xmlChunks.push(`\n    <dcterms:title>${workingName}</dcterms:title>`);
-                        remainingXML = remainingXML.slice(insertIndex);
-                    }
-                }
-            }
-
-            // handle displayID changes in the combined XML
-            remainingXML = xmlChunks.concat(remainingXML).join('');
-            xmlChunks = [];
-            
-            // replace displayId in URIs in xml            
-            let matchDataURI = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
-
-            while (matchDataURI) {
-                xmlChunks.push(remainingXML.slice(0,matchDataURI.index));                
-                const uri = matchDataURI[0];
-                const regexp = new RegExp(state.document.root.displayId, 'g');
-                xmlChunks.push(uri.replace(regexp, workingDisplayID));
-
-                remainingXML = remainingXML.slice(matchDataURI.index + uri.length);                
-                matchDataURI = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
-            }
-
-            // Replace displayId property in xml
-            remainingXML = xmlChunks.concat(remainingXML).join('');                      
-            xmlChunks = [];
-            const regexpOpenTag = /\<sbol\:displayId\>/;
-            const regexpCloseTag = /\<\/sbol\:displayId\>/;
-            matchData = remainingXML.match(regexpOpenTag);            
-
-            while(matchData) {
-                xmlChunks.push(remainingXML.slice(0, matchData.index + matchData[0].length));
-                remainingXML = remainingXML.slice(matchData.index + matchData[0].length);
-
-                matchData = remainingXML.match(regexpCloseTag);
-                xmlChunks.push(workingDisplayID);
-
-                remainingXML = remainingXML.slice(remainingXML.match(regexpCloseTag).index);
-                matchData = remainingXML.match(regexpOpenTag);
-            }
-
-            const newSBOLcontent = xmlChunks.concat(remainingXML).join('');
-
-            await state.replaceDocumentForIDChange(newSBOLcontent);      
+            await state.replaceDocumentForIDChange(result.sbolContent);
         });
     };
         
@@ -527,6 +456,19 @@ export default function CurationForm({ }) {
                                 {isEditingName ?
                                  <Group direction="column" spacing={12}>
                                      <Group spacing={0} align="flex-start">
+                                         <Text size="xs" color="dimmed" mb={4}>Display ID</Text>
+                                     </Group>
+                                     <Textarea
+                                         autosize
+                                         maxrows={1}
+                                         value={workingDisplayID}
+                                         onChange={event => {
+                                             setWorkingDisplayID(event.currentTarget.value);
+                                         }}
+                                         styles={{ input: { font: "18px monospace" } }}
+                                         placeholder="Display ID"
+                                     />
+                                     <Group spacing={0} align="flex-start">
                                          <Text size="xs" color="dimmed" mb={4}>Name</Text>
                                      </Group>
                                      <Textarea
@@ -539,20 +481,8 @@ export default function CurationForm({ }) {
                                          styles={{ input: { font: "18px monospace" } }}
                                          placeholder="Document name"
                                      />
-                                     <Group spacing={0} align="flex-start">
-                                         <Text size="xs" color="dimmed" mb={4}>Display ID</Text>
-                                     </Group>
-                                     <Textarea
-                                         autosize
-                                         maxrows={1}
-                                         value={workingDisplayID}
-                                         onChange={event => {
-                                             setWorkingDisplayID(event.currentTarget.value);
-                                         }}
-                                         styles={{ input: { font: "18px monospace" } }}
-                                     />
                                  </Group> :
-                                 <Title order={3}>{name}</Title>
+                                 <Title order={3}>{displayId}</Title>
                                 }                                
                                 {isEditingName ? 
                                  <Group spacing={6}>

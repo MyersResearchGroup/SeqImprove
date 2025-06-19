@@ -137,6 +137,11 @@ export async function createSBOLDocument(sbolContent) {
         document.root.richDescription = document.root.description
     }
     
+    // initialize title as display ID if one doesn't exist
+    if (!document.root.title) {
+        document.root.title = document.root.displayId
+    }
+    
     return document
 }
 

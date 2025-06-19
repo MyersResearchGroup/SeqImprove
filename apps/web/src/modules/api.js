@@ -320,6 +320,44 @@ export async function fetchSimilarParts(topLevelUri) {
     return result.similarParts
 }
 
+export async function updateDocumentProperties(sbolContent, title, displayId) {
+    try {
+        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/updateDocumentProperties`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                sbolContent: sbolContent,
+                title: title,
+                displayId: displayId
+            }),
+            timeout: 30000,
+        });
+    }
+    catch (err) {
+        console.error("Failed to fetch.");
+        showServerErrorNotification();
+        return { sbolContent: "", error: "Network error" };
+    }
+
+    try {
+        var result = await response.json();
+    }
+    catch (err) {
+        console.error("Couldn't parse JSON.");
+        showServerErrorNotification();
+        return { sbolContent: "", error: "Parse error" };
+    }
+
+    if (response.status == 200) {
+        console.log("Document properties updated successfully.");
+        return result;
+    } else {
+        return { sbolContent: "", error: result.error || "Server error" };
+    }
+}
+
 async function fetchWithTimeout(resource, options = {}) {
     const { timeout = 8000 } = options;
     
