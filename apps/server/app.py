@@ -269,6 +269,7 @@ def run_biobert(text):
             accum[id] = {
                 'id': find_ontology_link(id),
                 'displayId': id,
+                'title': anno['title'],
                 'mentions': mentions + [{
                     'text': anno['mention'],
                     'confidence': anno['prob'],
@@ -461,6 +462,43 @@ def remove_library():
     print(f"\nupdated libraries: {FEATURE_LIBRARIES.keys()}")
 
     return {"response": "Library successfully deleted"}
+
+@app.post("/api/updateDocumentProperties")
+def update_document_properties():
+    request_data = request.get_json()
+    sbol_content = request_data['sbolContent']
+    new_title = request_data.get('title')
+    new_display_id = request_data.get('displayId')
+
+    try:
+        # create SBOL document using Python sbol2 library
+        doc = sbol2.Document()
+        doc.readString(sbol_content)
+        
+        # get the root component definition
+        if len(doc.componentDefinitions) > 0:
+            root_component = doc.componentDefinitions[0]
+            
+            # update displayId if provided
+            if new_display_id is not None:
+                root_component.displayId = new_display_id
+            
+            # update title if provided, otherwise set to display ID
+            if new_title is not None:
+                root_component.name = new_title
+            elif not root_component.name:
+                # if no title exists, set it to the display ID
+                root_component.name = root_component.displayId
+            
+            # return the updated SBOL content
+            updated_sbol = doc.writeString()
+            return {"sbolContent": updated_sbol, "error": ""}
+        else:
+            return {"sbolContent": "", "error": "No component definitions found in document"}
+            
+    except Exception as e:
+        print(f"Error updating document properties: {str(e)}")
+        return {"sbolContent": "", "error": f"Failed to update document: {str(e)}"}
 
 # if __name__ == '__main__':
 #     app.run(debug=True,host='0.0.0.0',port=5000)

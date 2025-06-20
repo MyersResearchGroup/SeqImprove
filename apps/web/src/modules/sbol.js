@@ -45,6 +45,11 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
         set(value) { this.setStringProperty(Predicates.RichDescription, value) },
     },
 
+    title: {
+        get() { return this.getStringProperty("http://purl.org/dc/terms/title") },
+        set(value) { this.setStringProperty("http://purl.org/dc/terms/title", value) },
+    },
+
     // role: {
     //     get() { return this.roles[0] },
     //     set(value) {
@@ -130,6 +135,11 @@ export async function createSBOLDocument(sbolContent) {
     // initialize rich description as regular description if one doesn't exist
     if (!document.root.richDescription) {
         document.root.richDescription = document.root.description
+    }
+    
+    // initialize title as display ID if one doesn't exist
+    if (!document.root.title) {
+        document.root.title = document.root.displayId
     }
     
     return document
