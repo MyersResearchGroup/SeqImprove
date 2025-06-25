@@ -452,6 +452,13 @@ export function mutateDocumentForDisplayID(set, mutator) {
     });
 }
 
+export function mutateDocumentForName(set, mutator) {
+    set(state => {
+        mutator?.(state);
+        return { document: state.document };
+    });
+}
+
 export function mutateSequencePartLibrariesSelected(set, mutator) {
     set(state => {
         mutator(state);

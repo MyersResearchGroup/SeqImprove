@@ -20,6 +20,7 @@ import { useState } from "react"
 import { showErrorNotification, showNotificationSuccess } from "../modules/util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import { createSBOLDocument } from '../modules/sbol'
+import { updateDocumentProperties } from '../modules/api'
 
 function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
@@ -350,6 +351,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
 export default function CurationForm({ }) {
 
     const displayId = useStore(s => s.document?.root.displayId)
+    const name = useStore(s => s.document?.root.title || s.document?.root.displayId)
     const richDescription = useStore(s => s.document?.root.richDescription)
 
     // colors for annotations
@@ -378,18 +380,25 @@ export default function CurationForm({ }) {
     //     })
     // }, [])
 
-    const [ isEditingDisplayID, setIsEditingDisplayID ] = useState(false);
+    const [ isEditingName, setIsEditingName ] = useState(false);
+    const [ workingName, setWorkingName ] = useState(name);
     const [ workingDisplayID, setWorkingDisplayID ] = useState(displayId);
-    const [ displayIDisReadOnly, setDisplayIDisReadOnly ] = useState(false);
+    const [ nameIsReadOnly, setNameIsReadOnly ] = useState(false);
 
-    const handleStartDisplayIDEdit = _ => {
-        setIsEditingDisplayID(true);
+    const handleStartNameEdit = () => {
+        setIsEditingName(true);
+        setWorkingName(name);
         setWorkingDisplayID(displayId);
     };
     
-    const handleEndDisplayIDEdit = (cancelled = false) => {
+    const handleEndNameEdit = async (cancelled = false) => {
         if (cancelled) {
-            setIsEditingDisplayID(false);
+            setIsEditingName(false);
+            return;
+        }
+
+        if (!workingName || workingName.trim().length === 0) {
+            showErrorNotification("Name cannot be empty.", "Please provide a valid name.");
             return;
         }
 
@@ -398,47 +407,20 @@ export default function CurationForm({ }) {
             return;
         }
 
-        setIsEditingDisplayID(false);       
+        setIsEditingName(false);       
 
+        // use Python sbol2 library via API
+        const sbolContent = useStore.getState().sbolContent;
+        const result = await updateDocumentProperties(sbolContent, workingName, workingDisplayID);
+        
+        if (result.error) {
+            showErrorNotification("Failed to update document", result.error);
+            return;
+        }
+
+        // Update the document with the new SBOL content
         mutateDocumentForDisplayID(useStore.setState, async state => {
-            // updateChildURIDisplayIDs(workingDisplayID, state.document.root.displayId, state.document);
-
-            // Replace displayId in URIs in xml            
-            let remainingXML = state.document.serializeXML();
-            let xmlChunks = [];
-            let matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
-
-            while (matchData) {
-                xmlChunks.push(remainingXML.slice(0,matchData.index));                
-                const uri = matchData[0];
-                const regexp = new RegExp(state.document.root.displayId, 'g');
-                xmlChunks.push(uri.replace(regexp, workingDisplayID));
-
-                remainingXML = remainingXML.slice(matchData.index + uri.length);                
-                matchData = remainingXML.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/);
-            }
-
-            // Replace displayId property in xml
-            remainingXML = xmlChunks.concat(remainingXML).join('');                      
-            xmlChunks = [];
-            const regexpOpenTag = /\<sbol\:displayId\>/;
-            const regexpCloseTag = /\<\/sbol\:displayId\>/;
-            matchData = remainingXML.match(regexpOpenTag);            
-
-            while(matchData) {
-                xmlChunks.push(remainingXML.slice(0, matchData.index + matchData[0].length));
-                remainingXML = remainingXML.slice(matchData.index + matchData[0].length);
-
-                matchData = remainingXML.match(regexpCloseTag);
-                xmlChunks.push(workingDisplayID);
-
-                remainingXML = remainingXML.slice(remainingXML.match(regexpCloseTag).index);
-                matchData = remainingXML.match(regexpOpenTag);
-            }
-
-            const newSBOLcontent = xmlChunks.concat(remainingXML).join('');
-
-            await state.replaceDocumentForIDChange(newSBOLcontent);      
+            await state.replaceDocumentForIDChange(result.sbolContent);
         });
     };
         
@@ -471,83 +453,99 @@ export default function CurationForm({ }) {
                                 </ActionIcon>
                             </Tooltip>
                             <Group>
-                                {isEditingDisplayID ?
-                                 <Textarea
-                                     autosize
-                                     macrows={1}
-                                     value={workingDisplayID}
-                                     onChange={event => {
-                                         setWorkingDisplayID(event.currentTarget.value);
-                                     }}
-                                     styles={{ input: { font: "22px monospace" } }}
-                                 /> :
+                                {isEditingName ?
+                                 <Group direction="column" spacing={12}>
+                                     <Group spacing={0} align="flex-start">
+                                         <Text size="xs" color="dimmed" mb={4}>Display ID</Text>
+                                     </Group>
+                                     <Textarea
+                                         autosize
+                                         maxrows={1}
+                                         value={workingDisplayID}
+                                         onChange={event => {
+                                             setWorkingDisplayID(event.currentTarget.value);
+                                         }}
+                                         styles={{ input: { font: "18px monospace" } }}
+                                         placeholder="Display ID"
+                                     />
+                                     <Group spacing={0} align="flex-start">
+                                         <Text size="xs" color="dimmed" mb={4}>Name</Text>
+                                     </Group>
+                                     <Textarea
+                                         autosize
+                                         maxrows={1}
+                                         value={workingName}
+                                         onChange={event => {
+                                             setWorkingName(event.currentTarget.value);
+                                         }}
+                                         styles={{ input: { font: "18px monospace" } }}
+                                         placeholder="Document name"
+                                     />
+                                 </Group> :
                                  <Title order={3}>{displayId}</Title>
                                 }                                
-                                {isEditingDisplayID ? 
+                                {isEditingName ? 
                                  <Group spacing={6}>
-                                     <ActionIcon onClick={() => handleEndDisplayIDEdit(true)} color="red"><FaTimes /></ActionIcon>
-                                     <ActionIcon onClick={() => handleEndDisplayIDEdit(false)} color="green"><FaCheck /></ActionIcon>
-                                 </Group> : !displayIDisReadOnly &&
-                                 <ActionIcon onClick={handleStartDisplayIDEdit}><FaPencilAlt /></ActionIcon>} 
+                                     <ActionIcon onClick={() => handleEndNameEdit(true)} color="red"><FaTimes /></ActionIcon>
+                                     <ActionIcon onClick={() => handleEndNameEdit(false)} color="green"><FaCheck /></ActionIcon>
+                                 </Group> : !nameIsReadOnly &&
+                                 <ActionIcon onClick={handleStartNameEdit}><FaPencilAlt /></ActionIcon>} 
                             </Group>
                             <Tabs.List>
                                 <Tabs.Tab value="overview" onClick={() => {
-                                              setDisplayIDisReadOnly(false);                                              
+                                              setNameIsReadOnly(false);                                              
                                           }}>Overview</Tabs.Tab>
                                 <Tabs.Tab value="sequence" onClick={() => {
-                                              if (isEditingDisplayID) {
-                                                  handleEndDisplayIDEdit(true);
+                                              if (isEditingName) {
+                                                  handleEndNameEdit(true);
                                               }
-                                              setDisplayIDisReadOnly(true);
+                                              setNameIsReadOnly(true);
                                           }}>Sequence</Tabs.Tab>
                                 <Tabs.Tab value="text" onClick={() => {
-                                              if (isEditingDisplayID) {
-                                                  handleEndDisplayIDEdit(true);                                              
+                                              if (isEditingName) {
+                                                  handleEndNameEdit(true);                                              
                                               }
-                                              setDisplayIDisReadOnly(true);
+                                              setNameIsReadOnly(true);
                                           }}>Text</Tabs.Tab>
                                 <Tabs.Tab value="proteins" onClick={() => {
-                                              if (isEditingDisplayID) {
-                                                  handleEndDisplayIDEdit(true);                                                  
+                                              if (isEditingName) {
+                                                  handleEndNameEdit(true);                                                  
                                               }
-                                              setDisplayIDisReadOnly(true);
+                                              setNameIsReadOnly(true);
                                           }}>Proteins</Tabs.Tab>
                             </Tabs.List>
-                        </Group>
-                        {isLoggedInToSynBioHub ?
-                         <Button variant="subtle"
-                                 onClick={logout}
-                         >
-                             Log out
-                         </Button> :
-                         <p></p>
-                        }                        
-                        <Menu shadow="md" width={200}>
-                            <Menu.Target>
-                                <Button onClick={()=>{
-                                    if(!isValid(sequence)){
-                                        //showMessage if inValid
-                                        const errMessage = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."
-                                        showErrorNotification(errMessage);
-                                    }
-                                }}>Export Document</Button>
-                            </Menu.Target>
+                            {isLoggedInToSynBioHub ?
+                             <Button variant="subtle"
+                                     onClick={logout}
+                             >
+                                 Log out
+                             </Button> :
+                             <p></p>
+                            }                        
+                            <Menu shadow="md" width={200}>
+                                <Menu.Target>
+                                    <Button onClick={()=>{
+                                        if(!isValid(sequence)){
+                                            // showMessage if invalid
+                                            const errMessage = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."
+                                            showErrorNotification(errMessage);
+                                        }
+                                    }}>Export Document</Button>
+                                </Menu.Target>
 
-                            {isValid(sequence) && <Menu.Dropdown> 
-                                <Menu.Item onClick={exportDocument}> 
-                                    Download SBOL2 {<TbDownload />}
-                                </Menu.Item>
-                                <Menu.Item onClick={() => {
-                                               loadSynBioHubs();
-                                               setIsInteractingWithSynBioHub(true);
-                                           }}>
-                                    Upload to SynBioHub {<TbUpload />}
-                                </Menu.Item>
-                            </Menu.Dropdown>}
-                        </Menu>
-                        {/* <Button onClick={exportDocument} variant="light" rightIcon={<TbDownload />}>
-                            Save SBOL
-                            </Button> */}
+                                {isValid(sequence) && <Menu.Dropdown> 
+                                    <Menu.Item onClick={exportDocument}> 
+                                        Download SBOL2 {<TbDownload />}
+                                    </Menu.Item>
+                                    <Menu.Item onClick={() => {
+                                                   loadSynBioHubs();
+                                                   setIsInteractingWithSynBioHub(true);
+                                               }}>
+                                        Upload to SynBioHub {<TbUpload />}
+                                    </Menu.Item>
+                                </Menu.Dropdown>}
+                            </Menu>
+                        </Group>
                         </Group>
                         </Container>
                         </Header>
