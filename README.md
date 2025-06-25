@@ -19,10 +19,11 @@
         2.  [For Developers](#for-developers)
             1.  [Architecture Overview](#architecture-overview)
             2.  [Key Components](#key-components)
-            3.  [API Reference](#api-reference)
-            4.  [State Management](#state-management)
-            5.  [Adding New Features](#adding-new-features)
-            6.  [Testing](#testing)
+            3.  [Backend](#backend)
+            4.  [API Reference](#api-reference)
+            5.  [State Management](#state-management)
+            6.  [Adding New Features](#adding-new-features)
+            7.  [Testing](#testing)
 
 
 <a id="org90173bd"></a>
@@ -258,6 +259,23 @@ requirements.txt             # Python dependencies
 Dockerfile                   # Container configuration
 ```
 
+### Backend
+
+There are 8 API routes, the least obvious of which is
+
+    @app.get("/api/boot")
+    def boot_app():
+        return "Rise and shine"
+
+This endpoint gets queried as soon as someone visits the SeqImprove website. The purpose of this is to trigger the invocation of the `setup` function. Flask will call `setup()` when your API gets its first request. We use the `setup` function to load the feature libraries that SynBict uses for annotating DNA sequences, which is a time consuming operation.
+
+When running SeqImprove locally, the `setup` function will run once and never again, or at least not until you restart the backend. But in a cloud computing environment, the backend server will shut down when it is not in use. So we ensure that `setup` runs as soon as someone visits the website so that annotating sequences will go much faster, as the user won't have to wait for the `setup` to finish, as it will have a head start.
+
+The sequence annotations are taken care of by [SYNBICT](https://github.com/SD2E/SYNBICT), which internally uses the [flashtext](https://github.com/vi3k6i5/flashtext) python library for string matching.
+
+
+<a id="org3b2d932"></a>
+
 ### API Reference
 
 #### Core Endpoints
@@ -339,20 +357,3 @@ export default function NewComponent() {
 - **Integration**: Test SBOL import/export workflows end-to-end
 
 <a id="org3c0aa94"></a>
-
-### Backend
-
-There are 8 API routes, the least obvious of which is
-
-    @app.get("/api/boot")
-    def boot_app():
-        return "Rise and shine"
-
-This endpoint gets queried as soon as someone visits the SeqImprove website. The purpose of this is to trigger the invocation of the `setup` function. Flask will call `setup()` when your API gets its first request. We use the `setup` function to load the feature libraries that SynBict uses for annotating DNA sequences, which is a time consuming operation.
-
-When running SeqImprove locally, the `setup` function will run once and never again, or at least not until you restart the backend. But in a cloud computing environment, the backend server will shut down when it is not in use. So we ensure that `setup` runs as soon as someone visits the website so that annotating sequences will go much faster, as the user won't have to wait for the `setup` to finish, as it will have a head start.
-
-The sequence annotations are taken care of by [SYNBICT](https://github.com/SD2E/SYNBICT), which internally uses the [flashtext](https://github.com/vi3k6i5/flashtext) python library for string matching.
-
-
-<a id="org3b2d932"></a>
