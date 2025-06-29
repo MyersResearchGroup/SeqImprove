@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e23b0bce-f70f-4fd3-ad89-bf0b4ec4abe5" alt="SeqImprove" width="355"/>
+  <img src="https://github.com/user-attachments/assets/4b56ae5e-bb7c-474b-877d-a5f0946f58b6" alt="SeqImprove" width="355"/>
 </p>
 
 # Table of Contents
