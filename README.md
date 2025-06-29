@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/4b56ae5e-bb7c-474b-877d-a5f0946f58b6" alt="SeqImprove" width="355"/>
+</p>
+
 # Table of Contents
 
 1.  [SeqImprove](#org90173bd)
@@ -6,13 +10,9 @@
     3.  [Getting Started with Development](#org457403a)
     4.  [Running the Backend](#orgfaab638)
     5.  [Running the Frontend](#org41a114d)
-    6.  [Notes on the code base (May 2024)](#orgc38d955)
-        1.  [Backend](#org3c0aa94)
-        2.  [Frontend](#org3b2d932)
-    7.  [Deployment](#orgc9d1db5)
+    6.  [Deployment](#orgc9d1db5)
         1.  [Deploying the Frontend](#org4298ae7)
         2.  [Deploying to Backend](#org8f7e82e)
-
 
 <a id="org90173bd"></a>
 
@@ -67,13 +67,7 @@ Ask a teammate about the production API location.
 
 ## Running the Backend
 
-The backend is to be run within a docker container. You can build and run the backend via the docker cli.
-
-    cd SeqImprove/apps/server
-    docker build -t seqimprove .
-    docker run seqimprove
-
-However, if you are working on the backend, this method will force you to rebuild the docker container every time you want to see the result of your changes. Thankfully there is a better way.
+To run the backend you can follow these steps:
 
 1.  Install Visual Studio Code
 2.  In VS Code, install the Microsoft DevContainers extension.
@@ -97,32 +91,10 @@ Now the backend is running. When you make changes, you do not need to rebuild th
     cd SeqImprove/apps/web
     npm run dev
 
-Now, SeqImprove should be available at <https://localhost:5173>. Open this URL in your browser.
+Now, SeqImprove should be available at <http://localhost:5173>. Open this URL in your browser.
 
 
 <a id="orgc38d955"></a>
-
-## Notes on the code base (May 2024)
-
-
-<a id="org3c0aa94"></a>
-
-### Backend
-
-There are 4 API routes, the least obvious of which is
-
-    @app.get("/api/boot")
-    def boot_app():
-        return "Rise and shine"
-
-This endpoint gets queried as soon as someone visits the SeqImprove website. The purpose of this is to trigger the invocation of the `setup` function. Flask will call `setup()` when your API gets its first request. We use the `setup` function to load the feature libraries that SynBict uses for annotating DNA sequences, which is a time consuming operation.
-
-When running SeqImprove locally, the `setup` function will run once and never again, or at least not until you restart the backend. But in a cloud computing environment, the backend server will shut down when it is not in use. So we ensure that `setup` runs as soon as someone visits the website so that annotating sequences will go much faster, as the user won't have to wait for the `setup` to finish, as it will have a head start.
-
-The sequence annotations are taken care of by [SYNBICT](https://github.com/SD2E/SYNBICT), which internally uses the [flashtext](https://github.com/vi3k6i5/flashtext) python library for string matching.
-
-
-<a id="org3b2d932"></a>
 
 ### Frontend
 
@@ -158,4 +130,3 @@ The server is just a Docker container that Azure pulls from Docker Hub, so to de
     (If you get an error complaining you don't have permission to execute this file, then run `chmod +x ./deploy.sh` first.)
 
 Azure might take a second to start using the updated container.
-
