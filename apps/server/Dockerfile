@@ -33,4 +33,4 @@ WORKDIR /docker-flask-api
 # define the command to start the container
 # CMD ["python3","app.py"]
 # waitress-serve --port=5001 --call app:create_app
-CMD ["waitress-serve", "--port=5001", "--call", "app:create_app"]
+CMD ["waitress-serve", "--port=5000", "--call", "app:create_app"]
