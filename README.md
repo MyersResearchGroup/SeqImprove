@@ -102,6 +102,9 @@ This is a React app, so you will need to study [ReactJS](https://react.dev/) as 
 
 
 <a id="orgc9d1db5"></a>
+<!--
+This is a
+multiline comment
 
 ## Deployment
 
@@ -130,3 +133,4 @@ The server is just a Docker container that Azure pulls from Docker Hub, so to de
     (If you get an error complaining you don't have permission to execute this file, then run `chmod +x ./deploy.sh` first.)
 
 Azure might take a second to start using the updated container.
+-->
