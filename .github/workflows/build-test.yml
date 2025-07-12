@@ -1,21 +1,49 @@
-name: Build Latest Docker Image
-
-defaults:
-  run:
-    working-directory: ./apps/server
+name: Build and Test
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
 jobs:
-  build:
+  build-test:
+    name: Build Test Frontend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/web
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ./apps/web/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Build Docker image
       run: |
-        docker build -t synbiosuite/seqimprove-api:latest .
+        docker build -t synbiosuite/seqimprove-web:test .
+
+  build-test-backend:
+    name: Build Test Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/server
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: |
+        docker build -t synbiosuite/seqimprove-api:test .

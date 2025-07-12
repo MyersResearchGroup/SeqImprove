@@ -1,8 +1,4 @@
-name: Deploy Docker Image CI
-
-defaults:
-  run:
-    working-directory: ./apps/server
+name: Deploy Latest Images
 
 on:
   push:
@@ -10,15 +6,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  latest:
+    name: Build and Deploy Latest Frontend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/web
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ./apps/web/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Build Docker image
       run: |
-        docker build -t synbiosuite/seqimprove-api:latest .
-    - name: Publish to DockerHub
+        docker build -t synbiosuite/seqimprove-web:latest .
+    
+    - name: Login to DockerHub
       run: |
         docker login -u ${{ secrets.SYNBIOSUITE_DOCKER_USERNAME }} -p ${{ secrets.SYNBIOSUITE_DOCKER_PASSWORD }}
+    
+    - name: Push to DockerHub
+      run: |
+        docker push synbiosuite/seqimprove-web:latest
+
+  latest-backend:
+    name: Build and Deploy Latest Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/server
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: |
+        docker build -t synbiosuite/seqimprove-api:latest .
+    
+    - name: Login to DockerHub
+      run: |
+        docker login -u ${{ secrets.SYNBIOSUITE_DOCKER_USERNAME }} -p ${{ secrets.SYNBIOSUITE_DOCKER_PASSWORD }}
+    
+    - name: Push to DockerHub
+      run: |
         docker push synbiosuite/seqimprove-api:latest
