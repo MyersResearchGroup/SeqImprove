@@ -10,29 +10,12 @@ jobs:
   build-test:
     name: Build Test Frontend
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./apps/web
 
     steps:
     - uses: actions/checkout@v4
     
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: ./apps/web/package-lock.json
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build application
-      run: npm run build
-    
     - name: Build Docker image
-      run: |
-        docker build -t synbiosuite/seqimprove-web:test .
+      run: docker build -f apps/web/Dockerfile -t synbiosuite/seqimprove-web:test .
 
   build-test-backend:
     name: Build Test Backend
