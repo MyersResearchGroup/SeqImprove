@@ -9,7 +9,7 @@ COPY . .
 
 # Install all dependencies from the root of the monorepo
 # This correctly links workspace packages like 'text-ranger'
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Build the 'web' application using Turborepo
 RUN npm run build -- --filter=web
