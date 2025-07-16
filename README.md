@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://github.com/user-attachments/assets/4b56ae5e-bb7c-474b-877d-a5f0946f58b6" alt="SeqImprove" width="355"/>
-</p>
+</p> 
 
 # Table of Contents
 
