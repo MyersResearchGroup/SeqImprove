@@ -219,14 +219,20 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
         .map(sa => sa.persistentIdentity.slice(0, -2)) //synbict increments a number at the end of the persistent identities, so we cut off the last 2 chars to compare
     
     let annotations = [];  
-    const annDoc = new SBOL2GraphView(new Graph());
+    let synbictDoc = null;
 
+    // process each library annotation result separately to avoid matchOne errors
+    // when the same component definition exists in multiple libraries
     await Promise.all(annoLibsAssoc.map(([ sbolAnnotated, partLibrary ]) => {
         return (async () => {
-            // create and load annotated doc
-            // const annDoc = new SBOL2GraphView(new Graph());
+            // create and load annotated doc for each library separately
+            const annDoc = new SBOL2GraphView(new Graph());
             await annDoc.loadString(sbolAnnotated);
             
+            // Store the first document as the synbictDoc (they should all have the same root component)
+            if (!synbictDoc) {
+                synbictDoc = annDoc;
+            }
 
             // concatenate new annotations to result
             annotations = annotations.concat(annDoc.rootComponentDefinitions[0].sequenceAnnotations
@@ -244,7 +250,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
         })();
     }));
 
-    return { fetchedAnnotations: annotations, synbictDoc: annDoc };            
+    return { fetchedAnnotations: annotations, synbictDoc: synbictDoc };            
 }
 
 export async function fetchAnnotateText(text) {
