@@ -469,6 +469,7 @@ def update_document_properties():
     sbol_content = request_data['sbolContent']
     new_title = request_data.get('title')
     new_display_id = request_data.get('displayId')
+    new_source = request_data.get('source')
 
     try:
         # create SBOL document using Python sbol2 library
@@ -489,6 +490,12 @@ def update_document_properties():
             elif not root_component.name:
                 # if no title exists, set it to the display ID
                 root_component.name = root_component.displayId
+            
+            # update source if provided (using prov:wasDerivedFrom)
+            if new_source is not None:
+                # use the Dublin Core source property or PROV-O wasDerivedFrom
+                prov_was_derived_from = "http://www.w3.org/ns/prov#wasDerivedFrom"
+                root_component.setPropertyValue(prov_was_derived_from, new_source)
             
             # return the updated SBOL content
             updated_sbol = doc.writeString()

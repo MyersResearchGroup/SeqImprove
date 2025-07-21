@@ -353,6 +353,7 @@ export default function CurationForm({ }) {
     const displayId = useStore(s => s.document?.root.displayId)
     const name = useStore(s => s.document?.root.title || s.document?.root.displayId)
     const richDescription = useStore(s => s.document?.root.richDescription)
+    const source = useStore(s => s.document?.root.source)
 
     // colors for annotations
     const sequenceColors = useCyclicalColors(useStore(s => s.sequenceAnnotations.length))
@@ -572,7 +573,12 @@ export default function CurationForm({ }) {
                                               <Space h={40} />
                                               <TargetOrganismsSelection />
                                               <Space h={40} />
-                                              <References />                            
+                                              <References />
+                                              <Space h={20} />
+                                              <Title order={5} mb={10}>Source</Title>
+                                              <Text color="dimmed">
+                                                  {source ? source : "No source specified"}
+                                              </Text>                            
                                           </>}
                                     right={<SimilarParts />}
                                 />
