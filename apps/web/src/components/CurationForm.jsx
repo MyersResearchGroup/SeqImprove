@@ -21,6 +21,7 @@ import { showErrorNotification, showNotificationSuccess } from "../modules/util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import { createSBOLDocument } from '../modules/sbol'
 import { updateDocumentProperties } from '../modules/api'
+import FormSection from './FormSection'
 
 function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
@@ -385,6 +386,11 @@ export default function CurationForm({ }) {
     const [ workingName, setWorkingName ] = useState(name);
     const [ workingDisplayID, setWorkingDisplayID ] = useState(displayId);
     const [ nameIsReadOnly, setNameIsReadOnly ] = useState(false);
+    
+    // source editing state
+    const [ isEditingSource, setIsEditingSource ] = useState(false);
+    const [ workingSource, setWorkingSource ] = useState(source);
+    const [ sourceError, setSourceError ] = useState(false);
 
     const handleStartNameEdit = () => {
         setIsEditingName(true);
@@ -422,6 +428,45 @@ export default function CurationForm({ }) {
         // Update the document with the new SBOL content
         mutateDocumentForDisplayID(useStore.setState, async state => {
             await state.replaceDocumentForIDChange(result.sbolContent);
+        });
+    };
+
+    const handleStartSourceEdit = () => {
+        setIsEditingSource(true);
+        setWorkingSource(source);
+        setSourceError(false);
+    };
+    
+    const handleEndSourceEdit = (cancelled = false) => {
+        if (cancelled) {
+            setIsEditingSource(false);
+            setSourceError(false);
+            return;
+        }
+
+        // validate source if provided
+        if (workingSource && workingSource.trim()) {
+            const trimmedSource = workingSource.trim();
+            
+            // check if it's a valid URL/URI
+            try {
+                new URL(trimmedSource);
+            } catch {
+                // also accept URIs that might not be full URLs
+                const isValidUri = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmedSource);
+                if (!isValidUri) {
+                    setSourceError("Source should be a valid URL or URI");
+                    return;
+                }
+            }
+        }
+
+        setIsEditingSource(false);
+        setSourceError(false);
+
+        // update the source in the document
+        mutateDocument(useStore.setState, state => {
+            state.document.root.source = workingSource?.trim() || '';
         });
     };
         
@@ -574,11 +619,46 @@ export default function CurationForm({ }) {
                                               <TargetOrganismsSelection />
                                               <Space h={40} />
                                               <References />
-                                              <Space h={20} />
-                                              <Title order={5} mb={10}>Source</Title>
-                                              <Text color="dimmed">
-                                                  {source ? source : "No source specified"}
-                                              </Text>                            
+                                              <Space h={40} />
+                                              <FormSection title="Source" rightSection={
+                                                  isEditingSource ? (
+                                                      <Group spacing={6}>
+                                                          <ActionIcon onClick={() => handleEndSourceEdit(true)} color="red">
+                                                              <FaTimes />
+                                                          </ActionIcon>
+                                                          <ActionIcon onClick={() => handleEndSourceEdit(false)} color="green">
+                                                              <FaCheck />
+                                                          </ActionIcon>
+                                                      </Group>
+                                                  ) : (
+                                                      <ActionIcon onClick={handleStartSourceEdit}>
+                                                          <FaPencilAlt />
+                                                      </ActionIcon>
+                                                  )
+                                              }>
+                                                  {isEditingSource ? (
+                                                      <TextInput
+                                                          value={workingSource}
+                                                          onChange={(e) => {
+                                                              setWorkingSource(e.currentTarget.value);
+                                                              if (sourceError) setSourceError(false);
+                                                          }}
+                                                          placeholder="Enter URL/URI where this sequence was obtained"
+                                                          error={sourceError}
+                                                          onKeyDown={(e) => {
+                                                              if (e.key === 'Enter') {
+                                                                  handleEndSourceEdit(false);
+                                                              } else if (e.key === 'Escape') {
+                                                                  handleEndSourceEdit(true);
+                                                              }
+                                                          }}
+                                                      />
+                                                  ) : (
+                                                      <Text color="dimmed">
+                                                          {source ? source : "No source specified"}
+                                                      </Text>
+                                                  )}
+                                              </FormSection>                            
                                           </>}
                                     right={<SimilarParts />}
                                 />
