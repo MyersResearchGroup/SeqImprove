@@ -50,6 +50,11 @@ Object.defineProperties(S2ComponentDefinition.prototype, {
         set(value) { this.setStringProperty("http://purl.org/dc/terms/title", value) },
     },
 
+    source: {
+        get() { return this.getStringProperty("http://www.w3.org/ns/prov#wasDerivedFrom") },
+        set(value) { this.setStringProperty("http://www.w3.org/ns/prov#wasDerivedFrom", value) },
+    },
+
     // role: {
     //     get() { return this.roles[0] },
     //     set(value) {
