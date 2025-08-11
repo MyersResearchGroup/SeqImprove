@@ -480,16 +480,51 @@ def update_document_properties():
         if len(doc.componentDefinitions) > 0:
             root_component = doc.componentDefinitions[0]
             
-            # update displayId if provided
+            # update displayId if provided - must ensure URI consistency for SynBioHub
             if new_display_id is not None:
-                root_component.displayId = new_display_id
+                old_display_id = root_component.displayId
+                
+                try:
+                    # update displayId
+                    root_component.displayId = new_display_id
+                    
+                    # update the identity URI using sbol2's built-in methods
+                    base_uri = 'https://example.com/'
+                    new_uri = base_uri + new_display_id + '/1'
+                    new_persistent = base_uri + new_display_id
+                    
+                    # set the new URIs
+                    if hasattr(root_component, 'identity'):
+                        root_component.identity = new_uri
+                    
+                    if hasattr(root_component, 'persistentIdentity'):
+                        root_component.persistentIdentity = new_persistent
+                    
+                    # update sequence URIs if they exist
+                    if hasattr(root_component, 'sequences') and root_component.sequences:
+                        for seq in root_component.sequences:
+                            if hasattr(seq, 'displayId') and old_display_id in str(seq.displayId):
+                                new_seq_id = new_display_id + '_seq'
+                                seq.displayId = new_seq_id
+                                
+                                # update sequence URIs
+                                if hasattr(seq, 'identity'):
+                                    seq.identity = base_uri + new_seq_id + '/1'
+                                if hasattr(seq, 'persistentIdentity'):
+                                    seq.persistentIdentity = base_uri + new_seq_id
+                    
+                except Exception as e:
+                    # fallback to basic displayId update
+                    root_component.displayId = new_display_id
             
             # update title if provided, otherwise set to display ID
-            if new_title is not None:
-                root_component.name = new_title
-            elif not root_component.name:
-                # if no title exists, set it to the display ID
-                root_component.name = root_component.displayId
+            current_root = doc.componentDefinitions[0] if len(doc.componentDefinitions) > 0 else None
+            if current_root:
+                if new_title is not None:
+                    current_root.name = new_title
+                elif not current_root.name:
+                    # if no title exists, set it to the display ID
+                    current_root.name = current_root.displayId
             
             # update source if provided (using prov:wasDerivedFrom)
             if new_source is not None:

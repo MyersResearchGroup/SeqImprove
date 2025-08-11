@@ -27,7 +27,7 @@ function validDisplayID(displayID) {
     return displayID.match(/^[a-z_]\w+$/i);
 }
 
-function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs}) {     
+function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs, isEditingName, handleEndNameEdit}) {     
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
 
     return (
@@ -38,7 +38,11 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
             size={"auto"}
         >
             {isLoggedInToSynBioHub ?
-             <SynBioHubClientUpload setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} /> :
+             <SynBioHubClientUpload 
+                 setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} 
+                 isEditingName={isEditingName}
+                 handleEndNameEdit={handleEndNameEdit}
+             /> :
              <SynBioHubClientLogin synBioHubs={synBioHubs} />
             }            
         </Modal>
@@ -127,7 +131,7 @@ export function SynBioHubClientLogin({ synBioHubs }) {
     );
 }
 
-function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {        
+function SynBioHubClientUpload({ setIsInteractingWithSynBioHub, isEditingName, handleEndNameEdit }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
     const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
     const [inputError, setInputError] = useState(false);
@@ -142,7 +146,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
     const [ rootCollections, setRootCollections ] = useState([]);
     const [ rootCollectionURI, setRootCollectionURI ] = useState('');
 
-    const xml = useStore(s => s.serializeXML());        
+        
 
     (async () => {        
         if (!rootCollectionsLoaded) { // curl -X GET -H "Accept: text/plain" -H "X-authorization: 5ab3af6e-2ddd-4ac2-af76-d4285d2ffe03" https://synbiohub.org/rootCollections
@@ -255,10 +259,15 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                                      params.append('name', name);
                                      params.append('description', description);
                                      params.append('citations', citations.map(cit => cit.trim()).join(','));
-                                     params.append('overwrite_merge', overwrite ? 1 : 0);
-                                     
-                                     // Create a Blob from the text
-                                     const blob = new Blob([xml], { type: 'text/plain' });
+                                                                         params.append('overwrite_merge', overwrite ? 1 : 0);
+                                    
+                                    // create a Blob from the text - get fresh XML at export time
+                                    // ensure any pending displayId/name changes are applied first
+                                    if (isEditingName) {
+                                        await handleEndNameEdit(false);
+                                    }
+                                    const currentXml = useStore.getState().exportDocument(false);
+                                    const blob = new Blob([currentXml], { type: 'text/plain' });
                                      params.append('file', blob, 'file.txt');
                                      const url = synBioHubUrlPrefix + "/submit"; // submit to dynamic url prefix
 
@@ -313,8 +322,13 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                                   const params = new FormData();                                                                                                                                                                        
                                   params.append('overwrite_merge', overwrite ? 3 : 2);                                                                                                                       
                                   params.append('rootCollections', rootCollectionURI);
-                                  // Create a Blob from the text
-                                  const blob = new Blob([xml], { type: 'text/plain' });
+                                  // create a Blob from the text - get fresh XML at export time
+                                  // ensure pending displayId/name changes are applied first
+                                  if (isEditingName) {
+                                      await handleEndNameEdit(false);
+                                  }
+                                  const currentXml = useStore.getState().exportDocument(false);
+                                  const blob = new Blob([currentXml], { type: 'text/plain' });
                                   params.append('file', blob, 'example.txt');
                                   const url = synBioHubUrlPrefix + "/submit"; // submit to dynamic url prefix
 
@@ -425,10 +439,17 @@ export default function CurationForm({ }) {
             return;
         }
 
-        // Update the document with the new SBOL content
-        mutateDocumentForDisplayID(useStore.setState, async state => {
-            await state.replaceDocumentForIDChange(result.sbolContent);
-        });
+        // update the document with the new SBOL content
+        await useStore.getState().replaceDocumentForIDChange(result.sbolContent);
+        
+        // add small delay to ensure state is fully updated
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        // refresh working values to reflect the updated document
+        const updatedDisplayId = useStore.getState().document?.root.displayId;
+        const updatedName = useStore.getState().document?.root.title || updatedDisplayId;
+        setWorkingDisplayID(updatedDisplayId);
+        setWorkingName(updatedName);
     };
 
     const handleStartSourceEdit = () => {
@@ -601,6 +622,8 @@ export default function CurationForm({ }) {
                             onClose={() => setIsInteractingWithSynBioHub(false)}
                             setOpened={setIsInteractingWithSynBioHub}                            
                             synBioHubs={synBioHubs}
+                            isEditingName={isEditingName}
+                            handleEndNameEdit={handleEndNameEdit}
                         />                        
                         <Container>
                             <Tabs.Panel value="overview" pt={20}>
