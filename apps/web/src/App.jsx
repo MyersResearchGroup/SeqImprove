@@ -29,12 +29,12 @@ export default function App() {
         paramsUri && loadSBOL(paramsUri, FILE_TYPES.URL)
     }, [isFileEdited]);
 
-    //name change effect
-    useEffect(() => {
-        if (nameChanged && !isUriCleaned) {
-            cleanSBOLDocument();
-        }
-    }, [nameChanged])
+    // name change effect - disabled to prevent displayId from being reset
+    // useEffect(() => {
+    //     if (nameChanged && !isUriCleaned) {
+    //         cleanSBOLDocument();
+    //     }
+    // }, [nameChanged])
 
 
     // load SBOL into store if we have a complete_sbol parameter
