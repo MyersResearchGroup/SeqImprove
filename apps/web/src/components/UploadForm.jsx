@@ -120,13 +120,62 @@ export default function UploadForm() {
     const handleSubmit = async values => {        
         switch (values.method) {
         case Methods.Upload:
-
+            // validate file content matches selected type
+            const fileContent = await values.file.text();
+            const fileContentTrimmed = fileContent.trim();
+            
             switch (values.file_t) {
             case "SBOL2":
-                loadSBOL(await values.file.text(), FILE_TYPES.SBOL2);
+                // check if it's actually SBOL (should be XML starting with <?xml)
+                if (!fileContentTrimmed.startsWith('<?xml') && !fileContentTrimmed.startsWith('<rdf:RDF')) {
+                    // check if it might be GenBank format
+                    if (fileContentTrimmed.includes('LOCUS') || fileContentTrimmed.includes('ORIGIN')) {
+                        showErrorNotification("File Type Mismatch", [
+                            "The uploaded file appears to be GenBank format, but SBOL2 was selected.",
+                            "Please either:",
+                            "• Select 'GenBank' as the input format, or",
+                            "• Upload an SBOL2 (.xml) file instead"
+                        ]);
+                        return;
+                    }
+                    // check if it might be FASTA format  
+                    if (fileContentTrimmed.startsWith('>')) {
+                        showErrorNotification("File Type Mismatch", [
+                            "The uploaded file appears to be FASTA format, but SBOL2 was selected.",
+                            "Please either:",
+                            "• Select 'FASTA' as the input format, or", 
+                            "• Upload an SBOL2 (.xml) file instead"
+                        ]);
+                        return;
+                    }
+                }
+                loadSBOL(fileContent, FILE_TYPES.SBOL2);
                 break;
             case "FASTA":
-                const [ fastaDoc, err, warning ] = parseFasta(await values.file.text());
+                // check if it's actually FASTA format
+                if (!fileContentTrimmed.startsWith('>')) {
+                    // check if it might be SBOL format
+                    if (fileContentTrimmed.startsWith('<?xml') || fileContentTrimmed.startsWith('<rdf:RDF')) {
+                        showErrorNotification("File Type Mismatch", [
+                            "The uploaded file appears to be SBOL2 format, but FASTA was selected.",
+                            "Please either:",
+                            "• Select 'SBOL2' as the input format, or",
+                            "• Upload a FASTA (.fasta/.fa) file instead"
+                        ]);
+                        return;
+                    }
+                    // check if it might be GenBank format
+                    if (fileContentTrimmed.includes('LOCUS') || fileContentTrimmed.includes('ORIGIN')) {
+                        showErrorNotification("File Type Mismatch", [
+                            "The uploaded file appears to be GenBank format, but FASTA was selected.",
+                            "Please either:",
+                            "• Select 'GenBank' as the input format, or",
+                            "• Upload a FASTA (.fasta/.fa) file instead"
+                        ]);
+                        return;
+                    }
+                }
+                const [ fastaDoc, err, warning ] = parseFasta(fileContent);
                 if (err) {
                     showErrorNotification(err);
                     return;
@@ -138,7 +187,30 @@ export default function UploadForm() {
                 loadSBOL(sbolContent, FILE_TYPES.FASTA);
                 break;
             case "GenBank":
-                const genbank_text = await values.file.text();                
+                // check if it's actually GenBank format
+                if (!fileContentTrimmed.includes('LOCUS') && !fileContentTrimmed.includes('ORIGIN')) {
+                    // check if it might be SBOL format
+                    if (fileContentTrimmed.startsWith('<?xml') || fileContentTrimmed.startsWith('<rdf:RDF')) {
+                        showErrorNotification("File Type Mismatch", [
+                            "The uploaded file appears to be SBOL2 format, but GenBank was selected.",
+                            "Please either:",
+                            "• Select 'SBOL2' as the input format, or",
+                            "• Upload a GenBank (.gb/.gbk) file instead"
+                        ]);
+                        return;
+                    }
+                    // check if it might be FASTA format
+                    if (fileContentTrimmed.startsWith('>')) {
+                        showErrorNotification("File Type Mismatch", [
+                            "The uploaded file appears to be FASTA format, but GenBank was selected.",
+                            "Please either:",
+                            "• Select 'FASTA' as the input format, or",
+                            "• Upload a GenBank (.gb/.gbk) file instead"
+                        ]);
+                        return;
+                    }
+                }
+                const genbank_text = fileContent;                
                 const { sbol2_content, err1 } = await fetchConvertGenbankToSBOL2(genbank_text);
                 if (!err1) {
                     loadSBOL(sbol2_content, FILE_TYPES.GENBANK);    
