@@ -500,18 +500,106 @@ def update_document_properties():
                     if hasattr(root_component, 'persistentIdentity'):
                         root_component.persistentIdentity = new_persistent
                     
-                    # update sequence URIs if they exist
-                    if hasattr(root_component, 'sequences') and root_component.sequences:
-                        for seq in root_component.sequences:
-                            if hasattr(seq, 'displayId') and old_display_id in str(seq.displayId):
+                    # update sequence URIs if they exist to match new displayId
+                    sequences_updated = 0
+                    try:
+                        for i, seq_item in enumerate(doc.sequences):
+                            # check if this is a sequence object or URI string
+                            if hasattr(seq_item, 'displayId'):
+                                # it's a sequence object
+                                seq = seq_item
                                 new_seq_id = new_display_id + '_seq'
+                                
+                                # update both displayId and name to match component's new name
                                 seq.displayId = new_seq_id
                                 
+                                # set sequence name to component's new name + '_seq'
+                                if new_title:
+                                    new_seq_name = new_title + '_seq'
+                                    seq.name = new_seq_name
+                                
                                 # update sequence URIs
+                                new_seq_uri = base_uri + new_seq_id + '/1'
+                                new_seq_persistent = base_uri + new_seq_id
+                                
                                 if hasattr(seq, 'identity'):
-                                    seq.identity = base_uri + new_seq_id + '/1'
+                                    seq.identity = new_seq_uri
                                 if hasattr(seq, 'persistentIdentity'):
-                                    seq.persistentIdentity = base_uri + new_seq_id
+                                    seq.persistentIdentity = new_seq_persistent
+                                    
+                                sequences_updated += 1
+                            elif isinstance(seq_item, str):
+                                # it's a URI string - need to find the actual sequence object
+                                try:
+                                    seq_obj = doc.find(seq_item)
+                                    if seq_obj and hasattr(seq_obj, 'displayId'):
+                                        new_seq_id = new_display_id + '_seq'
+                                        
+                                        # update both displayId and name to match component's new name
+                                        seq_obj.displayId = new_seq_id
+                                        
+                                        # set sequence name to component's new name + '_seq'
+                                        if new_title:
+                                            new_seq_name = new_title + '_seq'
+                                            seq_obj.name = new_seq_name
+                                        
+                                        # update sequence URIs
+                                        new_seq_uri = base_uri + new_seq_id + '/1'
+                                        new_seq_persistent = base_uri + new_seq_id
+                                        
+                                        if hasattr(seq_obj, 'identity'):
+                                            seq_obj.identity = new_seq_uri
+                                        if hasattr(seq_obj, 'persistentIdentity'):
+                                            seq_obj.persistentIdentity = new_seq_persistent
+                                            
+                                        sequences_updated += 1
+                                except Exception:
+                                    pass
+                    except Exception:
+                        pass
+                    
+                    # update ComponentDefinition sequence reference to match updated sequence URI
+                    if sequences_updated > 0 and hasattr(root_component, 'sequences') and root_component.sequences:
+                        new_seq_id = new_display_id + '_seq' 
+                        new_seq_reference_uri = base_uri + new_seq_id + '/1'
+                        
+                        # get the old sequence references
+                        old_seq_refs = list(root_component.sequences) if root_component.sequences else []
+                        
+                        try:
+                            # use string manipulation to update sequence reference in XML
+                            doc_string = doc.writeString()
+                            
+                            if old_seq_refs:
+                                old_ref_pattern = f'rdf:resource="{old_seq_refs[0]}"'
+                                new_ref_pattern = f'rdf:resource="{new_seq_reference_uri}"'
+                            
+                                if old_ref_pattern in doc_string:
+                                    updated_doc_string = doc_string.replace(old_ref_pattern, new_ref_pattern)
+                                    
+                                    # create new document from updated string
+                                    new_doc = sbol2.Document()
+                                    new_doc.readString(updated_doc_string)
+                                    
+                                    # replace original document content
+                                    doc.clear()
+                                    
+                                    # copy all objects from new document to original
+                                    if hasattr(new_doc, 'componentDefinitions'):
+                                        for comp_def in new_doc.componentDefinitions:
+                                            doc.add(comp_def)
+                                    if hasattr(new_doc, 'sequences'):
+                                        for seq in new_doc.sequences:
+                                            doc.add(seq)
+                                    if hasattr(new_doc, 'collections'):
+                                        for coll in new_doc.collections:
+                                            doc.add(coll)
+                                    
+                                    # fallback if needed
+                                    if not doc.componentDefinitions and not doc.sequences:
+                                        doc.readString(updated_doc_string)
+                        except Exception:
+                            pass
                     
                 except Exception as e:
                     # fallback to basic displayId update

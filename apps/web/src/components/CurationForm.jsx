@@ -380,7 +380,23 @@ export default function CurationForm({ }) {
 
     // exporting
     const exportDocument = useStore(s => s.exportDocument); 
-    const sequence = useStore(s => s.document?.root.sequence)?.toLowerCase();
+    const sequence = useStore(s => {
+        // try multiple ways to get the sequence
+        const doc = s.document;
+        if (!doc || !doc.root) return undefined;
+        
+        // method 1: direct sequence property
+        if (doc.root.sequence) {
+            return doc.root.sequence.toLowerCase();
+        }
+        
+        // method 2: through sequences array
+        if (doc.root.sequences && doc.root.sequences[0] && doc.root.sequences[0].elements) {
+            return doc.root.sequences[0].elements.toLowerCase();
+        }
+        
+        return undefined;
+    });
    
     // show notification with known bugs
     // useEffect(() => {
@@ -502,9 +518,15 @@ export default function CurationForm({ }) {
     };
 
     function isValid(sequence) {
-        if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]+$/i) === null) { // contains invalid char
+        if (!sequence || typeof sequence !== 'string') {
             return false;
         }
+        
+        const validChars = /^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]+$/i;
+        if (sequence.match(validChars) === null) {
+            return false;
+        }
+        
         return true;
     }
 
@@ -592,15 +614,16 @@ export default function CurationForm({ }) {
                             <Menu shadow="md" width={200}>
                                 <Menu.Target>
                                     <Button onClick={()=>{
-                                        if(!isValid(sequence)){
-                                            // showMessage if invalid
+                                        // only show validation error if sequence exists but is invalid
+                                        // don't show error if sequence is just undefined/not loaded
+                                        if(sequence && !isValid(sequence)){
                                             const errMessage = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."
                                             showErrorNotification(errMessage);
                                         }
                                     }}>Export Document</Button>
                                 </Menu.Target>
 
-                                {isValid(sequence) && <Menu.Dropdown> 
+                                {(!sequence || isValid(sequence)) && <Menu.Dropdown> 
                                     <Menu.Item onClick={exportDocument}> 
                                         Download SBOL2 {<TbDownload />}
                                     </Menu.Item>
