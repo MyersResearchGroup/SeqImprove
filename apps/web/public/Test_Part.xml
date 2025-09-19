@@ -15,7 +15,7 @@
     <sbol:type rdf:resource="http://identifiers.org/so/SO:0000987" />
     <sbol:role rdf:resource="http://identifiers.org/so/SO:0000804" />
     <sbol:sequence rdf:resource="https://example.com/Test_Part_seq/1" />
-    <ns2:richDescription>This part makes [GFP](https://bioregistry.io/NCBIGene:8790). It was tested in [E. coli](https://bioregistry.io/NCBITaxon:562) and is thought to work in [B. subtilis](https://bioregistry.io/NCBITaxon:518697). The circuit functions better when background levels of [lactose](https://bioregistry.io/mesh:D007785) are low. [E. coli](https://bioregistry.io/NCBITaxon:562) is the same as [Escherichia coli](https://bioregistry.io/NCBITaxon:562). Escichia coi.</ns2:richDescription>
+    <ns2:richDescription>This part makes [GFP](https://www.ncbi.nlm.nih.gov/nuccore/M62654). It was tested in [E. coli](https://bioregistry.io/NCBITaxon:562) and is thought to work in [B. subtilis](https://bioregistry.io/NCBITaxon:518697). The circuit functions better when background levels of [lactose](https://bioregistry.io/mesh:D007785) are low. [E. coli](https://bioregistry.io/NCBITaxon:562) is the same as [Escherichia coli](https://bioregistry.io/NCBITaxon:562). Escichia coi.</ns2:richDescription>
     <ns2:targetOrganism rdf:resource="https://www.uniprot.org/taxonomy/562" />
     <ns2:protein rdf:resource="https://identifiers.org/UniProt:P42212" />
   </sbol:ComponentDefinition>
