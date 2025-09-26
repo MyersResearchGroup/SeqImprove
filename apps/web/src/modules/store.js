@@ -103,9 +103,7 @@ export const useStore = create((set, get) => ({
                         "The converted SBOL document is invalid. This may be due to:",
                         "• Complex GenBank features that don't convert properly",
                         "• Missing required sequence information", 
-                        "• Unsupported annotation types",
-                        "",
-                        "Try simplifying your GenBank file or use the format help guide."
+                        "• Unsupported annotation types"
                     ]);
                     break;
 
