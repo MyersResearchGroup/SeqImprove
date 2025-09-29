@@ -227,15 +227,18 @@ export function removeDuplicateComponentAnnotation(componentDefinition, id) {
         return
 
     const duplicateAnnotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
+    if (!duplicateAnnotation) return;
     const associatedComponent = duplicateAnnotation.component
 
     const origIdNum = Number(id.slice(-1)) - 1 
     const originalAnnotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id.slice(0, -1) + origIdNum)
 
-    if (originalAnnotation.rangeMax === duplicateAnnotation.rangeMax && originalAnnotation.rangeMin === duplicateAnnotation.rangeMin) {
+    if (originalAnnotation && originalAnnotation.rangeMax === duplicateAnnotation.rangeMax && originalAnnotation.rangeMin === duplicateAnnotation.rangeMin) {
         console.log("removing duplicate annotation: " + duplicateAnnotation.displayId)
         duplicateAnnotation.destroy()
-        associatedComponent.destroy()
+        if (associatedComponent) {
+            associatedComponent.destroy()
+        }
     }
 }
 
@@ -252,11 +255,19 @@ export function removeAnnotationWithDefinition(componentDefinition, id) {
         return
 
     const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
+    if (!annotation) return;
+    
     const associatedComponent = annotation.component
+    if (!associatedComponent) return;
+    
     const definition = associatedComponent.definition
+    if (!definition) return;
+    
     const sequences = definition.sequences
 
-    sequences[0].destroy()
+    if (sequences && sequences[0]) {
+        sequences[0].destroy()
+    }
     annotation.destroy()
     associatedComponent.destroy()
     definition.destroy()

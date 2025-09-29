@@ -15,7 +15,6 @@ import re
 from sequences_to_features import download_sequences
 from sequences_to_features import FeatureLibrary
 from sequences_to_features import FeatureAnnotater
-import subprocess
 from waitress import serve
 
 FEATURE_FILES = 0
@@ -290,20 +289,74 @@ def run_biobert(text):
     return annotations
 
 def convert_genbank_to_sbol2(genbank_content, uri_prefix):    
-    result_sbol_content = ""
+    """
+    Convert GenBank content to SBOL2 using the online SBOL Validator API.
+    """
+    SBOL_VALIDATOR_URL = "https://validator.sbolstandard.org/validate/"
+    uri_prefix = 'https://seqimprove.synbiohub.org/'
     
-    # create a temporary file using a context manager    
-    with tempfile.NamedTemporaryFile() as file_genbank:
-        file_genbank.write(bytes(genbank_content, 'utf-8'))
-        file_genbank.seek(0)
-        with tempfile.NamedTemporaryFile() as file_sbol:
-            command = ["java", "-jar", "libSBOLj-2.4.0-withDependencies.jar", file_genbank.name, "-l", "SBOL2", "-o", file_sbol.name, "-p", uri_prefix]
-            output = subprocess.check_output(command, universal_newlines=True, stderr=subprocess.STDOUT)
-            print(output)
-            result_sbol_content = file_sbol.read().decode('utf-8')
-    # files are now closed and removed        
+    # prepare the request payload 
+    request_payload = {
+        'options': {
+            'language': 'SBOL2',  # output format
+            'test_equality': False,
+            'check_uri_compliance': False,
+            'check_completeness': False,
+            'check_best_practices': False,
+            'fail_on_first_error': False,
+            'provide_detailed_stack_trace': False,
+            'subset_uri': '',
+            'uri_prefix': uri_prefix,  
+            'version': '',
+            'insert_type': False,
+            'main_file_name': 'genbank_input',
+            'diff_file_name': 'comparison file',
+        },
+        'return_file': True,  # we want the converted content returned
+        'main_file': genbank_content
+    }
     
-    return result_sbol_content
+    try:
+        # make the POST request to the SBOL Validator API
+        response = requests.post(
+            SBOL_VALIDATOR_URL, 
+            json=request_payload,
+            headers={'Content-Type': 'application/json'},
+            timeout=30  # 30 second timeout
+        )
+        
+        # check if the request was successful
+        response.raise_for_status()
+        
+        # parse the JSON response
+        result = response.json()
+        
+        # check if the conversion was valid
+        if not result.get('valid', False):
+            error_messages = result.get('errors', ['Unknown validation error'])
+            error_text = '\n'.join(error_messages)
+            raise Exception(f"SBOL validation failed: {error_text}")
+        
+        # return the converted SBOL2 content
+        if 'result' in result:
+            return result['result']
+        elif 'output_file' in result:
+            # if only output_file URL is provided, fetch the content
+            file_response = requests.get(result['output_file'], timeout=30)
+            file_response.raise_for_status()
+            return file_response.text
+        else:
+            raise Exception("No converted content found in API response")
+            
+    except requests.exceptions.Timeout:
+        raise Exception("Timeout while contacting SBOL Validator API")
+    except requests.exceptions.RequestException as e:
+        # log the actual response content for debugging
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"API request failed - Status: {e.response.status_code}, Content: {e.response.text}")
+        raise Exception(f"Network error while contacting SBOL Validator API: {str(e)}")
+    except Exception as e:
+        raise Exception(f"Error during GenBank to SBOL2 conversion: {str(e)}")
 
 def run_synbio2easy(sbol_content):
     namespace = 'https://seqimprove.synbiohub.org'
@@ -353,25 +406,20 @@ def genbank_to_sbol2():
     request_data = request.get_json()
     # need to make sure 'GenBankContent' field exists before doing this:
     print("BEGINNING CONVERSION")
-    if ('GenBankContent' in request_data and 'uriPrefix' in request_data):
+    if ('GenBankContent' in request_data):
         genbank_content = request_data['GenBankContent']
-        uri_prefix = request_data['uriPrefix']
+        uri_prefix = 'https://seqimprove.synbiohub.org/'  
         try:
             sbol2_content = convert_genbank_to_sbol2(genbank_content, uri_prefix)
         except Exception as e:
             print(str(e))
-            return {"sbol2_content": "", "err": e}
+            return {"sbol2_content": "", "err": str(e)}
         else:
             print("CONVERSION SUCCESSFUL")
             return {"sbol2_content": sbol2_content, "err": ""}
         
     else:
-        error_message = ""
-        if 'GenBankContent' in request_data:
-            error_message = "Missing uriPrefix field in request data"
-        else:
-            error_message = "Missing GenBankContent field in request data"
-            
+        error_message = "Missing GenBankContent field in request data"
         return {"sbol2_content": "", "err": error_message };
     
 @app.post("/api/cleanSBOL")
