@@ -1,17 +1,28 @@
-# init a base image
-FROM python:3.10-bookworm
+# inital base image
+FROM continuumio/miniconda3
 # update pip to minimize dependency errors 
 RUN pip install --upgrade pip
 # define the present working directory
 
 RUN apt update
 RUN apt install default-jdk -y
-
-# clone SYNBICT at root & install deps
-RUN pip install numpy==1.26.4 sbol2==1.3
-RUN git clone https://github.com/SD2E/SYNBICT
+# Clone the repo into /SYNBICT (absolute path in the image)
+RUN git clone --branch SYNBICT2 --single-branch --depth 1 \
+      https://github.com/SD2E/SYNBICT /SYNBICT
 WORKDIR /SYNBICT
-RUN pip install .
+
+# Use bash so `conda activate` works within the same RUN
+SHELL ["/bin/bash", "-lc"]
+
+# Create env and install everything inside it in one layer
+RUN conda env create -f environment.yml && \
+    echo "conda activate synbict_conda" >> ~/.bashrc && \
+    conda activate synbict_conda && \
+    pip install "sbol2>=1.3" "dnaplotlib>=1.0" && \
+    pip install .
+
+# Make the env the default PATH for subsequent layers/containers
+ENV PATH=/opt/conda/envs/synbict_conda/bin:$PATH
 
 WORKDIR /docker-flask-api
 # copy the contents into the working dir
