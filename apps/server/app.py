@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 import requests
 import re
-from sequences_to_features import load_sbol, FeatureLibrary, download_sequences
+from sequences_to_features import FeatureAnnotater, load_sbol, FeatureLibrary, download_sequences
 from sequences_to_features.Annotator import SAMFeatureMapper
 from sequences_to_features.FeatureAnnotatorBase import FeatureAnnotatorSimple
 from sequences_to_features.FeatureExtractor import FeatureExtractor
@@ -24,13 +24,11 @@ FEATURE_LIBRARY = 1
 
 uris = []
 sbh_file_prefixes = []
-# all feature docs combined
-feature_library = FeatureLibrary([])
-# a list of all feature docs
-feature_docs = []
+
+FEATURE_DOCS = []
 
 # path to index in doc
-map_dict = {}
+MAP_DICT = {}
 
 
 print("HAHA")
@@ -83,12 +81,12 @@ def setup():
         feature_doc = sbol2.Document()
         feature_doc.read(feature_library_path)
         print("key: ", feature_library_path)# create a key to index, small dictionary
-        map_dict[feature_library_path] = len(feature_docs)
-        feature_docs.append(feature_doc)
-    feature_library = FeatureLibrary(feature_docs)
-    print(f"Loaded {len(feature_library.features)} feature libraries.")
-    run_synbict_all()
-
+        MAP_DICT[feature_library_path] = len(FEATURE_DOCS)
+        FEATURE_DOCS.append(feature_doc)
+    global FEATURE_LIBRARY
+    FEATURE_LIBRARY = FeatureLibrary(FEATURE_DOCS)
+    doc = load_sbol("/home/sophia/git_repo/SYNBICT/example/add_gene/100005_addgene_out.xml")
+    run_synbict_all(doc, ["All_Libraries"], isSimilar=True, algorithm='bwa')
 
     # check for new libraries in synbiohub.org/rootcollections, pull if any exist
     #
@@ -181,26 +179,30 @@ async def get_feature_libraries_paths(feature_libraries_dir) -> str:
 # feature_libraries: list[str]
 # def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
 
-def run_synbict_all():
-    tmp = FeatureExtractor(feature_docs)
+def run_synbict_all(sbol_content: str, part_library_file_names: list[str], isSimilar: bool, algorithm: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+    anno_lib_assoc = []
+    tmp = FeatureExtractor(FEATURE_DOCS)
     fasta_path = 'test.fasta' #'/home/sophia/git_repo/SYNBICT/example/test.fasta'
     index_prefix = 'test'
     tmp.write_fasta(fasta_path)
     #tmp.write_metadata('test_metadata.json') # '/home/sophia/git_repo/SYNBICT/example/test_metadata.json'
-    tmp.build_index(fasta_path, index_prefix, 'bwa')
+    tmp.build_index(fasta_path, index_prefix, algorithm) # bwa
     bwa = BwaAligner(index_prefix)
     output_sam_path = 'aligned.sam'
-    doc = load_sbol("/home/sophia/git_repo/SYNBICT/example/add_gene/100005_addgene_out.xml")
-    bwa.align(doc, output_sam_path, True) # False
+    #doc = load_sbol("/home/sophia/git_repo/SYNBICT/example/add_gene/100005_addgene_out.xml")
+    bwa.align(sbol_content, output_sam_path, not isSimilar) # False
     mapper = SAMFeatureMapper('aligned.sam')
-    inline_matches, rc_matches = mapper.extract_matches(exact_match=True, min_feature_length=40, is_bowtie2=False)#False
+    inline_matches, rc_matches = mapper.extract_matches(exact_match=not isSimilar, min_feature_length=40, is_bowtie2=False)#False
     print(f"Inline matches: {inline_matches}")
     print(f"RC matches: {rc_matches}")
-    simple = FeatureAnnotatorSimple(feature_library, inline_matches, rc_matches)
-    target_library = FeatureLibrary([doc], False)
+    simple = FeatureAnnotatorSimple(FEATURE_LIBRARY, inline_matches, rc_matches)
+    target_library = FeatureLibrary([sbol_content], False)
     output_docs = []
     output_library = FeatureLibrary(output_docs, False)
-    simple.annotate(inline_matches, rc_matches, target_library, 40, in_place=True, output_library=output_library, output_matches=False)#True, in_place=False
+    simple.annotate(inline_matches, rc_matches, target_library, 40, in_place=False, output_library=output_library, output_matches=False)#True, in_place=False
+    sbol_content.write("test.xml")
+    anno_lib_assoc.append([sbol_content.writeString(), part_library_file_names])
+    return None, None, anno_lib_assoc
 setup()   
 def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
@@ -232,7 +234,6 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 # replace
                 min_target_length = 10  
                 # replace 
-                              
                 annotated_identities = annotater.annotate(target_library, min_target_length, in_place=True)
 
                 # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
@@ -467,6 +468,8 @@ def annotate_sequence():
     sbol_content = request_data['completeSbolContent']
     part_library_file_names = request_data['partLibraries'] 
     clean_document = request_data['cleanDocument']
+    tool = request_data['tool']
+    similar_mapping = request_data['similarMapping']
 
     if clean_document: 
         sbol_content = run_synbio2easy(sbol_content)
@@ -479,11 +482,14 @@ def annotate_sequence():
         #     [sbol_xml_annotated, part_lib_file_name],
         #     ...
         # ]
-        error_code, error_message, anno_lib_assoc,  = run_synbict(sbol_content, part_library_file_names)
-        
+        if(tool == 'FlashText'):
+            error_code, error_message, anno_lib_assoc,  = run_synbict(sbol_content, part_library_file_names)
+        else:
+            # will change later
+            error_code, error_message, anno_lib_assoc,  = run_synbict(sbol_content, part_library_file_names)
         if (error_code):
             return {"sbol": sbol_content, "error_message": error_message}, error_code
-        
+
     except Exception as e:
         print("Caught exception")
         print(str(e))
