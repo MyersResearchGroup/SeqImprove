@@ -24,14 +24,23 @@ FEATURE_LIBRARY = 1
 
 uris = []
 sbh_file_prefixes = []
+# this is static, keep all the loaded libraries, won't change when add or remove,
+# use this as a reference in dictionary or FeatureLibrary object
+FEATURE_DOCS = [] 
+# this is a dynamic dictionary, can be changed when add or remove library, 
+# only used by FlashText algorithm
+FEATURE_LIBRARIES = {}
+# OLD:
+# FEATURE_LIBRARIES = [
+#     [[file, file2, file3], featury_library],
+#     [[file, file2, file3], featury_library],
+# ]
+# NEW:
+# FEATURE_LIBRARIES = {
+#     "file1": featury_library1,
+#     "file2": featury_library2,
+# }
 
-FEATURE_DOCS = []
-
-# path to index in doc
-MAP_DICT = {}
-
-
-print("HAHA")
 def setup():
     print("Initializing the app...")
     # Set pySBOL configuration parameters
@@ -76,16 +85,14 @@ def setup():
     else:
         print(f"Failed to retrieve data from SynBioHub: {sbhresponse.status_code}")
 
-    for feature_library_path in feature_libraries_paths[2:3]:
-        print(feature_library_path)
+    for feature_library_path in feature_libraries_paths[2:7]:
         feature_doc = sbol2.Document()
         feature_doc.read(feature_library_path)
-        print("key: ", feature_library_path)# create a key to index, small dictionary
-        MAP_DICT[feature_library_path] = len(FEATURE_DOCS)
         FEATURE_DOCS.append(feature_doc)
-    global FEATURE_LIBRARY
-    FEATURE_LIBRARY = FeatureLibrary(FEATURE_DOCS)
+        FEATURE_LIBRARIES[feature_library_path] = FeatureLibrary([feature_doc])
+        
     doc = load_sbol("/home/sophia/git_repo/SYNBICT/example/add_gene/100005_addgene_out.xml")
+    create_index('bwa')
     run_synbict_all(doc, ["All_Libraries"], isSimilar=True, algorithm='bwa')
 
     # check for new libraries in synbiohub.org/rootcollections, pull if any exist
@@ -117,18 +124,18 @@ def create_app():
 
 # only retrieves feature library that already exists after setup
 # might create a libarary in the future
-# def create_feature_library(part_library_file_name):
-#     if ('synbiohub.org' in part_library_file_name): #if url, return the obj if indexed with url(sbh downloads only)
-#         if part_library_file_name in FEATURE_LIBRARIES:
-#             return FEATURE_LIBRARIES[part_library_file_name]
-#         else: #for locally stored sbh collections(indexed with file name for annotation)
-#             if part_library_file_name in uris:
-#                 uri_index = uris.index(part_library_file_name)
-#                 part_library_file_name = sbh_file_prefixes[uri_index] + '.xml'
+def create_feature_library(part_library_file_name):
+    if ('synbiohub.org' in part_library_file_name): #if url, return the obj if indexed with url(sbh downloads only)
+        if part_library_file_name in FEATURE_LIBRARIES:
+            return FEATURE_LIBRARIES[part_library_file_name]
+        else: #for locally stored sbh collections(indexed with file name for annotation)
+            if part_library_file_name in uris:
+                uri_index = uris.index(part_library_file_name)
+                part_library_file_name = sbh_file_prefixes[uri_index] + '.xml'
 
-#     feature_libraries_dir = "./assets/synbict/feature-libraries"
-#     feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
-#     return FEATURE_LIBRARIES[feature_library_path]
+    feature_libraries_dir = "./assets/synbict/feature-libraries"
+    feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
+    return FEATURE_LIBRARIES[feature_library_path]
 
 def sbh_pull_library(uri):
     feature_doc = sbol2.Document() #reinit
@@ -176,12 +183,21 @@ async def get_feature_libraries_paths(feature_libraries_dir) -> str:
 #         print("Error occurred while running the Node.js script:", e)
 #         return None
 
-# feature_libraries: list[str]
-# def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+# only run this when creating index, not necessary for annotation.
+def create_index(algorithm: str):
+    tmp = FeatureExtractor(FEATURE_DOCS) # pass a dictionary of featureLibraries
+    fasta_path = 'test.fasta' #'/home/sophia/git_repo/SYNBICT/example/test.fasta'
+    index_prefix = 'test'
+    tmp.write_fasta(fasta_path)
+    #tmp.write_metadata('test_metadata.json') # '/home/sophia/git_repo/SYNBICT/example/test_metadata.json'
+    tmp.build_index(fasta_path, index_prefix, algorithm) # bwa
 
+# def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
 def run_synbict_all(sbol_content: str, part_library_file_names: list[str], isSimilar: bool, algorithm: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+    
     anno_lib_assoc = []
-    tmp = FeatureExtractor(FEATURE_DOCS)
+    
+    tmp = FeatureExtractor(FEATURE_DOCS) # pass a dictionary of featureLibraries
     fasta_path = 'test.fasta' #'/home/sophia/git_repo/SYNBICT/example/test.fasta'
     index_prefix = 'test'
     tmp.write_fasta(fasta_path)
@@ -193,9 +209,8 @@ def run_synbict_all(sbol_content: str, part_library_file_names: list[str], isSim
     bwa.align(sbol_content, output_sam_path, not isSimilar) # False
     mapper = SAMFeatureMapper('aligned.sam')
     inline_matches, rc_matches = mapper.extract_matches(exact_match=not isSimilar, min_feature_length=40, is_bowtie2=False)#False
-    print(f"Inline matches: {inline_matches}")
-    print(f"RC matches: {rc_matches}")
-    simple = FeatureAnnotatorSimple(FEATURE_LIBRARY, inline_matches, rc_matches)
+    feature_library = FeatureLibrary(FEATURE_DOCS)
+    simple = FeatureAnnotatorSimple(feature_library, inline_matches, rc_matches)
     target_library = FeatureLibrary([sbol_content], False)
     output_docs = []
     output_library = FeatureLibrary(output_docs, False)
