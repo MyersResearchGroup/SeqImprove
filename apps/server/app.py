@@ -500,6 +500,9 @@ def annotate_sequence():
         if(tool == 'FlashText'):
             error_code, error_message, anno_lib_assoc,  = run_synbict(sbol_content, part_library_file_names)
         else:
+            #if index not found: 
+            #   run create_index()
+            # run_synbict_all()
             # will change later
             error_code, error_message, anno_lib_assoc,  = run_synbict(sbol_content, part_library_file_names)
         if (error_code):
