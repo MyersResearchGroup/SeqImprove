@@ -205,7 +205,7 @@ export const useStore = create((set, get) => ({
     importedLibraries: [],
 
     loadingSequenceAnnotations: false,
-       
+
     loadSequenceAnnotations: async (...args) => {
         set({ loadingSequenceAnnotations: true });
         let allLibraries = []
@@ -217,6 +217,8 @@ export const useStore = create((set, get) => ({
                 sbolContent: get().document.serializeXML(),
                 selectedLibraryFileNames: allLibraries.map(lib => lib.value),
                 isUriCleaned: get().isUriCleaned,
+                algorithm: args[1],
+                allowSimilarMatches: args[2],
             }) ?? [];
 
             let { fetchedAnnotations, synbictDoc } = result;

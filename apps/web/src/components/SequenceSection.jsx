@@ -271,6 +271,10 @@ function Annotations({ colors }) {
     const toggleLibrary = useStore(s => s.toggleImportedLibraries)
     const removeLibrary = useStore(s => s.removeImportedLibrary)
 
+    // Algorithm and match mode state
+    const [selectedAlgorithm, setSelectedAlgorithm] = useState('FlashText');
+    const [allowSimilarMatches, setAllowSimilarMatches] = useState(false);
+
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
         <div ref={ref} {...props}>
@@ -282,7 +286,7 @@ function Annotations({ colors }) {
         const libs = importedLibraries.filter((lib) =>
                 lib.enabled == true)
         if (sequencePartLibrariesSelected.length > 0 || libs.length > 0) {
-            loadSequenceAnnotations(libs)
+            loadSequenceAnnotations(libs, selectedAlgorithm, allowSimilarMatches)
         }
         else showErrorNotification('No libraries selected ', 'Select one or more libraries to continue')
     }
@@ -323,18 +327,38 @@ function Annotations({ colors }) {
                     const chosenLibraries = sequencePartLibraries.filter(lib => {
                         return librariesSelected[0].includes(lib.value);
                     });
-                    // mutate the libraries Selected in the store                                    
-                    mutateSequencePartLibrariesSelected(useStore.setState, state => {     
+                    // mutate the libraries Selected in the store
+                    mutateSequencePartLibrariesSelected(useStore.setState, state => {
                         if(chosenLibraries.some(item => item.value === 'local_libraries')) {
                             state.sequencePartLibrariesSelected = chosenLibraries.filter(item => item.value !== 'local_libraries')
                             state.sequencePartLibrariesSelected.push(...localLibraries)
                         }
                         else state.sequencePartLibrariesSelected = chosenLibraries;
                     });
-                    
+
 
                     setSequencePartLibrariesSelected(...librariesSelected);
-                })}               
+                })}
+            />
+
+            <Select
+                label="Algorithm"
+                placeholder="Select algorithm"
+                value={selectedAlgorithm}
+                onChange={setSelectedAlgorithm}
+                data={[
+                    { value: 'FlashText', label: 'FlashText' },
+                    { value: 'BWA', label: 'BWA' },
+                    { value: 'Minimap2', label: 'Minimap2' },
+                    { value: 'BLASTN', label: 'BLASTN' }
+                ]}
+            />
+
+            <Checkbox
+                label="Allow Similar Matches"
+                checked={allowSimilarMatches}
+                onChange={(event) => setAllowSimilarMatches(event.currentTarget.checked)}
+                mt="sm"
             />
             
 
