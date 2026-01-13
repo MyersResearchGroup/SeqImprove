@@ -184,6 +184,8 @@ export async function fetchAnnotateSequence({
   isUriCleaned,
   algorithm,
   allowSimilarMatches,
+  codonMatches,
+  includeHypothetical,
 }) {
   console.log("Annotating sequence...");
 
@@ -202,6 +204,8 @@ export async function fetchAnnotateSequence({
           cleanDocument: !isUriCleaned,
           algorithm: algorithm,
           allowSimilarMatches: allowSimilarMatches,
+          codonMatches: codonMatches,
+          includeHypothetical: includeHypothetical,
         }),
         timeout: 320000,
       }

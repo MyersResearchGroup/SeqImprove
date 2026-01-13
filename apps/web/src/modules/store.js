@@ -219,6 +219,8 @@ export const useStore = create((set, get) => ({
                 isUriCleaned: get().isUriCleaned,
                 algorithm: args[1],
                 allowSimilarMatches: args[2],
+                codonMatches: args[3],
+                includeHypothetical: args[4],
             }) ?? [];
 
             let { fetchedAnnotations, synbictDoc } = result;
