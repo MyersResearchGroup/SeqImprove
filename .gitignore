@@ -42,22 +42,22 @@ auto-save-list
 tramp
 .\#*
 
-# Server cache and build artifacts
+# server cache and build artifacts
 apps/server/.cache/
 apps/server/__pycache__/
 __pycache__/
 
-# Log files
+# log files
 *.log
 apps/server/_logs/
 
-# Alignment output files
+# alignment output files
 *.sam
 *.sam.log
 
-# Test/temporary index files
+# test/temporary index files
 apps/server/test.*
 apps/server/aligned*
 
-# Python cache
+# python cache
 *.pyc

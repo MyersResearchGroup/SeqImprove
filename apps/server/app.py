@@ -35,8 +35,7 @@ sbh_file_prefixes = []
 library_cache = None
 index_manager = None
 
-# legacy globals for backwards compatibility with FlashText and user-imported libraries
-# this is a dynamic dictionary, can be changed when add or remove library
+# dynamic dictionary for feature libraries
 FEATURE_LIBRARIES = {}
 
 def setup():
@@ -58,7 +57,7 @@ def setup():
     print(f"Preloading libraries from {feature_libraries_dir}...")
     library_cache.preload_libraries(feature_libraries_dir)
 
-    # also populate legacy FEATURE_LIBRARIES dict for FlashText compatibility
+    # populate FEATURE_LIBRARIES dict for FlashText
     feature_libraries_paths = asyncio.run(get_feature_libraries_paths(feature_libraries_dir))
     for feature_library_path in feature_libraries_paths:
         FEATURE_LIBRARIES[feature_library_path] = library_cache.get_feature_library(feature_library_path)
@@ -180,23 +179,6 @@ async def get_feature_libraries_paths(feature_libraries_dir) -> str:
 #     except subprocess.CalledProcessError as e:
 #         print("Error occurred while running the Node.js script:", e)
 #         return None
-
-# legacy function - now handled by IndexManager but kept for reference
-def create_index_legacy(algorithm: str, library_docs: list):
-    # build index from specific library documents, not all FEATURE_DOCS
-    tmp = FeatureExtractor(library_docs)
-    fasta_path = 'test.fasta'
-    index_prefix = 'test'
-    tmp.write_fasta(fasta_path)
-
-    # map frontend algorithm names to build_index tool names
-    algorithm_map = {
-        'BWA': 'bwa',
-        'Minimap2': 'minimap2',
-        'BLASTN': 'blast'
-    }
-    tool_name = algorithm_map.get(algorithm, algorithm.lower())
-    tmp.build_index(fasta_path, index_prefix, tool_name)
 
 def clean_target_document(target_doc: sbol2.Document) -> sbol2.Document:
     """
@@ -625,7 +607,7 @@ def annotate_sequence():
     part_library_file_names = request_data['partLibraries']
     clean_document = request_data['cleanDocument']
 
-    # get algorithm and match parameters with defaults for backward compatibility
+    # get algorithm and match parameters
     algorithm = request_data.get('algorithm', 'FlashText')
     allow_similar_matches = request_data.get('allowSimilarMatches', False)
     codon_matches = request_data.get('codonMatches', False)
