@@ -317,31 +317,6 @@ function Annotations({ colors }) {
                 </Group>              
             )}
 
-            <MultiSelect
-                data={sequencePartLibraries}
-                label="Sequence part libraries"
-                placeholder="Choose the libraries to annotate against"
-                value={sequencePartLibrariesSelected}
-                searchable
-                maxSelectedValues={3} // <-- NOTE: There is a bug on deployment where the backend doesn't respond when many part libraries are selected. We're not able to reproduce it locally, but this makes it a non issue.
-                onChange={((...librariesSelected) => {
-                    const chosenLibraries = sequencePartLibraries.filter(lib => {
-                        return librariesSelected[0].includes(lib.value);
-                    });
-                    // mutate the libraries Selected in the store
-                    mutateSequencePartLibrariesSelected(useStore.setState, state => {
-                        if(chosenLibraries.some(item => item.value === 'local_libraries')) {
-                            state.sequencePartLibrariesSelected = chosenLibraries.filter(item => item.value !== 'local_libraries')
-                            state.sequencePartLibrariesSelected.push(...localLibraries)
-                        }
-                        else state.sequencePartLibrariesSelected = chosenLibraries;
-                    });
-
-
-                    setSequencePartLibrariesSelected(...librariesSelected);
-                })}
-            />
-
             <Select
                 label="Algorithm"
                 placeholder="Select algorithm"
@@ -412,6 +387,32 @@ function Annotations({ colors }) {
                 </Tooltip>
             </Group>
 
+            <MultiSelect
+                mt="sm"
+                data={sequencePartLibraries}
+                label="Sequence part libraries"
+                placeholder="Choose the libraries to annotate against"
+                value={sequencePartLibrariesSelected}
+                searchable
+                maxSelectedValues={3} // <-- NOTE: There is a bug on deployment where the backend doesn't respond when many part libraries are selected. We're not able to reproduce it locally, but this makes it a non issue.
+                onChange={((...librariesSelected) => {
+                    const chosenLibraries = sequencePartLibraries.filter(lib => {
+                        return librariesSelected[0].includes(lib.value);
+                    });
+                    // mutate the libraries Selected in the store
+                    mutateSequencePartLibrariesSelected(useStore.setState, state => {
+                        if(chosenLibraries.some(item => item.value === 'local_libraries')) {
+                            state.sequencePartLibrariesSelected = chosenLibraries.filter(item => item.value !== 'local_libraries')
+                            state.sequencePartLibrariesSelected.push(...localLibraries)
+                        }
+                        else state.sequencePartLibrariesSelected = chosenLibraries;
+                    });
+
+
+                    setSequencePartLibrariesSelected(...librariesSelected);
+                })}
+            />
+
             {libraryImported && <Stack mt="sm" gap="xs">
                 {importedLibraries.map((library, index) => (
                     <Grid key={index}>
@@ -420,12 +421,12 @@ function Annotations({ colors }) {
                                 label={library.label}
                                 checked={library.enabled}
                                 onChange={() => toggleLibrary(index)}
-                                key={index} 
+                                key={index}
                             />
                         </Grid.Col>
                         <Grid.Col span={2}>
                             <Tooltip label="Delete from server memory">
-                                <CloseButton 
+                                <CloseButton
                                     onClick={() => handleClose(library)}
                                 />
                             </Tooltip>
