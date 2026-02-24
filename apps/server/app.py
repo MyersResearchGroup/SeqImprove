@@ -6,7 +6,6 @@ from flask_api import status
 import sbol2
 import logging
 import os
-import asyncio
 import json
 import subprocess
 import tempfile
@@ -25,17 +24,15 @@ from library_cache import (
     LibraryCache, IndexManager
 )
 
-FEATURE_FILES = 0
-FEATURE_LIBRARY = 1
-
 uris = []
 sbh_file_prefixes = []
 
-# cache instances for efficient library and index management
-library_cache = None
-index_manager = None
+# cache instances — initialized in setup(), used throughout the app
+library_cache: LibraryCache = None
+index_manager: IndexManager = None
 
-# dynamic dictionary for feature libraries
+# FlashText FeatureLibrary dict (keyed by path or SynBioHub URL)
+# For alignment algorithms, use library_cache.get_feature_library_for_subset() instead
 FEATURE_LIBRARIES = {}
 
 def setup():
@@ -45,24 +42,24 @@ def setup():
     sbol2.Config.setOption('validate', True)
     sbol2.Config.setOption('sbol_typed_uris', False)
 
-    # initialize caching system
+    # steps 1-2 — initialize caching system, read XML → SBOL docs + FeatureLibraries (kept forever)
     global library_cache, index_manager
     library_cache, index_manager = init_cache(
         cache_dir="./.cache/seqimprove",
-        max_indexes=10  # cache up to 10 algorithm/library combinations
+        max_indexes=10
     )
 
-    # preload all feature libraries into cache
+    # preload all feature libraries: XML → SBOL Documents → FeatureLibraries (permanent)
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     print(f"Preloading libraries from {feature_libraries_dir}...")
     library_cache.preload_libraries(feature_libraries_dir)
 
-    # populate FEATURE_LIBRARIES dict for FlashText
-    feature_libraries_paths = asyncio.run(get_feature_libraries_paths(feature_libraries_dir))
-    for feature_library_path in feature_libraries_paths:
-        FEATURE_LIBRARIES[feature_library_path] = library_cache.get_feature_library(feature_library_path)
+    # populate FlashText FEATURE_LIBRARIES dict from the permanent cache
+    for name, abs_path in library_cache._library_name_map.items():
+        FEATURE_LIBRARIES[abs_path] = library_cache.get_feature_library(abs_path)
 
     print(f"Loaded {len(FEATURE_LIBRARIES)} libraries into cache")
+    print(f"Available libraries: {library_cache.get_available_library_names()}")
 
     # read in collections from synbiohub
     sbh_collections = "https://synbiohub.org/rootcollections"
@@ -160,11 +157,6 @@ def create_temp_file(content):
         print("Error occurred while creating the temporary file:", e)
         return None
 
-async def get_feature_libraries_paths(feature_libraries_dir) -> str:
-    loop = asyncio.get_event_loop()
-    feature_files = await loop.run_in_executor(None, os.listdir, feature_libraries_dir)
-    feature_library_paths = [os.path.join(feature_libraries_dir, library_file) for library_file in feature_files]
-    return feature_library_paths
 
 # def run_node_script(script_path, arguments):
 #     try:
@@ -257,57 +249,69 @@ def clean_target_document(target_doc: sbol2.Document) -> sbol2.Document:
 
     return target_doc
 
-def run_synbict_all(sbol_content: str, part_library_file_names: list[str], exact_match: bool, algorithm: str, index_prefix: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
-    """Run synbict2 with alignment-based algorithms (bwa, minimap2, blastn)."""
-    anno_lib_assoc = []
+def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bool, algorithm: str, index_prefix: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+    """
+    Run annotation with alignment-based algorithms (BWA, Minimap2, BLASTN).
+
+    Pipeline:
+      step 3: Index (cached by algorithm + library subset -> handled by IndexManager)
+      step 4: Align query against index -> temp files (cleaned up after)
+      step 5: Parse alignment -> SBOL annotations (uses FeatureLibrary from step 2)
+
+    Args:
+        sbol_content: Target SBOL XML string (from user)
+        library_paths: Absolute paths to selected library files
+        exact_match: If True, require exact matches; if False, allow ≥95% identity
+        algorithm: One of 'BWA', 'Minimap2', 'BLASTN'
+        index_prefix: Path prefix for the cached index files
+    """
     algo_normalized = algorithm.lower()
 
-    # get fresh library documents from cache (fresh copies to avoid mutation issues)
-    feature_libraries_dir = "./assets/synbict/feature-libraries"
-    library_paths = [os.path.join(feature_libraries_dir, f) for f in part_library_file_names]
-    selected_library_docs = library_cache.get_fresh_documents_for_libraries(library_paths)
+    # step 2 — get FeatureLibrary from permanent cache
+    # exact matches are read-only on library docs -> use permanent cache
+    # similar matches mutate library docs (variant creation) -> use fresh copies from XML cache
+    if exact_match:
+        feature_library = library_cache.get_feature_library_for_subset(library_paths)
+    else:
+        feature_library = library_cache.get_fresh_feature_library_for_subset(library_paths)
 
-    # parse target sbol content into document
+    # parse target SBOL content (from user, temporary)
     target_doc = sbol2.Document()
     try:
         target_doc.readString(sbol_content)
     except Exception as e:
         return status.HTTP_400_BAD_REQUEST, f'Could not parse sbol_content: {e}', None
 
-    # clean the target document to remove any existing annotations from previous runs
-    # this prevents infinite loops in SYNBICT when re-annotating
+    # clean the target document to remove existing annotations from previous runs
     target_doc = clean_target_document(target_doc)
 
-    # set up output paths (use cache directory for temp files)
-    output_sam_path = os.path.join(os.path.dirname(index_prefix), 'aligned.sam')
     min_feature_length = 10
 
     try:
-        # choose aligner and mapper based on algorithm
-        if algo_normalized == 'bwa':
-            aligner = BwaAligner(index_prefix)
-            aligner.align(target_doc, output_sam_path, exact_match)
-            mapper = SAMFeatureMapper(output_sam_path)
-            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
-        elif algo_normalized == 'minimap2':
-            output_sam_path = os.path.join(os.path.dirname(index_prefix), 'aligned_minimap2.sam')
-            aligner = Minimap2Aligner(index_prefix)
-            aligner.align(target_doc, output_sam_path, exact_match)
-            mapper = SAMFeatureMapper(output_sam_path)
-            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
-        elif algo_normalized == 'blastn':
-            output_table_path = os.path.join(os.path.dirname(index_prefix), 'aligned_blast.txt')
-            aligner = BlastAligner(index_prefix)
-            aligner.align(target_doc, output_table_path, exact_match)
-            mapper = TableFeatureMapper(output_table_path)
-            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
-        else:
-            return status.HTTP_400_BAD_REQUEST, f'Algorithm {algorithm} not supported', None
+        # step 4 — align query to temp directory (not index cache dir)
+        with tempfile.TemporaryDirectory(prefix="seqimprove_align_") as tmp_dir:
+            if algo_normalized == 'bwa':
+                output_path = os.path.join(tmp_dir, 'aligned.sam')
+                aligner = BwaAligner(index_prefix)
+                aligner.align(target_doc, output_path, exact_match)
+                mapper = SAMFeatureMapper(output_path)
+            elif algo_normalized == 'minimap2':
+                output_path = os.path.join(tmp_dir, 'aligned.sam')
+                aligner = Minimap2Aligner(index_prefix)
+                aligner.align(target_doc, output_path, exact_match)
+                mapper = SAMFeatureMapper(output_path)
+            elif algo_normalized == 'blastn':
+                output_path = os.path.join(tmp_dir, 'aligned.txt')
+                aligner = BlastAligner(index_prefix)
+                aligner.align(target_doc, output_path, exact_match)
+                mapper = TableFeatureMapper(output_path)
+            else:
+                return status.HTTP_400_BAD_REQUEST, f'Algorithm {algorithm} not supported', None
 
-        # get feature library using only selected libraries
-        feature_library = FeatureLibrary(selected_library_docs)
+            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
+            # temp files cleaned up automatically when TemporaryDirectory exits
 
-        # create annotator and perform annotation
+        # step 5 — parse alignment into SBOL annotations
         annotator = FeatureAnnotatorSimple(feature_library, inline_matches, rc_matches)
         target_library = FeatureLibrary([target_doc])
         output_library = FeatureLibrary([])
@@ -315,13 +319,10 @@ def run_synbict_all(sbol_content: str, part_library_file_names: list[str], exact
         annotator.annotate(inline_matches, rc_matches, target_library, min_feature_length,
                          in_place=True, output_library=output_library, output_matches=False)
 
-        # return annotated document with library name
-        anno_lib_assoc.append([target_doc.writeString(), "All_Libraries"])
+        return None, None, [[target_doc.writeString(), "All_Libraries"]]
 
     except Exception as e:
         return status.HTTP_500_INTERNAL_SERVER_ERROR, f'Error during annotation: {str(e)}', None
-
-    return None, None, anno_lib_assoc
 
 def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
@@ -623,44 +624,25 @@ def annotate_sequence():
             # use original flashtext-based method
             error_code, error_message, anno_lib_assoc = run_synbict(sbol_content, part_library_file_names)
         else:
-            # use alignment-based method (bwa, minimap2, blastn)
+            # resolve library names to absolute paths via LibraryCache
             feature_libraries_dir = "./assets/synbict/feature-libraries"
+            library_paths, skipped = library_cache.resolve_library_paths(
+                part_library_file_names, library_dir=feature_libraries_dir
+            )
 
-            # filter out SynBioHub URLs - alignment algorithms only support local libraries
-            # also convert any SynBioHub URLs to local file names if they've been downloaded
-            local_library_names = []
-            skipped_urls = []
-            for lib_name in part_library_file_names:
-                if 'synbiohub.org' in lib_name or lib_name.startswith('http'):
-                    # check if this is a known SynBioHub collection with a local copy
-                    if lib_name in uris:
-                        uri_index = uris.index(lib_name)
-                        local_name = sbh_file_prefixes[uri_index] + '.xml'
-                        local_library_names.append(local_name)
-                    else:
-                        # no local copy available, skip this library
-                        skipped_urls.append(lib_name)
-                else:
-                    local_library_names.append(lib_name)
-
-            if not local_library_names:
+            if not library_paths:
                 return {"sbol": sbol_content, "error_message": "No valid local libraries selected. Alignment algorithms (BWA, Minimap2, BLASTN) require local library files."}, status.HTTP_400_BAD_REQUEST
 
-            library_paths = [os.path.join(feature_libraries_dir, f) for f in local_library_names]
+            if skipped:
+                print(f"Skipped non-local libraries: {skipped}")
 
-            # verify all library files exist
-            missing_files = [p for p in library_paths if not os.path.exists(p)]
-            if missing_files:
-                return {"sbol": sbol_content, "error_message": f"Library files not found: {', '.join(missing_files)}"}, status.HTTP_400_BAD_REQUEST
-
-            # use IndexManager to get or create cached index
-            # this handles content-based hashing and LRU eviction automatically
+            # step 3 — get or create cached index (keyed by algorithm + library subset hash)
             index_prefix, fasta_path = index_manager.get_or_create_index(algorithm, library_paths)
 
-            # invert allow_similar_matches: False means exact match, True means similar matches allowed
+            # steps 4-5 — align + annotate
             exact_match = not allow_similar_matches
             error_code, error_message, anno_lib_assoc = run_synbict_all(
-                sbol_content, local_library_names, exact_match, algorithm, index_prefix
+                sbol_content, library_paths, exact_match, algorithm, index_prefix
             )
 
         if error_code:
