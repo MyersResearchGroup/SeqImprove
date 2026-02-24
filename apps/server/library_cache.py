@@ -84,11 +84,15 @@ class LibraryCache:
     """
     Manages loading and caching of SBOL library documents.
 
-    Features:
-    - Lazy loading: Libraries loaded only when requested
-    - Content hashing: SHA256 hash for cache invalidation
-    - In-memory caching: Keeps loaded documents for reuse
-    - Thread-safe access
+    Two-tier caching strategy:
+    - Tier 1 (permanent, in-memory): SBOL Documents, XML strings, FeatureLibraries
+      Loaded once at startup, never evicted. Used for indexing (read-only) and as
+      templates for fast fresh copies when annotation mutates docs.
+    - Tier 2 (per-subset): FeatureLibrary objects keyed by frozenset of library paths.
+      Reused for exact-match annotation where no mutation occurs.
+
+    For similar-match annotation (which mutates library docs via variant creation),
+    fresh Document copies are created from cached XML strings — no disk I/O needed.
     """
 
     def __init__(self, cache_dir: str = DEFAULT_CACHE_DIR):
@@ -96,9 +100,12 @@ class LibraryCache:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self._lock = threading.RLock()
-        self._documents: Dict[str, sbol2.Document] = {}  # path -> document
-        self._feature_libraries: Dict[str, FeatureLibrary] = {}  # path -> feature library
-        self._hashes: Dict[str, str] = {}  # path -> content_hash
+        self._documents: Dict[str, sbol2.Document] = {}  # abs_path -> document (permanent)
+        self._xml_strings: Dict[str, str] = {}  # abs_path -> serialized XML (for fast fresh copies)
+        self._feature_libraries: Dict[str, FeatureLibrary] = {}  # abs_path -> single-library FeatureLibrary
+        self._subset_feature_libraries: Dict[frozenset, FeatureLibrary] = {}  # frozenset(paths) -> merged FeatureLibrary
+        self._hashes: Dict[str, str] = {}  # abs_path -> content_hash
+        self._library_name_map: Dict[str, str] = {}  # filename -> abs_path (e.g. "iGEM.xml" -> "/full/path/iGEM.xml")
         self._metadata = self._load_metadata()
 
     def _load_metadata(self) -> CacheMetadata:
@@ -173,14 +180,17 @@ class LibraryCache:
 
     def get_document(self, file_path: str, force_reload: bool = False) -> sbol2.Document:
         """
-        Get an SBOL Document for a library file.
+        Get an SBOL Document for a library file (permanently cached).
+
+        Documents are loaded from disk once and kept in memory forever.
+        The cached XML string is also stored for creating fast fresh copies.
 
         Args:
             file_path: Path to the library XML file
             force_reload: If True, bypass cache and reload from disk
 
         Returns:
-            sbol2.Document instance
+            sbol2.Document instance (from permanent cache — do NOT mutate)
         """
         with self._lock:
             abs_path = os.path.abspath(file_path)
@@ -194,10 +204,13 @@ class LibraryCache:
                     cached_info.last_accessed = time.time()
                     return self._documents[abs_path]
 
-            # load fresh document
+            # load from disk (one-time cost per library)
             doc = sbol2.Document()
             doc.read(abs_path)
             self._documents[abs_path] = doc
+
+            # cache the XML string for fast fresh copies later
+            self._xml_strings[abs_path] = doc.writeString()
 
             # update metadata
             if abs_path in self._metadata.libraries:
@@ -209,24 +222,33 @@ class LibraryCache:
 
     def get_fresh_document(self, file_path: str) -> sbol2.Document:
         """
-        Get a fresh copy of an SBOL Document (not from cache).
-        Use this when you need to modify the document without affecting cache.
+        Get a fresh (mutable) copy of an SBOL Document.
+
+        Creates a new Document by deserializing the cached XML string — no disk I/O.
+        Use this when the annotation process will mutate the document (e.g. similar matches
+        create variant definitions inside library docs).
         """
-        abs_path = os.path.abspath(file_path)
-        doc = sbol2.Document()
-        doc.read(abs_path)
-        return doc
+        with self._lock:
+            abs_path = os.path.abspath(file_path)
+
+            # ensure the document and XML string are cached
+            if abs_path not in self._xml_strings:
+                self.get_document(abs_path)
+
+            doc = sbol2.Document()
+            doc.readString(self._xml_strings[abs_path])
+            return doc
 
     def get_feature_library(self, file_path: str, force_reload: bool = False) -> FeatureLibrary:
         """
-        Get a FeatureLibrary for a library file.
+        Get a FeatureLibrary for a single library file (permanently cached).
 
         Args:
             file_path: Path to the library XML file
-            force_reload: If True, bypass cache and reload from disk
+            force_reload: If True, bypass cache and reload
 
         Returns:
-            FeatureLibrary instance
+            FeatureLibrary instance (from permanent cache — do NOT mutate)
         """
         with self._lock:
             abs_path = os.path.abspath(file_path)
@@ -246,23 +268,112 @@ class LibraryCache:
 
             return feature_lib
 
+    def get_feature_library_for_subset(self, file_paths: List[str]) -> FeatureLibrary:
+        """
+        Get a cached FeatureLibrary for a subset of libraries (step 2).
+
+        Merges features from multiple libraries into a single FeatureLibrary.
+        Cached by frozenset of absolute paths — reused across requests with the
+        same library selection.
+
+        Only use the returned FeatureLibrary for read-only operations
+        (exact-match annotation). For similar-match annotation that mutates docs,
+        use get_fresh_feature_library_for_subset() instead.
+        """
+        with self._lock:
+            key = frozenset(os.path.abspath(p) for p in file_paths)
+
+            if key in self._subset_feature_libraries:
+                return self._subset_feature_libraries[key]
+
+            docs = self.get_documents_for_libraries(list(key))
+            feature_lib = FeatureLibrary(docs)
+            self._subset_feature_libraries[key] = feature_lib
+            return feature_lib
+
+    def get_fresh_feature_library_for_subset(self, file_paths: List[str]) -> FeatureLibrary:
+        """
+        Get a fresh (mutable) FeatureLibrary for a subset of libraries.
+
+        Creates fresh Document copies from cached XML strings, then builds a new
+        FeatureLibrary. Use this for similar-match annotation which mutates library docs.
+        No disk I/O — all from in-memory XML cache.
+        """
+        fresh_docs = self.get_fresh_documents_for_libraries(file_paths)
+        return FeatureLibrary(fresh_docs)
+
     def get_documents_for_libraries(self, file_paths: List[str]) -> List[sbol2.Document]:
-        """Get documents for multiple library files."""
+        """Get permanently cached documents for multiple library files."""
         return [self.get_document(fp) for fp in file_paths]
 
     def get_fresh_documents_for_libraries(self, file_paths: List[str]) -> List[sbol2.Document]:
-        """Get fresh copies of documents for multiple library files."""
+        """Get fresh (mutable) copies of documents from in-memory XML cache."""
         return [self.get_fresh_document(fp) for fp in file_paths]
 
+    def resolve_library_paths(self, names: List[str], library_dir: str = None) -> Tuple[List[str], List[str]]:
+        """
+        Resolve library display names to absolute file paths.
+
+        Handles:
+        - Plain filenames ("iGEM.xml") -> looked up in name map
+        - Absolute paths -> returned as-is if they exist
+        - SynBioHub URLs -> skipped (returned in second list)
+
+        Returns:
+            Tuple of (resolved_paths, skipped_names)
+        """
+        resolved = []
+        skipped = []
+
+        for name in names:
+            # skip SynBioHub URLs
+            if 'synbiohub.org' in name or name.startswith('http'):
+                skipped.append(name)
+                continue
+
+            # check name map first
+            if name in self._library_name_map:
+                resolved.append(self._library_name_map[name])
+                continue
+
+            # try as absolute path
+            abs_path = os.path.abspath(name)
+            if os.path.exists(abs_path):
+                resolved.append(abs_path)
+                continue
+
+            # try joining with library_dir
+            if library_dir:
+                joined = os.path.abspath(os.path.join(library_dir, name))
+                if os.path.exists(joined):
+                    resolved.append(joined)
+                    continue
+
+            skipped.append(name)
+
+        return resolved, skipped
+
+    def get_available_library_names(self) -> List[str]:
+        """Get list of available library filenames."""
+        return list(self._library_name_map.keys())
+
     def preload_libraries(self, library_dir: str):
-        """Preload all libraries from a directory into cache."""
+        """
+        Preload all libraries from a directory into permanent cache (step 1).
+
+        Loads XML -> SBOL Documents, caches XML strings, and builds the
+        name-to-path map for library selection by name.
+        """
         lib_path = Path(library_dir)
         if not lib_path.exists():
             return
 
-        for xml_file in lib_path.glob("*.xml"):
+        for xml_file in sorted(lib_path.glob("*.xml")):
             try:
-                self.get_document(str(xml_file))
+                abs_path = str(xml_file.resolve())
+                self.get_document(abs_path)
+                # build name -> path map for selection by name
+                self._library_name_map[xml_file.name] = abs_path
                 print(f"Preloaded library: {xml_file.name}")
             except Exception as e:
                 print(f"Warning: Could not preload {xml_file}: {e}")
@@ -271,7 +382,9 @@ class LibraryCache:
         """Clear all in-memory caches."""
         with self._lock:
             self._documents.clear()
+            self._xml_strings.clear()
             self._feature_libraries.clear()
+            self._subset_feature_libraries.clear()
             self._hashes.clear()
 
 
