@@ -164,7 +164,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub, isEditingName, h
             
             // const userRootCollections = _rootCollections.filter(collection => collection.uri.match(/https:\/\/synbiohub.org\/user\/*/));
             // let regex = RegExp(synBioHubUrlPrefix + "/user/*");
-            let regex = RegExp("*/user/*");
+            let regex = new RegExp(".*\\/user\\/.*");
             const userRootCollections = _rootCollections.filter(collection => collection.uri.match(regex));
             setRootCollections(userRootCollections);
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
