@@ -6,61 +6,79 @@ from flask_api import status
 import sbol2
 import logging
 import os
-import asyncio
 import json
 import subprocess
 import tempfile
 import requests
 import re
-from sequences_to_features import download_sequences
-from sequences_to_features import FeatureLibrary
-from sequences_to_features import FeatureAnnotater
+from sequences_to_features import FeatureAnnotater, load_sbol, FeatureLibrary, download_sequences
+from sequences_to_features.Annotator import SAMFeatureMapper, TableFeatureMapper
+from sequences_to_features.FeatureAnnotatorBase import FeatureAnnotatorSimple
+from sequences_to_features.FeatureExtractor import FeatureExtractor
+from sequences_to_features import BwaAligner, Minimap2Aligner, BlastAligner
 from waitress import serve
 
-FEATURE_FILES = 0
-FEATURE_LIBRARY = 1
+# import caching system
+from library_cache import (
+    init_cache, get_library_cache, get_index_manager,
+    LibraryCache, IndexManager
+)
 
 uris = []
 sbh_file_prefixes = []
 
+# cache instances — initialized in setup(), used throughout the app
+library_cache: LibraryCache = None
+index_manager: IndexManager = None
+
+# FlashText FeatureLibrary dict (keyed by path or SynBioHub URL)
+# For alignment algorithms, use library_cache.get_feature_library_for_subset() instead
 FEATURE_LIBRARIES = {}
-# OLD:
-# FEATURE_LIBRARIES = [
-#     [[file, file2, file3], featury_library],
-#     [[file, file2, file3], featury_library],
-# ]
-# NEW:
-# FEATURE_LIBRARIES = {
-#     "file1": featury_library1,
-#     "file2": featury_library2,
-# }
 
 def setup():
     print("Initializing the app...")
-    # Set pySBOL configuration parameters
+    # set pySBOL configuration parameters
     sbol2.setHomespace('http://seqimprove.synbiohub.org')
     sbol2.Config.setOption('validate', True)
     sbol2.Config.setOption('sbol_typed_uris', False)
 
-    # read in all feature libraries -- SYNBICT says they support
-    # directories, but they actually don't; only lists of files
-    feature_libraries_dir = "./assets/synbict/feature-libraries" 
-    feature_libraries_paths = asyncio.run(get_feature_libraries_paths(feature_libraries_dir))
-    
+    # steps 1-2 — initialize caching system, read XML → SBOL docs + FeatureLibraries (kept forever)
+    global library_cache, index_manager
+    library_cache, index_manager = init_cache(
+        cache_dir="./.cache/seqimprove",
+        max_indexes=10
+    )
+
+    # preload all feature libraries: XML → SBOL Documents → FeatureLibraries (permanent)
+    feature_libraries_dir = "./assets/synbict/feature-libraries"
+    print(f"Preloading libraries from {feature_libraries_dir}...")
+    library_cache.preload_libraries(feature_libraries_dir)
+
+    # populate FlashText FEATURE_LIBRARIES dict from the permanent cache
+    for name, abs_path in library_cache._library_name_map.items():
+        FEATURE_LIBRARIES[abs_path] = library_cache.get_feature_library(abs_path)
+
+    print(f"Loaded {len(FEATURE_LIBRARIES)} libraries into cache")
+    print(f"Available libraries: {library_cache.get_available_library_names()}")
+
     # read in collections from synbiohub
     sbh_collections = "https://synbiohub.org/rootcollections"
-    sbhresponse = requests.get(sbh_collections)
+    try:
+        sbhresponse = requests.get(sbh_collections, timeout=10)
+    except requests.exceptions.RequestException as e:
+        print(f"Warning: Could not connect to SynBioHub: {e}")
+        return
 
     # extract uris from json
     if sbhresponse.status_code == 200:
         sbh_str = json.dumps(sbhresponse.json())
         sbh_data = json.loads(sbh_str)
-        
+
         global uris
         global sbh_file_prefixes
 
-        uris = [item['uri'] for item in sbh_data]   
-        sbh_file_prefixes = [item['displayId'] for item in sbh_data] 
+        uris = [item['uri'] for item in sbh_data]
+        sbh_file_prefixes = [item['displayId'] for item in sbh_data]
 
         # remove large part libraries that break the http requests
         for uri in ['https://synbiohub.org/public/bsu/bsu_collection/1',
@@ -78,21 +96,6 @@ def setup():
                 sbh_file_prefixes.remove(sbh_file_prefix)
     else:
         print(f"Failed to retrieve data from SynBioHub: {sbhresponse.status_code}")
-
-    for feature_library_path in feature_libraries_paths:
-        print(feature_library_path)
-        feature_doc = sbol2.Document()
-        feature_doc.read(feature_library_path)
-        # FEATURE_LIBRARIES.append([feature_library_path, FeatureLibrary([feature_doc])])
-        FEATURE_LIBRARIES[feature_library_path] = FeatureLibrary([feature_doc])
-
-    # check for new libraries in synbiohub.org/rootcollections, pull if any exist
-    #
-    # for index, file_name in enumerate(sbh_file_prefixes):
-    #     if("./assets/synbict/feature-libraries/"+file_name+".xml" not in feature_libraries_paths): 
-    #         print(f"library {file_name} missing...")
-            # print(f"fetching from: {uris[index]}")
-            # FEATURE_LIBRARIES[file_name] = sbh_pull_library(uris[index])
 
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
@@ -125,7 +128,7 @@ def create_feature_library(part_library_file_name):
                 part_library_file_name = sbh_file_prefixes[uri_index] + '.xml'
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
-    feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
+    feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
     return FEATURE_LIBRARIES[feature_library_path]
 
 def sbh_pull_library(uri):
@@ -154,11 +157,6 @@ def create_temp_file(content):
         print("Error occurred while creating the temporary file:", e)
         return None
 
-async def get_feature_libraries_paths(feature_libraries_dir) -> str:
-    loop = asyncio.get_event_loop()
-    feature_files = await loop.run_in_executor(None, os.listdir, feature_libraries_dir)
-    feature_library_paths = [os.path.join(feature_libraries_dir, library_file) for library_file in feature_files]
-    return feature_library_paths
 
 # def run_node_script(script_path, arguments):
 #     try:
@@ -174,8 +172,158 @@ async def get_feature_libraries_paths(feature_libraries_dir) -> str:
 #         print("Error occurred while running the Node.js script:", e)
 #         return None
 
-# feature_libraries: list[str]
-# def run_synbict(sbol_content: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+def clean_target_document(target_doc: sbol2.Document) -> sbol2.Document:
+    """
+    Clean a target document by removing existing annotations and extra components.
+    This prevents infinite loops in SYNBICT when re-annotating already annotated content.
+
+    The function keeps only the primary component definition (the one we want to annotate)
+    and removes everything else that was added by previous annotation runs.
+    """
+    # find the primary component definition (the one we want to annotate)
+    # it should be the one with a sequence that's NOT a variant (_v\d+)
+    primary_comp = None
+    for comp_def in target_doc.componentDefinitions:
+        # skip variants created by previous annotation runs
+        if re.search(r'_v\d+', comp_def.displayId):
+            continue
+        # check if this component has a sequence
+        if comp_def.sequences and len(comp_def.sequences) > 0:
+            primary_comp = comp_def
+            break
+
+    if primary_comp is None:
+        # fallback: just take the first non-variant component
+        for comp_def in target_doc.componentDefinitions:
+            if not re.search(r'_v\d+', comp_def.displayId):
+                primary_comp = comp_def
+                break
+
+    if primary_comp is None and len(target_doc.componentDefinitions) > 0:
+        primary_comp = target_doc.componentDefinitions[0]
+
+    if primary_comp is None:
+        return target_doc
+
+    # clear existing sequence annotations and sub-components from the primary component
+    # this gives SYNBICT a clean slate to work with
+    annotations_to_remove = list(primary_comp.sequenceAnnotations)
+    for anno in annotations_to_remove:
+        try:
+            primary_comp.sequenceAnnotations.remove(anno.identity)
+        except Exception:
+            pass
+
+    components_to_remove = list(primary_comp.components)
+    for comp in components_to_remove:
+        try:
+            primary_comp.components.remove(comp.identity)
+        except Exception:
+            pass
+
+    # remove ALL component definitions except the primary one
+    # this includes variants and any other components added by annotation
+    comp_defs_to_remove = []
+    for comp_def in target_doc.componentDefinitions:
+        if comp_def.identity != primary_comp.identity:
+            comp_defs_to_remove.append(comp_def.identity)
+
+    for identity in comp_defs_to_remove:
+        try:
+            target_doc.componentDefinitions.remove(identity)
+        except Exception:
+            pass
+
+    # also remove any extra sequences that aren't referenced by the primary component
+    primary_seq_ids = set(primary_comp.sequences) if primary_comp.sequences else set()
+    seqs_to_remove = []
+    for seq in target_doc.sequences:
+        if seq.identity not in primary_seq_ids:
+            seqs_to_remove.append(seq.identity)
+
+    for identity in seqs_to_remove:
+        try:
+            target_doc.sequences.remove(identity)
+        except Exception:
+            pass
+
+    return target_doc
+
+def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bool, algorithm: str, index_prefix: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+    """
+    Run annotation with alignment-based algorithms (BWA, Minimap2, BLASTN).
+
+    Pipeline:
+      step 3: Index (cached by algorithm + library subset -> handled by IndexManager)
+      step 4: Align query against index -> temp files (cleaned up after)
+      step 5: Parse alignment -> SBOL annotations (uses FeatureLibrary from step 2)
+
+    Args:
+        sbol_content: Target SBOL XML string (from user)
+        library_paths: Absolute paths to selected library files
+        exact_match: If True, require exact matches; if False, allow ≥95% identity
+        algorithm: One of 'BWA', 'Minimap2', 'BLASTN'
+        index_prefix: Path prefix for the cached index files
+    """
+    algo_normalized = algorithm.lower()
+
+    # step 2 — get FeatureLibrary from permanent cache
+    # exact matches are read-only on library docs -> use permanent cache
+    # similar matches mutate library docs (variant creation) -> use fresh copies from XML cache
+    if exact_match:
+        feature_library = library_cache.get_feature_library_for_subset(library_paths)
+    else:
+        feature_library = library_cache.get_fresh_feature_library_for_subset(library_paths)
+
+    # parse target SBOL content (from user, temporary)
+    target_doc = sbol2.Document()
+    try:
+        target_doc.readString(sbol_content)
+    except Exception as e:
+        return status.HTTP_400_BAD_REQUEST, f'Could not parse sbol_content: {e}', None
+
+    # clean the target document to remove existing annotations from previous runs
+    target_doc = clean_target_document(target_doc)
+
+    min_feature_length = 10
+
+    try:
+        # step 4 — align query to temp directory (not index cache dir)
+        with tempfile.TemporaryDirectory(prefix="seqimprove_align_") as tmp_dir:
+            if algo_normalized == 'bwa':
+                output_path = os.path.join(tmp_dir, 'aligned.sam')
+                aligner = BwaAligner(index_prefix)
+                aligner.align(target_doc, output_path, exact_match)
+                mapper = SAMFeatureMapper(output_path)
+            elif algo_normalized == 'minimap2':
+                output_path = os.path.join(tmp_dir, 'aligned.sam')
+                aligner = Minimap2Aligner(index_prefix)
+                aligner.align(target_doc, output_path, exact_match)
+                mapper = SAMFeatureMapper(output_path)
+            elif algo_normalized == 'blastn':
+                output_path = os.path.join(tmp_dir, 'aligned.txt')
+                aligner = BlastAligner(index_prefix)
+                aligner.align(target_doc, output_path, exact_match)
+                mapper = TableFeatureMapper(output_path)
+            else:
+                return status.HTTP_400_BAD_REQUEST, f'Algorithm {algorithm} not supported', None
+
+            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
+            # temp files cleaned up automatically when TemporaryDirectory exits
+
+        # step 5 — parse alignment into SBOL annotations
+        annotator = FeatureAnnotatorSimple(feature_library, inline_matches, rc_matches)
+        target_library = FeatureLibrary([target_doc])
+        output_library = FeatureLibrary([])
+
+        annotator.annotate(inline_matches, rc_matches, target_library, min_feature_length,
+                         in_place=True, output_library=output_library, output_matches=False)
+
+        return None, None, [[target_doc.writeString(), "All_Libraries"]]
+
+    except Exception as e:
+        return status.HTTP_500_INTERNAL_SERVER_ERROR, f'Error during annotation: {str(e)}', None
+
 def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
 
@@ -203,7 +351,9 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 print(f"feature library for {part_lib_f_name}: {feature_library}")
                 min_feature_length = 10
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
-                min_target_length = 10                
+                # replace
+                min_target_length = 10  
+                # replace 
                 annotated_identities = annotater.annotate(target_library, min_target_length, in_place=True)
 
                 # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
@@ -401,6 +551,25 @@ def boot_app():
     print("hi")
     return "Rise and shine"
 
+@app.get("/api/cache/stats")
+def cache_stats():
+    """get statistics about the library and index cache"""
+    if index_manager is None:
+        return {"error": "Cache not initialized"}, 500
+
+    stats = index_manager.get_cache_stats()
+    stats["libraries_loaded"] = len(library_cache._documents) if library_cache else 0
+    return stats
+
+@app.post("/api/cache/clear")
+def clear_cache():
+    """clear all cached indexes (libraries remain in memory)"""
+    if index_manager is None:
+        return {"error": "Cache not initialized"}, 500
+
+    index_manager.clear_cache()
+    return {"message": "Index cache cleared successfully"}
+
 @app.post("/api/convert/genbanktosbol2")
 def genbank_to_sbol2():    
     request_data = request.get_json()
@@ -434,30 +603,57 @@ def clean_SBOL():
 @app.post("/api/annotateSequence")
 def annotate_sequence():
     request_data = request.get_json()
+    print("Received annotation request")
     sbol_content = request_data['completeSbolContent']
-    part_library_file_names = request_data['partLibraries'] 
+    part_library_file_names = request_data['partLibraries']
     clean_document = request_data['cleanDocument']
 
-    if clean_document: 
+    # get algorithm and match parameters
+    algorithm = request_data.get('algorithm', 'FlashText')
+    allow_similar_matches = request_data.get('allowSimilarMatches', False)
+    codon_matches = request_data.get('codonMatches', False)
+    include_hypothetical = request_data.get('includeHypothetical', False)
+
+    if clean_document:
         sbol_content = run_synbio2easy(sbol_content)
 
-    print("Running SYNBICT...")
-    # Run SYNBICT
+    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}...")
+
     try:
-        # anno_lib_assoc = [
-        #     [sbol_xml_annotated, part_lib_file_name],
-        #     [sbol_xml_annotated, part_lib_file_name],
-        #     ...
-        # ]
-        error_code, error_message, anno_lib_assoc,  = run_synbict(sbol_content, part_library_file_names)
-        
-        if (error_code):
+        if algorithm == 'FlashText':
+            # use original flashtext-based method
+            error_code, error_message, anno_lib_assoc = run_synbict(sbol_content, part_library_file_names)
+        else:
+            # resolve library names to absolute paths via LibraryCache
+            feature_libraries_dir = "./assets/synbict/feature-libraries"
+            library_paths, skipped = library_cache.resolve_library_paths(
+                part_library_file_names, library_dir=feature_libraries_dir
+            )
+
+            if not library_paths:
+                return {"sbol": sbol_content, "error_message": "No valid local libraries selected. Alignment algorithms (BWA, Minimap2, BLASTN) require local library files."}, status.HTTP_400_BAD_REQUEST
+
+            if skipped:
+                print(f"Skipped non-local libraries: {skipped}")
+
+            # step 3 — get or create cached index (keyed by algorithm + library subset hash)
+            index_prefix, fasta_path = index_manager.get_or_create_index(algorithm, library_paths)
+
+            # steps 4-5 — align + annotate
+            exact_match = not allow_similar_matches
+            error_code, error_message, anno_lib_assoc = run_synbict_all(
+                sbol_content, library_paths, exact_match, algorithm, index_prefix
+            )
+
+        if error_code:
             return {"sbol": sbol_content, "error_message": error_message}, error_code
-        
+
     except Exception as e:
         print("Caught exception")
         print(str(e))
-        return {"sbol": sbol_content}, status.HTTP_500_INTERNAL_SERVER_ERROR
+        import traceback
+        traceback.print_exc()
+        return {"sbol": sbol_content, "error_message": str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
         return {"annotations": anno_lib_assoc}
 
@@ -465,7 +661,7 @@ def annotate_sequence():
 def similar_parts():
     top_level_uri = request.get_json()['topLevelUri']
     # find similar parts
-    similar_parts = find_similar_parts(top_level_uri);
+    similar_parts = find_similar_parts(top_level_uri)
     return {"similarParts": similar_parts}
 
 @app.post("/api/annotateText")

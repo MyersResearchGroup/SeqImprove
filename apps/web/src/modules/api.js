@@ -1,379 +1,413 @@
-import { showNotificationSuccess, showServerErrorNotification } from "./util"
-import { Graph, SBOL2GraphView } from "sbolgraph"
+import { showNotificationSuccess, showServerErrorNotification } from "./util";
+import { Graph, SBOL2GraphView } from "sbolgraph";
 
 export async function bootAPIserver() {
-    try {
-        var response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/boot`);        
-    } catch (err) {
-        console.error(err);
-        return
-    }
+  try {
+    var response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/boot`);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
 
-    if (response.status == 200) {
-        console.log(response);
-    }
+  if (response.status == 200) {
+    console.log(response);
+  }
 }
 
 export async function fetchConvertGenbankToSBOL2(genbankContent) {
-    const TYPE_ERROR = 11;
-    let response;
-    let result;
-    let count;
-    for (count = 4; count < 10; count++) {
-        try {
-            response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/convert/genbanktosbol2`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"                
-                },
-                body: JSON.stringify({
-                    GenBankContent: genbankContent,
-                }),
-                timeout: count * 1000,
-            });
-            break;
-        }
-        catch (err) {            
-            console.error(err);            
-            count = TYPE_ERROR - 1;
-        }
-    }
-    if (count == 10) {
-        return { sbol2_content: "", err: "Network Error" };
-    } else if (count == TYPE_ERROR) {        
-        return { sbol2_content: "", err: TypeError };
-    }
-    
-    // Parse
+  const TYPE_ERROR = 11;
+  let response;
+  let result;
+  let count;
+  for (count = 4; count < 10; count++) {
     try {
-        result = await response.json();
+      response = await fetchWithTimeout(
+        `${import.meta.env.VITE_API_LOCATION}/api/convert/genbanktosbol2`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            GenBankContent: genbankContent,
+          }),
+          timeout: count * 1000,
+        }
+      );
+      break;
+    } catch (err) {
+      console.error(err);
+      count = TYPE_ERROR - 1;
     }
-    catch (err) {
-        console.error("Couldn't parse JSON.");
-        showServerErrorNotification();
-        return { sbol2_content: "", err: "Parse Error" };
-    }
-    
-    return { sbol2_content: result.sbol2_content, err: result.err };
+  }
+  if (count == 10) {
+    return { sbol2_content: "", err: "Network Error" };
+  } else if (count == TYPE_ERROR) {
+    return { sbol2_content: "", err: TypeError };
+  }
+
+  // Parse
+  try {
+    result = await response.json();
+  } catch (err) {
+    console.error("Couldn't parse JSON.");
+    showServerErrorNotification();
+    return { sbol2_content: "", err: "Parse Error" };
+  }
+
+  return { sbol2_content: result.sbol2_content, err: result.err };
 }
 
 export async function fetchSBOL(url) {
-    try {
-        return await (await fetch(url)).text()
-    }
-    catch (err) {
-        console.error(`Failed to fetch SBOL content from ${url}. Running in standalone mode.`)
-        showNotification({
-            title: "Failed to load SBOL from URL",
-            color: "red",
-        })
-    }
+  try {
+    return await (await fetch(url)).text();
+  } catch (err) {
+    console.error(
+      `Failed to fetch SBOL content from ${url}. Running in standalone mode.`
+    );
+    showNotification({
+      title: "Failed to load SBOL from URL",
+      color: "red",
+    });
+  }
 }
 
-export async function importLibrary(synBioHubSessionToken, requestURL, setIsImportingLibrary) {
-    try {
-        setIsImportingLibrary(true);
-        
-        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                sessionToken: synBioHubSessionToken,
-                url: requestURL
-            }),
-            timeout: 120000,
-        });
-    }
-    catch (err) {
-        console.error("Failed to fetch.");
-        showServerErrorNotification();
-        return;
-    }
+export async function importLibrary(
+  synBioHubSessionToken,
+  requestURL,
+  setIsImportingLibrary
+) {
+  try {
+    setIsImportingLibrary(true);
 
-    try {
-        var result = await response.json();
-    }
-    catch (err) {
-        console.error("Couldn't parse JSON.");
-        showServerErrorNotification();
-        return;
-    } finally {
-        setIsImportingLibrary(false);
-    }
+    var response = await fetchWithTimeout(
+      `${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionToken: synBioHubSessionToken,
+          url: requestURL,
+        }),
+        timeout: 120000,
+      }
+    );
+  } catch (err) {
+    console.error("Failed to fetch.");
+    showServerErrorNotification();
+    return;
+  }
+
+  try {
+    var result = await response.json();
+  } catch (err) {
+    console.error("Couldn't parse JSON.");
+    showServerErrorNotification();
+    return;
+  } finally {
+    setIsImportingLibrary(false);
+  }
 }
 
 export async function deleteLibrary(libraryURL) {
-    try {
-        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/deleteUserLibrary`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                url: libraryURL
-            }),
-            timeout: 120000,
-        });
-    }
-    catch (err) {
-        console.error("Failed to fetch.");
-        showServerErrorNotification();
-        return;
-    }
+  try {
+    var response = await fetchWithTimeout(
+      `${import.meta.env.VITE_API_LOCATION}/api/deleteUserLibrary`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: libraryURL,
+        }),
+        timeout: 120000,
+      }
+    );
+  } catch (err) {
+    console.error("Failed to fetch.");
+    showServerErrorNotification();
+    return;
+  }
 
-    try {
-        var result = await response.json();
-        showNotificationSuccess("Success!", result.response);
-        console.log(result)
-    }
-    catch (err) {
-        console.error("Error deleting library from memory: " + err);
-        showServerErrorNotification();
-        return;
-    }
+  try {
+    var result = await response.json();
+    showNotificationSuccess("Success!", result.response);
+    console.log(result);
+  } catch (err) {
+    console.error("Error deleting library from memory: " + err);
+    showServerErrorNotification();
+    return;
+  }
 }
 
 export async function cleanSBOL(sbolContent) {
-    try {
-        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/cleanSBOL`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                completeSbolContent: sbolContent,
-            }),
-            timeout: 120000,
-        });
-    }
-    catch (err) {
-        console.error("Failed to fetch.");
-        showServerErrorNotification();
-        return;
-    }
+  try {
+    var response = await fetchWithTimeout(
+      `${import.meta.env.VITE_API_LOCATION}/api/cleanSBOL`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          completeSbolContent: sbolContent,
+        }),
+        timeout: 120000,
+      }
+    );
+  } catch (err) {
+    console.error("Failed to fetch.");
+    showServerErrorNotification();
+    return;
+  }
 
-    try {
-        var result = await response.json();
-    }
-    catch (err) {
-        console.error("Couldn't parse JSON.");
-        showServerErrorNotification();
-        return;
-    }
+  try {
+    var result = await response.json();
+  } catch (err) {
+    console.error("Couldn't parse JSON.");
+    showServerErrorNotification();
+    return;
+  }
 
-    if (response.status == 200) {
-        console.log("Clean SBOL fetched.");
-        return result.sbol
-    }
+  if (response.status == 200) {
+    console.log("Clean SBOL fetched.");
+    return result.sbol;
+  }
 }
 
-export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNames, isUriCleaned }) {
-    console.log("Annotating sequence...")
+export async function fetchAnnotateSequence({
+  sbolContent,
+  selectedLibraryFileNames,
+  isUriCleaned,
+  algorithm,
+  allowSimilarMatches,
+  codonMatches,
+  includeHypothetical,
+}) {
+  console.log("Annotating sequence...");
 
-    // Fetch
-    try {
-        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/annotateSequence`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                completeSbolContent: sbolContent,
-                partLibraries: selectedLibraryFileNames,
-                cleanDocument: !isUriCleaned,
-            }),
-            timeout: 320000,
-        });
-    }
-    catch (err) {
-        console.error("Failed to fetch.");
-        showServerErrorNotification();
-        return;
-    }
+  // Fetch
+  try {
+    var response = await fetchWithTimeout(
+      `${import.meta.env.VITE_API_LOCATION}/api/annotateSequence`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          completeSbolContent: sbolContent,
+          partLibraries: selectedLibraryFileNames,
+          cleanDocument: !isUriCleaned,
+          algorithm: algorithm,
+          allowSimilarMatches: allowSimilarMatches,
+          codonMatches: codonMatches,
+          includeHypothetical: includeHypothetical,
+        }),
+        timeout: 320000,
+      }
+    );
+  } catch (err) {
+    console.error("Failed to fetch.");
+    showServerErrorNotification();
+    return;
+  }
 
-    // Parse
-    try {
-        var result = await response.json();
-    }
-    catch (err) {
-        console.error("Couldn't parse JSON.");
-        showServerErrorNotification();
-        return;
-    }
+  // Parse
+  try {
+    var result = await response.json();
+  } catch (err) {
+    console.error("Couldn't parse JSON.");
+    showServerErrorNotification();
+    return;
+  }
 
-    if (response.status == 200) {
-        console.log("Successfully annotated.");
-    }
+  if (response.status == 200) {
+    console.log("Successfully annotated.");
+  }
 
-    const annoLibsAssoc = result.annotations;    
-    
-    // create and load original doc
-    const originalDoc = new SBOL2GraphView(new Graph());
-    await originalDoc.loadString(sbolContent);
-    
-    // make a list of persistentIds to avoid
-    const originalAnnotations = originalDoc.rootComponentDefinitions[0].sequenceAnnotations
-        .map(sa => sa.persistentIdentity.slice(0, -2)) //synbict increments a number at the end of the persistent identities, so we cut off the last 2 chars to compare
-    
-    let annotations = [];  
-    let synbictDoc = null;
+  const annoLibsAssoc = result.annotations;
 
-    // process each library annotation result separately to avoid matchOne errors
-    // when the same component definition exists in multiple libraries
-    await Promise.all(annoLibsAssoc.map(([ sbolAnnotated, partLibrary ]) => {
-        return (async () => {
-            // create and load annotated doc for each library separately
-            const annDoc = new SBOL2GraphView(new Graph());
-            await annDoc.loadString(sbolAnnotated);
-            
-            // Store the first document as the synbictDoc (they should all have the same root component)
-            if (!synbictDoc) {
-                synbictDoc = annDoc;
-            }
+  // create and load original doc
+  const originalDoc = new SBOL2GraphView(new Graph());
+  await originalDoc.loadString(sbolContent);
 
-            // concatenate new annotations to result
-            annotations = annotations.concat(annDoc.rootComponentDefinitions[0].sequenceAnnotations
-                                             // filter annotations already in original document
-                                            .filter(sa => !originalAnnotations.includes(sa.persistentIdentity.slice(0, -2)))
-                                             // just return the info we need
-                                             .map(sa => ({
-                                                 name: sa.displayName,
-                                                 id: sa.persistentIdentity,
-                                                 location: [sa.rangeMin - 1, sa.rangeMax], // convert to 0 based indexing to match javascript array indices
-                                                 componentInstance: sa.component,
-                                                 featureLibrary: sa.component.definition.persistentIdentity,
-                                                 enabled: true,
-                                             })));
-        })();
-    }));
+  // make a list of persistentIds to avoid
+  const originalAnnotations =
+    originalDoc.rootComponentDefinitions[0].sequenceAnnotations.map((sa) =>
+      sa.persistentIdentity.slice(0, -2)
+    ); //synbict increments a number at the end of the persistent identities, so we cut off the last 2 chars to compare
 
-    return { fetchedAnnotations: annotations, synbictDoc: synbictDoc };            
+  let annotations = [];
+  let synbictDoc = null;
+
+  // process each library annotation result separately to avoid matchOne errors
+  // when the same component definition exists in multiple libraries
+  await Promise.all(
+    annoLibsAssoc.map(([sbolAnnotated, partLibrary]) => {
+      return (async () => {
+        // create and load annotated doc for each library separately
+        const annDoc = new SBOL2GraphView(new Graph());
+        await annDoc.loadString(sbolAnnotated);
+
+        // Store the first document as the synbictDoc (they should all have the same root component)
+        if (!synbictDoc) {
+          synbictDoc = annDoc;
+        }
+
+        // concatenate new annotations to result
+        annotations = annotations.concat(
+          annDoc.rootComponentDefinitions[0].sequenceAnnotations
+            // filter annotations already in original document
+            .filter(
+              (sa) =>
+                !originalAnnotations.includes(
+                  sa.persistentIdentity.slice(0, -2)
+                )
+            )
+            // just return the info we need
+            .map((sa) => ({
+              name: sa.displayName,
+              id: sa.persistentIdentity,
+              location: [sa.rangeMin - 1, sa.rangeMax], // convert to 0 based indexing to match javascript array indices
+              componentInstance: sa.component,
+              featureLibrary: sa.component.definition.persistentIdentity,
+              enabled: true,
+            }))
+        );
+      })();
+    })
+  );
+
+  return { fetchedAnnotations: annotations, synbictDoc: synbictDoc };
 }
 
 export async function fetchAnnotateText(text) {
+  console.log("Annotating text...");
 
-    console.log("Annotating text...")
+  // Fetch
+  try {
+    var response = await fetchWithTimeout(
+      `${import.meta.env.VITE_API_LOCATION}/api/annotateText`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+        timeout: 120000,
+      }
+    );
+  } catch (err) {
+    console.error("Failed to fetch.");
+    showServerErrorNotification();
+    throw err;
+  }
 
-    // Fetch
-    try {
-        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/annotateText`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ text }),
-            timeout: 120000,
-        });
-    }
-    catch (err) {
-        console.error("Failed to fetch.")
-        showServerErrorNotification()
-        throw(err);
-    }
-    
-    // Parse
-    try {
-        var result = await response.json()
-    }
-    catch (err) {
-        console.error("Couldn't parse JSON.")
-        showServerErrorNotification()
-        return
-    }
-    
-    console.log("Successfully annotated.")    
-    // https://bioregistry.io/NCBITaxon:562
-    result.annotations.forEach((anno, i) => {
-        result.annotations[i].id = "https://bioregistry.io/" + anno.displayId;
-    });
-    return result.annotations;
+  // Parse
+  try {
+    var result = await response.json();
+  } catch (err) {
+    console.error("Couldn't parse JSON.");
+    showServerErrorNotification();
+    return;
+  }
+
+  console.log("Successfully annotated.");
+  // https://bioregistry.io/NCBITaxon:562
+  result.annotations.forEach((anno, i) => {
+    result.annotations[i].id = "https://bioregistry.io/" + anno.displayId;
+  });
+  return result.annotations;
 }
 
 export async function fetchSimilarParts(topLevelUri) {
+  console.log("Fetching similar parts...");
 
-    console.log("Fetching similar parts...")
+  // Fetch
+  try {
+    var response = await fetch(
+      `${import.meta.env.VITE_API_LOCATION}/api/findSimilarParts`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ topLevelUri }),
+      }
+    );
+  } catch (err) {
+    console.error("Failed to fetch.");
+    showServerErrorNotification();
+    return;
+  }
 
-    // Fetch
-    try {
-        var response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/findSimilarParts`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ topLevelUri }),
-        })
-    }
-    catch (err) {
-        console.error("Failed to fetch.")
-        showServerErrorNotification()
-        return
-    }
+  // Parse
+  try {
+    var result = await response.json();
+  } catch (err) {
+    console.error("Couldn't parse JSON.");
+    showServerErrorNotification();
+    return;
+  }
 
-    // Parse
-    try {
-        var result = await response.json()
-    }
-    catch (err) {
-        console.error("Couldn't parse JSON.")
-        showServerErrorNotification()
-        return
-    }
-    
-    console.log("Successfully fetched similar parts.")
-    return result.similarParts
+  console.log("Successfully fetched similar parts.");
+  return result.similarParts;
 }
 
 export async function updateDocumentProperties(sbolContent, title, displayId) {
-    try {
-        var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/updateDocumentProperties`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                sbolContent: sbolContent,
-                title: title,
-                displayId: displayId
-            }),
-            timeout: 30000,
-        });
-    }
-    catch (err) {
-        console.error("Failed to fetch.");
-        showServerErrorNotification();
-        return { sbolContent: "", error: "Network error" };
-    }
+  try {
+    var response = await fetchWithTimeout(
+      `${import.meta.env.VITE_API_LOCATION}/api/updateDocumentProperties`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sbolContent: sbolContent,
+          title: title,
+          displayId: displayId,
+        }),
+        timeout: 30000,
+      }
+    );
+  } catch (err) {
+    console.error("Failed to fetch.");
+    showServerErrorNotification();
+    return { sbolContent: "", error: "Network error" };
+  }
 
-    try {
-        var result = await response.json();
-    }
-    catch (err) {
-        console.error("Couldn't parse JSON.");
-        showServerErrorNotification();
-        return { sbolContent: "", error: "Parse error" };
-    }
+  try {
+    var result = await response.json();
+  } catch (err) {
+    console.error("Couldn't parse JSON.");
+    showServerErrorNotification();
+    return { sbolContent: "", error: "Parse error" };
+  }
 
-    if (response.status == 200) {
-        console.log("Document properties updated successfully.");
-        return result;
-    } else {
-        return { sbolContent: "", error: result.error || "Server error" };
-    }
+  if (response.status == 200) {
+    console.log("Document properties updated successfully.");
+    return result;
+  } else {
+    return { sbolContent: "", error: result.error || "Server error" };
+  }
 }
 
 async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 8000 } = options;
-    
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-  
-    const response = await fetch(resource, {
-      ...options,
-      signal: controller.signal  
-    });
-    clearTimeout(id);
-  
-    return response;
+  const { timeout = 8000 } = options;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  const response = await fetch(resource, {
+    ...options,
+    signal: controller.signal,
+  });
+  clearTimeout(id);
+
+  return response;
 }
