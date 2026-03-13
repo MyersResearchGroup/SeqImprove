@@ -128,7 +128,7 @@ def create_feature_library(part_library_file_name):
                 part_library_file_name = sbh_file_prefixes[uri_index] + '.xml'
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
-    feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
+    feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
     return FEATURE_LIBRARIES[feature_library_path]
 
 def sbh_pull_library(uri):
