@@ -102,6 +102,14 @@ export async function importLibrary(synBioHubSessionToken, requestURL, setIsImpo
     } finally {
         setIsImportingLibrary(false);
     }
+
+    if (!response.ok || result.error) {
+        console.error("Library import failed:", result.error || response.statusText);
+        showServerErrorNotification();
+        return;
+    }
+
+    return result;
 }
 
 export async function deleteLibrary(libraryURL) {
@@ -203,12 +211,19 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
         return;
     }
 
-    if (response.status == 200) {
-        console.log("Successfully annotated.");
+    if (!response.ok || result.error_message) {
+        const msg = result.error_message || `Server returned HTTP ${response.status}`;
+        console.error("Annotation failed:", msg);
+        throw new Error(msg);
     }
 
-    const annoLibsAssoc = result.annotations;    
-    
+    const annoLibsAssoc = result.annotations;
+
+    if (!annoLibsAssoc || annoLibsAssoc.length === 0) {
+        console.warn("No annotations returned from server:", result);
+        return { fetchedAnnotations: [], synbictDoc: null };
+    }
+
     // create and load original doc
     const originalDoc = new SBOL2GraphView(new Graph());
     await originalDoc.loadString(sbolContent);
