@@ -448,7 +448,10 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
 
             const _rootCollections = await response2.json();
             
-            let regex = RegExp(synBioHubUrlPrefix.replace(/^https?/, 'https?') + "/(?:user|public)/.*");
+            // SynBioHub URIs use the canonical domain (e.g. synbiohub.org) even when the API
+            // is accessed via api.synbiohub.org, so strip the api. subdomain before filtering.
+            const uriPrefix = synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, '$1');
+            let regex = RegExp(uriPrefix.replace(/^https?/, 'https?') + "/(?:user|public)/.*");
             const userRootCollections = _rootCollections.filter(collection => collection.uri.match(regex));
             setRootCollections(userRootCollections);
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
