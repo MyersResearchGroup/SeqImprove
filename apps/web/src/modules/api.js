@@ -73,7 +73,7 @@ export async function fetchSBOL(url) {
 export async function importLibrary(synBioHubSessionToken, requestURL, setIsImportingLibrary) {
     try {
         setIsImportingLibrary(true);
-        
+
         var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
             method: "POST",
             headers: {
@@ -85,31 +85,23 @@ export async function importLibrary(synBioHubSessionToken, requestURL, setIsImpo
             }),
             timeout: 120000,
         });
-    }
-    catch (err) {
-        console.error("Failed to fetch.");
-        showServerErrorNotification();
-        return;
-    }
 
-    try {
         var result = await response.json();
+
+        if (!response.ok || result.error) {
+            console.error("Library import failed:", result.error || response.statusText);
+            showServerErrorNotification();
+            return;
+        }
+
+        return result;
     }
     catch (err) {
-        console.error("Couldn't parse JSON.");
+        console.error("Library import error:", err);
         showServerErrorNotification();
-        return;
     } finally {
         setIsImportingLibrary(false);
     }
-
-    if (!response.ok || result.error) {
-        console.error("Library import failed:", result.error || response.statusText);
-        showServerErrorNotification();
-        return;
-    }
-
-    return result;
 }
 
 export async function deleteLibrary(libraryURL) {
