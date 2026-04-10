@@ -388,11 +388,11 @@ function Annotations({ colors }) {
                     <Loader my={30} size="sm" variant="dots" /> :
                 </Center>
              : <NavLink
-                    label="Analyze Sequence"
-                    icon={<FiDownloadCloud />}
+                    label={isImportingLibrary ? "Importing library, please wait..." : "Analyze Sequence"}
+                    icon={isImportingLibrary ? <Loader size="xs" /> : <FiDownloadCloud />}
                     variant="subtle"
                     active={true}
-                    color="blue"
+                    color={isImportingLibrary ? "gray" : "blue"}
                     disabled={isImportingLibrary}
                     onClick={handleAnalyzeSequenceClick}
                     sx={{ borderRadius: 6 }}
@@ -491,16 +491,16 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                             params.append('rootCollections', rootCollectionURI);
                             // Create a Blob from the text
                             setIsLoading(true);
-                            const response = importLibrary(synBioHubSessionToken, rootCollectionURI, setIsImportingLibrary)                         
+                            const response = await importLibrary(synBioHubSessionToken, rootCollectionURI, setIsImportingLibrary)
 
+                            setIsInteractingWithSynBioHub(false);
                             if (response) {
                                 setInputError(false);
-                                setIsInteractingWithSynBioHub(false);
                                 showNotificationSuccess("Success!", "Imported Library: " + selectedCollectionID + ".");
                                 mutateDocument(useStore.setState, state => {state.libraryImported = true});
-                                addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})                                                                                                           
-                            } else {                                          
-                                showErrorNotification("Failure.", "SynBioHub did not accept the request");
+                                addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
+                            } else {
+                                showErrorNotification("Import Failed", "Could not import library from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.");
                             }
                         }}>
                           Submit

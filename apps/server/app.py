@@ -7,6 +7,9 @@ import sbol2
 import logging
 import os
 import asyncio
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 import json
 import subprocess
 import tempfile
@@ -84,7 +87,8 @@ def setup():
         feature_doc = sbol2.Document()
         feature_doc.read(feature_library_path)
         # FEATURE_LIBRARIES.append([feature_library_path, FeatureLibrary([feature_doc])])
-        FEATURE_LIBRARIES[feature_library_path] = FeatureLibrary([feature_doc])
+        abs_path = os.path.abspath(feature_library_path)
+        FEATURE_LIBRARIES[abs_path] = FeatureLibrary([feature_doc])
 
     # check for new libraries in synbiohub.org/rootcollections, pull if any exist
     #
@@ -125,7 +129,10 @@ def create_feature_library(part_library_file_name):
                 part_library_file_name = sbh_file_prefixes[uri_index] + '.xml'
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
-    feature_library_path = os.path.join(feature_libraries_dir, part_library_file_name)
+    feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
+    if feature_library_path not in FEATURE_LIBRARIES:
+        raise KeyError(f"Library not found in cache: '{part_library_file_name}'. "
+                       f"It may have been deleted. Available libraries: {list(FEATURE_LIBRARIES.keys())}")
     return FEATURE_LIBRARIES[feature_library_path]
 
 def sbh_pull_library(uri):
@@ -183,8 +190,8 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
         target_doc = sbol2.Document()
         try:
             target_doc.readString(sbol_content)
-        except Exception:
-            print('Could not parse sbol_content')    
+        except Exception as e:
+            logger.error(f"Could not parse sbol_content: {e}", exc_info=True)
             return status.HTTP_400_BAD_REQUEST, 'Could not parse sbol_content', None
         else:
             # Create a temporary file
@@ -437,6 +444,8 @@ def annotate_sequence():
     sbol_content = request_data['completeSbolContent']
     part_library_file_names = request_data['partLibraries'] 
     clean_document = request_data['cleanDocument']
+    logger.info(f"Annotation request: libraries={part_library_file_names}, clean={clean_document}")
+    logger.info(f"Available FEATURE_LIBRARIES keys: {list(FEATURE_LIBRARIES.keys())}")
 
     if clean_document: 
         sbol_content = run_synbio2easy(sbol_content)
@@ -455,9 +464,8 @@ def annotate_sequence():
             return {"sbol": sbol_content, "error_message": error_message}, error_code
         
     except Exception as e:
-        print("Caught exception")
-        print(str(e))
-        return {"sbol": sbol_content}, status.HTTP_500_INTERNAL_SERVER_ERROR
+        logger.error(f"Annotation failed for libraries={part_library_file_names}: {e}", exc_info=True)
+        return {"sbol": sbol_content, "error_message": str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
         return {"annotations": anno_lib_assoc}
 
@@ -485,29 +493,39 @@ def import_library():
         "X-authorization": SBHSessionToken
     }
 
-    response = requests.get(collectionURL, headers=headers)
+    logger.info(f"Importing library from: {collectionURL}")
+    try:
+        response = requests.get(collectionURL, headers=headers, timeout=60)
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Failed to connect to SynBioHub for '{collectionURL}': {e}")
+        return {"error": f"Could not connect to SynBioHub: {e}"}, status.HTTP_502_BAD_GATEWAY
 
     # Check if the request was successful
     if response.status_code == 200:
-        feature_doc = sbol2.Document()
-        feature_doc.readString(response.text)
-        FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
-        print(f"all libraries: {FEATURE_LIBRARIES.keys()}")
-        
-        return {"response": response.text}
+        try:
+            feature_doc = sbol2.Document()
+            feature_doc.readString(response.text)
+            FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
+            logger.info(f"Imported library '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
+            return {"response": response.text}
+        except Exception as e:
+            logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
+            return {"error": f"Failed to parse library SBOL: {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR
     else:
-        print(f"Request failed with status code: {response.status_code}")
-        return {"response": response.text}
+        logger.error(f"Failed to import library '{collectionURL}': HTTP {response.status_code}")
+        return {"error": f"SynBioHub returned HTTP {response.status_code}"}, response.status_code
 
 @app.post("/api/deleteUserLibrary")
 def remove_library():
     request_data = request.get_json()
     collectionURL = request_data['url']
 
-    if FEATURE_LIBRARIES[collectionURL]: del FEATURE_LIBRARIES[collectionURL]
-    else: return {"response": "Library does not exist"}
-
-    print(f"\nupdated libraries: {FEATURE_LIBRARIES.keys()}")
+    if collectionURL in FEATURE_LIBRARIES:
+        del FEATURE_LIBRARIES[collectionURL]
+        logger.info(f"Deleted library '{collectionURL}'. Remaining: {list(FEATURE_LIBRARIES.keys())}")
+    else:
+        logger.warning(f"Attempted to delete library not in cache: '{collectionURL}'. Available: {list(FEATURE_LIBRARIES.keys())}")
+        return {"response": "Library does not exist"}
 
     return {"response": "Library successfully deleted"}
 

@@ -219,9 +219,9 @@ export const useStore = create((set, get) => ({
                 isUriCleaned: get().isUriCleaned,
             }) ?? [];
 
-            let { fetchedAnnotations, synbictDoc } = result;
+            let { fetchedAnnotations = [], synbictDoc } = result;
 
-            set({             
+            set({
                 sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
                     fetchedAnnotations.forEach(anno => {
                         // skip duplicates
@@ -235,7 +235,8 @@ export const useStore = create((set, get) => ({
                 isUriCleaned: true,
             });
         } catch (err) {
-            showErrorNotification("Load Error", "Could not load sequence annotations");
+            const detail = err?.message || "The server encountered an error. A selected library may have failed to import — try removing it and re-importing.";
+            showErrorNotification("Annotation Error", detail);
             set({ loadingSequenceAnnotations: false });
         } finally {
             set({ loadingSequenceAnnotions: false });
