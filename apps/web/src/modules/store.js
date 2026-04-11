@@ -400,13 +400,23 @@ export const useStore = create((set, get) => ({
 
     cleanSBOLDocument: async () => {
         //call clean doc
-        const cleanedSBOL = await cleanSBOL(get().document.serializeXML())
-        set ({ sbolContent: cleanedSBOL });
-        
-        var cleanedDoc = await createSBOLDocument(cleanedSBOL);
+        try {
+        const xml = get().document.serializeXML();
 
-        set ({ document: cleanedDoc });
-        set ({ isUriCleaned: true })
+        const cleanedSBOL = await cleanSBOL(xml);
+        if (!cleanedSBOL) return;
+
+        const cleanedDoc = await createSBOLDocument(cleanedSBOL);
+
+        set({
+            sbolContent: cleanedSBOL,
+            document: cleanedDoc,
+            isUriCleaned: true
+        });
+
+    } catch (err) {
+        console.error("SBOL clean failed:", err);
+    }
     }
 }))
 
