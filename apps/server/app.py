@@ -51,7 +51,7 @@ def setup():
     feature_libraries_paths = asyncio.run(get_feature_libraries_paths(feature_libraries_dir))
     
     # read in collections from synbiohub
-    sbh_collections = "https://synbiohub.org/rootcollections"
+    sbh_collections = "https://api.synbiohub.org/rootcollections"
     sbhresponse = requests.get(sbh_collections)
 
     # extract uris from json
