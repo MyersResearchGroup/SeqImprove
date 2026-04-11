@@ -493,11 +493,14 @@ def import_library():
         "X-authorization": SBHSessionToken
     }
 
-    logger.info(f"Importing library from: {collectionURL}")
+    # Use api.synbiohub.org for the HTTP fetch to bypass Cloudflare,
+    # which blocks server-to-server requests to synbiohub.org with 403.
+    fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', collectionURL)
+    logger.info(f"Importing library from: {fetch_url} (original: {collectionURL})")
     try:
-        response = requests.get(collectionURL, headers=headers, timeout=60)
+        response = requests.get(fetch_url, headers=headers, timeout=60)
     except requests.exceptions.RequestException as e:
-        logger.error(f"Failed to connect to SynBioHub for '{collectionURL}': {e}")
+        logger.error(f"Failed to connect to SynBioHub for '{fetch_url}': {e}")
         return {"error": f"Could not connect to SynBioHub: {e}"}, status.HTTP_502_BAD_GATEWAY
 
     # Check if the request was successful
