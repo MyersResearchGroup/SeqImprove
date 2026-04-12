@@ -88,8 +88,7 @@ def setup():
         feature_doc.read(feature_library_path)
         # FEATURE_LIBRARIES.append([feature_library_path, FeatureLibrary([feature_doc])])
         abs_path = os.path.abspath(feature_library_path)
-        feature_lib = FeatureLibrary([feature_doc])
-        FEATURE_LIBRARIES[abs_path] = (feature_lib, FeatureAnnotater(feature_lib, 10))
+        FEATURE_LIBRARIES[abs_path] = FeatureLibrary([feature_doc])
 
     # check for new libraries in synbiohub.org/rootcollections, pull if any exist
     #
@@ -118,33 +117,45 @@ def create_app():
 # ===========================================================================================================================
 # ===========================================================================================================================
 
-def get_cached_annotater(part_library_file_name):
-    """Return the pre-built FeatureAnnotater for the given library key."""
+def create_feature_library(part_library_file_name):
     if ('synbiohub.org' in part_library_file_name):
         if part_library_file_name in FEATURE_LIBRARIES:
-            return FEATURE_LIBRARIES[part_library_file_name][1]
+            return FEATURE_LIBRARIES[part_library_file_name]
 
-        # Check if there's a locally-bundled file for this URI.
-        # uris always contains canonical synbiohub.org URLs, so strip api. before lookup.
-        canonical = re.sub(r'^(https?://)api\.', r'\1', part_library_file_name)
-        if canonical in uris:
-            uri_index = uris.index(canonical)
+        # Check if there's a locally-bundled file for this URI
+        if part_library_file_name in uris:
+            uri_index = uris.index(part_library_file_name)
             local_name = sbh_file_prefixes[uri_index] + '.xml'
             feature_libraries_dir = "./assets/synbict/feature-libraries"
             feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, local_name))
             if feature_library_path in FEATURE_LIBRARIES:
-                return FEATURE_LIBRARIES[feature_library_path][1]
+                return FEATURE_LIBRARIES[feature_library_path]
 
-        # Library not in cache — the server may have restarted. Tell the frontend to re-import.
-        raise KeyError(f"Library '{part_library_file_name}' is not in cache. "
-                       f"Please re-import it using the 'Import Library' button.")
+        # Library not in cache (e.g. container restarted) — fetch on demand from SynBioHub.
+        # Use api.synbiohub.org to bypass Cloudflare, which blocks server-to-server requests.
+        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', part_library_file_name)
+        logger.info(f"Library '{part_library_file_name}' not in cache, fetching on-demand from {fetch_url}")
+        try:
+            response = requests.get(fetch_url, headers={"Accept": "text/plain"}, timeout=300)
+        except requests.exceptions.RequestException as e:
+            raise KeyError(f"Library '{part_library_file_name}' not in cache and on-demand fetch failed: {e}")
+        if response.status_code != 200:
+            raise KeyError(f"Library '{part_library_file_name}' not in cache and SynBioHub returned HTTP {response.status_code}")
+        try:
+            feature_doc = sbol2.Document()
+            feature_doc.readString(response.text)
+            FEATURE_LIBRARIES[part_library_file_name] = FeatureLibrary([feature_doc])
+            logger.info(f"On-demand cached library '{part_library_file_name}'")
+            return FEATURE_LIBRARIES[part_library_file_name]
+        except Exception as e:
+            raise KeyError(f"Failed to parse on-demand library '{part_library_file_name}': {e}")
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
     if feature_library_path not in FEATURE_LIBRARIES:
         raise KeyError(f"Library not found in cache: '{part_library_file_name}'. "
                        f"Available libraries: {list(FEATURE_LIBRARIES.keys())}")
-    return FEATURE_LIBRARIES[feature_library_path][1]
+    return FEATURE_LIBRARIES[feature_library_path]
 
 def sbh_pull_library(uri):
     feature_doc = sbol2.Document() #reinit
@@ -216,8 +227,12 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 # Once the 'with' block ends, the temporary file will be automatically deleted.
 
                 target_library = FeatureLibrary([target_doc])
-                annotater = get_cached_annotater(part_lib_f_name)
-                min_target_length = 10
+                # feature_library = FEATURE_LIBRARIES[0]
+                feature_library = create_feature_library(part_lib_f_name)
+                print(f"feature library for {part_lib_f_name}: {feature_library}")
+                min_feature_length = 10
+                annotater = FeatureAnnotater(feature_library, min_feature_length)
+                min_target_length = 10                
                 annotated_identities = annotater.annotate(target_library, min_target_length, in_place=True)
 
                 # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
@@ -505,7 +520,7 @@ def import_library():
     fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', collectionURL)
     logger.info(f"Importing library from: {fetch_url} (original: {collectionURL})")
     try:
-        response = requests.get(fetch_url, headers=headers, timeout=180)
+        response = requests.get(fetch_url, headers=headers, timeout=300)
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to connect to SynBioHub for '{fetch_url}': {e}")
         return {"error": f"Could not connect to SynBioHub: {e}"}, status.HTTP_502_BAD_GATEWAY
@@ -515,8 +530,7 @@ def import_library():
         try:
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
-            feature_lib = FeatureLibrary([feature_doc])
-            FEATURE_LIBRARIES[collectionURL] = (feature_lib, FeatureAnnotater(feature_lib, 10))
+            FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
             logger.info(f"Imported library '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
             return {"response": response.text}
         except Exception as e:
