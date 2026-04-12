@@ -10,7 +10,7 @@ import { FILE_TYPES } from "./modules/fileTypes"
 
 export default function App() {
 
-    bootAPIserver();
+    bootAPIserver().catch(err => console.error("API server boot failed:", err));
     const loadSBOL = useStore(s => s.loadSBOL)
     const documentLoaded = useStore(s => !!s.document)
     const isFileEdited = useStore((s) => s.isFileEdited);
