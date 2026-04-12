@@ -83,7 +83,7 @@ export async function importLibrary(synBioHubSessionToken, requestURL, setIsImpo
                 sessionToken: synBioHubSessionToken,
                 url: requestURL
             }),
-            timeout: 300000,
+            timeout: 180000,
         });
 
         var result = await response.json();
@@ -145,7 +145,7 @@ export async function cleanSBOL(sbolContent) {
             body: JSON.stringify({
                 completeSbolContent: sbolContent,
             }),
-            timeout: 120000,
+            timeout: 180000,
         });
     }
     catch (err) {
@@ -184,7 +184,7 @@ export async function fetchAnnotateSequence({ sbolContent, selectedLibraryFileNa
                 partLibraries: selectedLibraryFileNames,
                 cleanDocument: !isUriCleaned,
             }),
-            timeout: 320000,
+            timeout: 180000,
         });
     }
     catch (err) {

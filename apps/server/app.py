@@ -131,24 +131,9 @@ def create_feature_library(part_library_file_name):
             if feature_library_path in FEATURE_LIBRARIES:
                 return FEATURE_LIBRARIES[feature_library_path]
 
-        # Library not in cache (e.g. container restarted) — fetch on demand from SynBioHub.
-        # Use api.synbiohub.org to bypass Cloudflare, which blocks server-to-server requests.
-        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', part_library_file_name)
-        logger.info(f"Library '{part_library_file_name}' not in cache, fetching on-demand from {fetch_url}")
-        try:
-            response = requests.get(fetch_url, headers={"Accept": "text/plain"}, timeout=300)
-        except requests.exceptions.RequestException as e:
-            raise KeyError(f"Library '{part_library_file_name}' not in cache and on-demand fetch failed: {e}")
-        if response.status_code != 200:
-            raise KeyError(f"Library '{part_library_file_name}' not in cache and SynBioHub returned HTTP {response.status_code}")
-        try:
-            feature_doc = sbol2.Document()
-            feature_doc.readString(response.text)
-            FEATURE_LIBRARIES[part_library_file_name] = FeatureLibrary([feature_doc])
-            logger.info(f"On-demand cached library '{part_library_file_name}'")
-            return FEATURE_LIBRARIES[part_library_file_name]
-        except Exception as e:
-            raise KeyError(f"Failed to parse on-demand library '{part_library_file_name}': {e}")
+        # Library not in cache — the server may have restarted. Tell the frontend to re-import.
+        raise KeyError(f"Library '{part_library_file_name}' is not in cache. "
+                       f"Please re-import it using the 'Import Library' button.")
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
@@ -520,7 +505,7 @@ def import_library():
     fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', collectionURL)
     logger.info(f"Importing library from: {fetch_url} (original: {collectionURL})")
     try:
-        response = requests.get(fetch_url, headers=headers, timeout=300)
+        response = requests.get(fetch_url, headers=headers, timeout=180)
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to connect to SynBioHub for '{fetch_url}': {e}")
         return {"error": f"Could not connect to SynBioHub: {e}"}, status.HTTP_502_BAD_GATEWAY
