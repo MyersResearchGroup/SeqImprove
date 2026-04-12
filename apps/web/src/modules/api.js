@@ -83,7 +83,7 @@ export async function importLibrary(synBioHubSessionToken, requestURL, setIsImpo
                 sessionToken: synBioHubSessionToken,
                 url: requestURL
             }),
-            timeout: 120000,
+            timeout: 300000,
         });
 
         var result = await response.json();
