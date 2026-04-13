@@ -70,10 +70,8 @@ export async function fetchSBOL(url) {
     }
 }
 
-export async function importLibrary(synBioHubSessionToken, requestURL, setIsImportingLibrary) {
+export async function importLibrary(synBioHubSessionToken, requestURL) {
     try {
-        setIsImportingLibrary(true);
-
         var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
             method: "POST",
             headers: {
@@ -99,8 +97,6 @@ export async function importLibrary(synBioHubSessionToken, requestURL, setIsImpo
     catch (err) {
         console.error("Library import error:", err);
         showServerErrorNotification();
-    } finally {
-        setIsImportingLibrary(false);
     }
 }
 

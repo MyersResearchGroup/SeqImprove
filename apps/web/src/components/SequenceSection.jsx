@@ -229,7 +229,9 @@ function Annotations({ colors }) {
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
     const [ isInteractingWithSynBioHub, setIsInteractingWithSynBioHub ] = useState(false);
     const [ isImportingLibrary, setIsImportingLibrary ] = useState(false);
-    const [ synBioHubs, setSynBioHubs ] = useState([]);    
+    const [ synBioHubs, setSynBioHubs ] = useState([]);
+    const [ cachedLibraryUrls, setCachedLibraryUrls ] = useState([]);
+    const addCachedUrl = (url) => setCachedLibraryUrls(prev => [...prev, url]);
 
     useStore(s => s.libraryImported);
 
@@ -279,12 +281,21 @@ function Annotations({ colors }) {
     ));
 
     const handleAnalyzeSequenceClick = () => {
-        const libs = importedLibraries.filter((lib) =>
-                lib.enabled == true)
-        if (sequencePartLibrariesSelected.length > 0 || libs.length > 0) {
-            loadSequenceAnnotations(libs)
+        const libs = importedLibraries.filter((lib) => lib.enabled == true)
+        const allLibraries = [...sequencePartLibrariesSelected, ...libs]
+        if (allLibraries.length === 0) {
+            showErrorNotification('No libraries selected', 'Select one or more libraries to continue')
+            return
         }
-        else showErrorNotification('No libraries selected ', 'Select one or more libraries to continue')
+        const notCached = allLibraries.filter(lib =>
+            lib.value.includes('synbiohub.org') && !cachedLibraryUrls.includes(lib.value)
+        )
+        if (notCached.length > 0) {
+            const names = notCached.map(l => l.label).join(', ')
+            showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
+            return
+        }
+        loadSequenceAnnotations(libs)
     }
 
     const handleClose = (library) => {removeLibrary(library)};
@@ -378,9 +389,10 @@ function Annotations({ colors }) {
                 opened={isInteractingWithSynBioHub}
                 setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub}
                 onClose={() => setIsInteractingWithSynBioHub(false)}
-                setOpened={setIsInteractingWithSynBioHub}                            
+                setOpened={setIsInteractingWithSynBioHub}
                 synBioHubs={synBioHubs}
                 setIsImportingLibrary={setIsImportingLibrary}
+                addCachedUrl={addCachedUrl}
             />
             
             {loading ?
@@ -402,7 +414,7 @@ function Annotations({ colors }) {
     )
 }
 
-function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs, setIsImportingLibrary}) {     
+function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs, setIsImportingLibrary, addCachedUrl}) {
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
 
     return (
@@ -413,14 +425,14 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
             size={"auto"}
         >
             {isLoggedInToSynBioHub ?
-             <SynBioHubClientSelect setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} setIsImportingLibrary={setIsImportingLibrary}/> :
+             <SynBioHubClientSelect setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} setIsImportingLibrary={setIsImportingLibrary} addCachedUrl={addCachedUrl}/> :
              <SynBioHubClientLogin synBioHubs={synBioHubs} />
-            }            
+            }
         </Modal>
     );
 }
 
-function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLibrary }) {        
+function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLibrary, addCachedUrl }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
     const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
     const [inputError, setInputError] = useState(false);
@@ -494,12 +506,15 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                             params.append('rootCollections', rootCollectionURI);
                             // Create a Blob from the text
                             setIsLoading(true);
-                            const response = await importLibrary(synBioHubSessionToken, rootCollectionURI, setIsImportingLibrary)
+                            setIsImportingLibrary(true);
+                            const response = await importLibrary(synBioHubSessionToken, rootCollectionURI)
 
                             setIsInteractingWithSynBioHub(false);
-                            if (response) {
+                            setIsImportingLibrary(false);
+                            if (response && response.success) {
                                 setInputError(false);
-                                showNotificationSuccess("Success!", "Imported Library: " + selectedCollectionID + ".");
+                                addCachedUrl(response.cachedUrl);
+                                showNotificationSuccess("Library Ready!", selectedCollectionID + " is cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
                                 mutateDocument(useStore.setState, state => {state.libraryImported = true});
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
                             } else {

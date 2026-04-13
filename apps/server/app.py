@@ -532,7 +532,7 @@ def import_library():
             feature_doc.readString(response.text)
             FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
             logger.info(f"Imported library '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
-            return {"response": response.text}
+            return {"success": True, "cachedUrl": collectionURL, "librariesInCache": list(FEATURE_LIBRARIES.keys())}
         except Exception as e:
             logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
             return {"error": f"Failed to parse library SBOL: {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR
