@@ -554,6 +554,14 @@ def import_library():
         logger.error(f"Failed to import library '{collectionURL}': HTTP {response.status_code}")
         return {"error": f"SynBioHub returned HTTP {response.status_code}"}, response.status_code
 
+@app.post("/api/checkLibraryCache")
+def check_library_cache():
+    request_data = request.get_json()
+    url = request_data['url']
+    canonical = re.sub(r'^(https?://)api\.', r'\1', url)
+    cached = canonical in FEATURE_LIBRARIES
+    return {"cached": cached, "url": canonical}
+
 @app.post("/api/deleteUserLibrary")
 def remove_library():
     request_data = request.get_json()
