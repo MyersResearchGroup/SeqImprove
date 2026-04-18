@@ -351,7 +351,8 @@ export const useStore = create((set, get) => ({
 
     addImportedLibrary: library => {
         set(produce(state => {
-            state.importedLibraries.push(library)
+            if (!state.importedLibraries.some(lib => lib.value === library.value))
+                state.importedLibraries.push(library)
         }));
     },
 
