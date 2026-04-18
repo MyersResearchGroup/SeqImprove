@@ -14,7 +14,7 @@ import "../../src/sequence-edit.css"
 import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { SynBioHubClientLogin } from "./CurationForm";
-import { importLibrary } from "../modules/api";
+import { importLibrary, checkLibraryCache } from "../modules/api";
 
 const WORDSIZE = 8;
 
@@ -500,13 +500,20 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                       <Center>
                           <Loader my={30} size="sm" variant="dots" />
                       </Center> :
-                      <Button onClick={async () => {                                                                  
-                            const params = new FormData();       
-                            //send to backend                                                                                                                                                                                                                                                                                
-                            params.append('rootCollections', rootCollectionURI);
-                            // Create a Blob from the text
+                      <Button onClick={async () => {
                             setIsLoading(true);
                             setIsImportingLibrary(true);
+
+                            const alreadyCached = await checkLibraryCache(rootCollectionURI);
+                            if (alreadyCached) {
+                                setIsInteractingWithSynBioHub(false);
+                                setIsImportingLibrary(false);
+                                addCachedUrl(rootCollectionURI);
+                                showNotificationSuccess("Library Ready!", selectedCollectionID + " is already cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
+                                addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false});
+                                return;
+                            }
+
                             const response = await importLibrary(synBioHubSessionToken, rootCollectionURI)
 
                             setIsInteractingWithSynBioHub(false);
