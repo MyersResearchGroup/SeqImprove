@@ -509,8 +509,9 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 setIsInteractingWithSynBioHub(false);
                                 setIsImportingLibrary(false);
                                 addCachedUrl(rootCollectionURI);
-                                showNotificationSuccess("Library Ready!", selectedCollectionID + " is already cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
+                                mutateDocument(useStore.setState, state => {state.libraryImported = true});
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false});
+                                showNotificationSuccess("Library Ready!", selectedCollectionID + " is already cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
                                 return;
                             }
 
