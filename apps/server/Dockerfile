@@ -8,7 +8,7 @@ RUN apt update
 RUN apt install default-jdk -y
 
 # clone SYNBICT at root & install deps
-RUN pip install numpy==1.26.4 sbol2==1.3
+RUN pip install "packaging<22.0" numpy==1.26.4 sbol2==1.3
 RUN git clone https://github.com/SD2E/SYNBICT
 WORKDIR /SYNBICT
 RUN pip install .
