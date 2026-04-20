@@ -100,21 +100,6 @@ export async function importLibrary(synBioHubSessionToken, requestURL) {
     }
 }
 
-export async function checkLibraryCache(url) {
-    try {
-        const response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/checkLibraryCache`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url }),
-        });
-        const result = await response.json();
-        return result.cached;
-    } catch (err) {
-        console.error("Failed to check library cache:", err);
-        return false;
-    }
-}
-
 export async function deleteLibrary(libraryURL) {
     try {
         var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/deleteUserLibrary`, {
