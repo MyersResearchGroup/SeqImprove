@@ -119,36 +119,50 @@ def create_app():
 
 def create_feature_library(part_library_file_name):
     if ('synbiohub.org' in part_library_file_name):
-        if part_library_file_name in FEATURE_LIBRARIES:
-            return FEATURE_LIBRARIES[part_library_file_name]
+        # Normalize to canonical URI as the consistent dictionary key (strip api. if present)
+        canonical = re.sub(r'^(https?://)api\.', r'\1', part_library_file_name)
+        logger.info(f"Creating feature library for: {canonical}")
+
+        # Check if already in cache (user-imported or previous on-demand fetch)
+        if canonical in FEATURE_LIBRARIES:
+            logger.info(f"Library '{canonical}' found in cache.")
+            return FEATURE_LIBRARIES[canonical]
 
         # Check if there's a locally-bundled file for this URI
-        if part_library_file_name in uris:
-            uri_index = uris.index(part_library_file_name)
+        # uris always contains canonical synbiohub.org URLs
+        # uris is fetched from api.synbiohub.org/rootcollections, 
+        # which lists all root collections in synbiohub.org, 
+        # including the feature libraries. So if the URI is in uris, 
+        # we know it's a synbiohub collection and we can check for a local file. If it's not in uris, then it's either not a synbiohub collection or it's a new one that was added after the server started, and in either case we should try to fetch it on demand.
+        if canonical in uris:
+            uri_index = uris.index(canonical)
             local_name = sbh_file_prefixes[uri_index] + '.xml'
             feature_libraries_dir = "./assets/synbict/feature-libraries"
             feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, local_name))
-            if feature_library_path in FEATURE_LIBRARIES:
-                return FEATURE_LIBRARIES[feature_library_path]
+            if os.path.exists(feature_library_path):
+                feature_doc = sbol2.Document()
+                feature_doc.read(feature_library_path)
+                FEATURE_LIBRARIES[canonical] = FeatureLibrary([feature_doc])
+                logger.info(f"Loaded local library '{local_name}' for '{canonical}'")
+                return FEATURE_LIBRARIES[canonical]
 
-        # Library not in cache (e.g. container restarted) — fetch on demand from SynBioHub.
-        # Use api.synbiohub.org to bypass Cloudflare, which blocks server-to-server requests.
-        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', part_library_file_name)
-        logger.info(f"Library '{part_library_file_name}' not in cache, fetching on-demand from {fetch_url}")
+        # Library not in cache — fetch on demand using api.synbiohub.org to bypass Cloudflare
+        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
+        logger.info(f"Library '{canonical}' not in cache, fetching on-demand from {fetch_url}")
         try:
             response = requests.get(fetch_url, headers={"Accept": "text/plain"}, timeout=300)
         except requests.exceptions.RequestException as e:
-            raise KeyError(f"Library '{part_library_file_name}' not in cache and on-demand fetch failed: {e}")
+            raise KeyError(f"Library '{canonical}' not in cache and on-demand fetch failed: {e}")
         if response.status_code != 200:
-            raise KeyError(f"Library '{part_library_file_name}' not in cache and SynBioHub returned HTTP {response.status_code}")
+            raise KeyError(f"Library '{canonical}' not in cache and SynBioHub returned HTTP {response.status_code}")
         try:
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
-            FEATURE_LIBRARIES[part_library_file_name] = FeatureLibrary([feature_doc])
-            logger.info(f"On-demand cached library '{part_library_file_name}'")
-            return FEATURE_LIBRARIES[part_library_file_name]
+            FEATURE_LIBRARIES[canonical] = FeatureLibrary([feature_doc])  # store under canonical key
+            logger.info(f"On-demand cached library '{canonical}'")
+            return FEATURE_LIBRARIES[canonical]
         except Exception as e:
-            raise KeyError(f"Failed to parse on-demand library '{part_library_file_name}': {e}")
+            raise KeyError(f"Failed to parse on-demand library '{canonical}': {e}")
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
@@ -229,7 +243,7 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 target_library = FeatureLibrary([target_doc])
                 # feature_library = FEATURE_LIBRARIES[0]
                 feature_library = create_feature_library(part_lib_f_name)
-                print(f"feature library for {part_lib_f_name}: {feature_library}")
+                print(f"The key of feature library is {part_lib_f_name}")
                 min_feature_length = 10
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
                 min_target_length = 10                
@@ -518,7 +532,7 @@ def import_library():
     # Use api.synbiohub.org for the HTTP fetch to bypass Cloudflare,
     # which blocks server-to-server requests to synbiohub.org with 403.
     fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', collectionURL)
-    logger.info(f"Importing library from: {fetch_url} (original: {collectionURL})")
+    logger.info(f"Importing library from: {fetch_url}")
     try:
         response = requests.get(fetch_url, headers=headers, timeout=300)
     except requests.exceptions.RequestException as e:
@@ -531,7 +545,7 @@ def import_library():
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
             FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
-            logger.info(f"Imported library '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
+            logger.info(f"Imported library URI '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
             return {"success": True, "cachedUrl": collectionURL, "librariesInCache": list(FEATURE_LIBRARIES.keys())}
         except Exception as e:
             logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
@@ -539,6 +553,14 @@ def import_library():
     else:
         logger.error(f"Failed to import library '{collectionURL}': HTTP {response.status_code}")
         return {"error": f"SynBioHub returned HTTP {response.status_code}"}, response.status_code
+
+@app.post("/api/checkLibraryCache")
+def check_library_cache():
+    request_data = request.get_json()
+    url = request_data['url']
+    canonical = re.sub(r'^(https?://)api\.', r'\1', url)
+    cached = canonical in FEATURE_LIBRARIES
+    return {"cached": cached, "url": canonical}
 
 @app.post("/api/deleteUserLibrary")
 def remove_library():
