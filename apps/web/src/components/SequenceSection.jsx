@@ -279,9 +279,11 @@ function Annotations({ colors }) {
             showErrorNotification('No libraries selected', 'Select one or more libraries to continue')
             return
         }
-        const notCached = allLibraries.filter(lib =>
+        // notCached is the list of remote SynBioHub libraries that still need to be fetched from the network
+        const notCached = libs.filter(lib =>
             lib.value.includes('synbiohub.org') && !cachedLibraryUrls.includes(lib.value)
         )
+        console.log("notCached: ", notCached);
         if (notCached.length > 0) {
             const names = notCached.map(l => l.label).join(', ')
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
