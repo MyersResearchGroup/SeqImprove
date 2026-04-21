@@ -244,8 +244,8 @@ function Annotations({ colors }) {
     
     const sequencePartLibraries = [
         { value: 'local_libraries', label: 'SeqImprove Local Libraries'},
-        { value: 'https://synbiohub.org/public/CnDatabase/CnDatabase_collection/1', label: 'Cryptococcus neoformans Database'},
-        { value: 'https://synbiohub.org/public/Eco1C1G1T1/Eco1C1G1T1_collection/1', label: 'Cello E. Coli Parts Collection'},
+        { value: 'CnDatabase_collection.xml', label: 'Cryptococcus neoformans Database'},
+        { value: 'Eco1C1G1T1_collection.xml', label: 'Cello E. Coli Parts Collection'},
     ];
 
     const localLibraries = [         
@@ -279,7 +279,8 @@ function Annotations({ colors }) {
             showErrorNotification('No libraries selected', 'Select one or more libraries to continue')
             return
         }
-        const notCached = allLibraries.filter(lib =>
+        // notCached is the list of remote SynBioHub libraries that still need to be fetched from the network
+        const notCached = libs.filter(lib =>
             lib.value.includes('synbiohub.org') && !cachedLibraryUrls.includes(lib.value)
         )
         if (notCached.length > 0) {
