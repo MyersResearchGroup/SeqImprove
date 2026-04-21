@@ -244,8 +244,8 @@ function Annotations({ colors }) {
     
     const sequencePartLibraries = [
         { value: 'local_libraries', label: 'SeqImprove Local Libraries'},
-        { value: 'https://synbiohub.org/public/CnDatabase/CnDatabase_collection/1', label: 'Cryptococcus neoformans Database'},
-        { value: 'https://synbiohub.org/public/Eco1C1G1T1/Eco1C1G1T1_collection/1', label: 'Cello E. Coli Parts Collection'},
+        { value: 'CnDatabase_collection.xml', label: 'Cryptococcus neoformans Database'},
+        { value: 'Eco1C1G1T1_collection.xml', label: 'Cello E. Coli Parts Collection'},
     ];
 
     const localLibraries = [         
@@ -283,7 +283,6 @@ function Annotations({ colors }) {
         const notCached = libs.filter(lib =>
             lib.value.includes('synbiohub.org') && !cachedLibraryUrls.includes(lib.value)
         )
-        console.log("notCached: ", notCached);
         if (notCached.length > 0) {
             const names = notCached.map(l => l.label).join(', ')
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
