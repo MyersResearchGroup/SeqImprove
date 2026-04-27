@@ -43,3 +43,23 @@ tramp
 .\#*
 # local embed harness
 apps/web/test-embed.html
+
+# server cache and build artifacts
+apps/server/.cache/
+apps/server/__pycache__/
+__pycache__/
+
+# log files
+*.log
+apps/server/_logs/
+
+# alignment output files
+*.sam
+*.sam.log
+
+# test/temporary index files
+apps/server/test.*
+apps/server/aligned*
+
+# python cache
+*.pyc
