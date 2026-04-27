@@ -1,9 +1,9 @@
 import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Checkbox, CloseButton, Flex, Grid, SegmentedControl, Select, Title } from '@mantine/core';
+import { Box, Checkbox, CloseButton, Flex, Grid, SegmentedControl, Select, Title } from '@mantine/core';
 import { Button, Center, Group, Stack, Loader, Modal, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
-import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
+import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight, FaInfoCircle } from "react-icons/fa"
 import { mutateDocument, mutateSequencePartLibrariesSelected, useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
@@ -248,11 +248,10 @@ function Annotations({ colors }) {
         { value: 'Eco1C1G1T1_collection.xml', label: 'Cello E. Coli Parts Collection'},
     ];
 
-    const localLibraries = [         
+    const localLibraries = [
         { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
         { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
         { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
-        { value: 'EcoFlex_MoClo_Toolkit_Freemont_Lab_collection.xml', label: 'EcoFlex Moclo Toolkit Freemont Lab Collection' },
         { value: 'Itaconic_Acid_Pathway_Voigt_Lab_collection.xml', label: 'Itaconic Acid Pathway Voigt Lab Collection' },
         { value: 'MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml', label: 'MoClo Yeast Toolkit Dueber Lab Colletion' },
         { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
@@ -264,6 +263,12 @@ function Annotations({ colors }) {
     const importedLibraries = useStore(s => s.importedLibraries)
     const toggleLibrary = useStore(s => s.toggleImportedLibraries)
     const removeLibrary = useStore(s => s.removeImportedLibrary)
+
+    // Algorithm and match mode state
+    const [selectedAlgorithm, setSelectedAlgorithm] = useState('FlashText');
+    const [allowSimilarMatches, setAllowSimilarMatches] = useState(false);
+    const [codonMatches, setCodonMatches] = useState(false);
+    const [includeHypothetical, setIncludeHypothetical] = useState(false);
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -288,7 +293,7 @@ function Annotations({ colors }) {
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
             return
         }
-        loadSequenceAnnotations(libs)
+        loadSequenceAnnotations(libs, selectedAlgorithm, allowSimilarMatches, codonMatches, includeHypothetical)
     }
 
     const handleClose = (library) => {removeLibrary(library)};
@@ -316,7 +321,78 @@ function Annotations({ colors }) {
                 </Group>              
             )}
 
+            <Select
+                label="Algorithm"
+                placeholder="Select algorithm"
+                value={selectedAlgorithm}
+                onChange={setSelectedAlgorithm}
+                data={[
+                    { value: 'FlashText', label: 'FlashText' },
+                    { value: 'BWA', label: 'BWA' },
+                    { value: 'Minimap2', label: 'Minimap2' },
+                    { value: 'BLASTN', label: 'BLASTN' }
+                ]}
+            />
+
+            <Group mt="sm" spacing="xs">
+                <Checkbox
+                    label="Similar Matches"
+                    checked={allowSimilarMatches}
+                    onChange={(event) => setAllowSimilarMatches(event.currentTarget.checked)}
+                />
+                <Tooltip
+                    label="Allow matches with 95%+ sequence identity instead of requiring exact matches"
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Group mt="sm" spacing="xs">
+                <Checkbox
+                    label="Codon Matches"
+                    checked={codonMatches}
+                    onChange={(event) => setCodonMatches(event.currentTarget.checked)}
+                />
+                <Tooltip
+                    label="Enable codon-aware matching that accounts for synonymous codons coding for the same amino acid"
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Group mt="sm" spacing="xs">
+                <Checkbox
+                    label="Include Hypothetical"
+                    checked={includeHypothetical}
+                    onChange={(event) => setIncludeHypothetical(event.currentTarget.checked)}
+                />
+                <Tooltip
+                    label="Include features labeled as hypothetical or uncharacterized in the annotation results"
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
             <MultiSelect
+                mt="sm"
                 data={sequencePartLibraries}
                 label="Sequence part libraries"
                 placeholder="Choose the libraries to annotate against"
@@ -327,20 +403,19 @@ function Annotations({ colors }) {
                     const chosenLibraries = sequencePartLibraries.filter(lib => {
                         return librariesSelected[0].includes(lib.value);
                     });
-                    // mutate the libraries Selected in the store                                    
-                    mutateSequencePartLibrariesSelected(useStore.setState, state => {     
+                    // mutate the libraries Selected in the store
+                    mutateSequencePartLibrariesSelected(useStore.setState, state => {
                         if(chosenLibraries.some(item => item.value === 'local_libraries')) {
                             state.sequencePartLibrariesSelected = chosenLibraries.filter(item => item.value !== 'local_libraries')
                             state.sequencePartLibrariesSelected.push(...localLibraries)
                         }
                         else state.sequencePartLibrariesSelected = chosenLibraries;
                     });
-                    
+
 
                     setSequencePartLibrariesSelected(...librariesSelected);
-                })}               
+                })}
             />
-            
 
             {libraryImported && <Stack mt="sm" gap="xs">
                 {importedLibraries.map((library, index) => (
@@ -350,12 +425,12 @@ function Annotations({ colors }) {
                                 label={library.label}
                                 checked={library.enabled}
                                 onChange={() => toggleLibrary(index)}
-                                key={index} 
+                                key={index}
                             />
                         </Grid.Col>
                         <Grid.Col span={2}>
                             <Tooltip label="Delete from server memory">
-                                <CloseButton 
+                                <CloseButton
                                     onClick={() => handleClose(library)}
                                 />
                             </Tooltip>
