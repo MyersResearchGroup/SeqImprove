@@ -218,9 +218,10 @@ export const useStore = create((set, get) => ({
                 selectedLibraryFileNames: allLibraries.map(lib => lib.value),
                 isUriCleaned: get().isUriCleaned,
                 algorithm: args[1],
-                allowSimilarMatches: args[2],
-                codonMatches: args[3],
-                includeHypothetical: args[4],
+                allowSimilarDNAMatches: args[2],
+                allowSimilarMatches: args[3],
+                codonMatches: args[4],
+                includeHypothetical: args[5],
             }) ?? [];
 
             let { fetchedAnnotations = [], synbictDoc } = result;

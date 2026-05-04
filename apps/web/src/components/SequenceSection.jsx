@@ -266,6 +266,7 @@ function Annotations({ colors }) {
 
     // Algorithm and match mode state
     const [selectedAlgorithm, setSelectedAlgorithm] = useState('FlashText');
+    const [similarDNAMatches, setSimilarDNAMatches] = useState(false);
     const [allowSimilarMatches, setAllowSimilarMatches] = useState(false);
     const [codonMatches, setCodonMatches] = useState(false);
     const [includeHypothetical, setIncludeHypothetical] = useState(false);
@@ -293,7 +294,7 @@ function Annotations({ colors }) {
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
             return
         }
-        loadSequenceAnnotations(libs, selectedAlgorithm, allowSimilarMatches, codonMatches, includeHypothetical)
+        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical)
     }
 
     const handleClose = (library) => {removeLibrary(library)};
@@ -336,12 +337,12 @@ function Annotations({ colors }) {
 
             <Group mt="sm" spacing="xs">
                 <Checkbox
-                    label="Similar Matches"
-                    checked={allowSimilarMatches}
-                    onChange={(event) => setAllowSimilarMatches(event.currentTarget.checked)}
+                    label="Similar DNA Sequence Matches"
+                    checked={similarDNAMatches}
+                    onChange={(event) => setSimilarDNAMatches(event.currentTarget.checked)}
                 />
                 <Tooltip
-                    label="Allow matches with 95%+ sequence identity instead of requiring exact matches"
+                    label="Allow DNA-level matches with 95%+ sequence identity instead of requiring exact DNA matches (applies to BWA, Minimap2, BLASTN)"
                     position="right"
                     withArrow
                     multiline
@@ -357,7 +358,14 @@ function Annotations({ colors }) {
                 <Checkbox
                     label="Codon Matches"
                     checked={codonMatches}
-                    onChange={(event) => setCodonMatches(event.currentTarget.checked)}
+                    onChange={(event) => {
+                        const checked = event.currentTarget.checked;
+                        setCodonMatches(checked);
+                        if (!checked) {
+                            setAllowSimilarMatches(false);
+                            setIncludeHypothetical(false);
+                        }
+                    }}
                 />
                 <Tooltip
                     label="Enable codon-aware matching that accounts for synonymous codons coding for the same amino acid"
@@ -374,8 +382,33 @@ function Annotations({ colors }) {
 
             <Group mt="sm" spacing="xs">
                 <Checkbox
+                    label="Similar Protein Matches"
+                    checked={allowSimilarMatches}
+                    disabled={!codonMatches}
+                    onChange={(event) => {
+                        const checked = event.currentTarget.checked;
+                        setAllowSimilarMatches(checked);
+                        if (!checked) setIncludeHypothetical(false);
+                    }}
+                />
+                <Tooltip
+                    label="Allow protein-level matches with 95%+ identity instead of requiring exact protein matches (Prokka)"
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Group mt="sm" spacing="xs">
+                <Checkbox
                     label="Include Hypothetical"
                     checked={includeHypothetical}
+                    disabled={!allowSimilarMatches}
                     onChange={(event) => setIncludeHypothetical(event.currentTarget.checked)}
                 />
                 <Tooltip

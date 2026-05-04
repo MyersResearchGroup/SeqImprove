@@ -7,6 +7,9 @@ import sbol2
 import logging
 import os
 import asyncio
+import shutil
+import threading
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -14,13 +17,37 @@ import json
 import subprocess
 import tempfile
 import requests
-import re
+import re, sys
 from sequences_to_features import FeatureAnnotater, load_sbol, FeatureLibrary, download_sequences
-from sequences_to_features.Annotator import SAMFeatureMapper, TableFeatureMapper
+from sequences_to_features.Annotator import SAMFeatureMapper, TableFeatureMapper, ProkkaTableFeatureMapper
 from sequences_to_features.FeatureAnnotatorBase import FeatureAnnotatorSimple
 from sequences_to_features.FeatureExtractor import FeatureExtractor
-from sequences_to_features import BwaAligner, Minimap2Aligner, BlastAligner
+from sequences_to_features import BwaAligner, Minimap2Aligner, BlastAligner, ProkkaAligner, ProkkaParser
 from waitress import serve
+
+conda_bin = os.path.expanduser("~/miniconda3/envs/synbict_conda/bin")
+prokka_bin = os.environ.get("PROKKA_BIN") or os.path.expanduser("~/miniconda3/envs/synbict_conda/prokka/bin")
+
+
+# Put conda env bins FIRST so `perl` and `prokka` resolve correctly
+os.environ["PATH"] = f"{prokka_bin}:{conda_bin}:" + os.environ["PATH"]
+
+print("Python:", sys.executable)
+print("CONDA_PREFIX:", os.environ.get("CONDA_PREFIX"))
+print("PATH head:", os.environ.get("PATH","").split(":")[:5])
+
+print("\nwhich prokka:")
+subprocess.run(["bash", "-lc", "which prokka && prokka --version"], check=False)
+
+print("\nwhich perl:")
+subprocess.run(["bash", "-lc", "which perl && perl -v | head -n 2"], check=False)
+
+print("\nBioPerl hmmer3 module check:")
+subprocess.run(["bash", "-lc", "perl -MBio::SearchIO::hmmer3 -e 'print \"OK\\n\"'"], check=False)
+
+# Prokka uses hardcoded paths (./database_protein.fasta, ./PROKKA_SYNBICT/) so
+# concurrent invocations would clobber each other. Serialize them.
+_prokka_lock = threading.Lock()
 
 # import caching system
 from library_cache import (
@@ -292,33 +319,44 @@ def clean_target_document(target_doc: sbol2.Document) -> sbol2.Document:
 
     return target_doc
 
-def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bool, algorithm: str, index_prefix: str) -> tuple[Optional[int], Optional[str], Optional[List]]:
+def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bool, algorithm: str,
+                    index_prefix: str, codon_matches: bool = False,
+                    include_hypothetical: bool = False,
+                    protein_exact_match: bool = True) -> tuple[Optional[int], Optional[str], Optional[List]]:
     """
-    Run annotation with alignment-based algorithms (BWA, Minimap2, BLASTN).
+    Run annotation with alignment-based algorithms (BWA, Minimap2, BLASTN), with
+    optional Prokka augmentation for protein-level matching.
 
     Pipeline:
       step 3: Index (cached by algorithm + library subset -> handled by IndexManager)
       step 4: Align query against index -> temp files (cleaned up after)
-      step 5: Parse alignment -> SBOL annotations (uses FeatureLibrary from step 2)
+      step 4b (optional): Run Prokka, merge protein-level matches into the result set
+      step 5: Parse alignment -> SBOL annotations
 
     Args:
         sbol_content: Target SBOL XML string (from user)
         library_paths: Absolute paths to selected library files
-        exact_match: If True, require exact matches; if False, allow ≥95% identity
+        exact_match: DNA-level — if True, require exact DNA matches; if False, allow ≥95% identity
         algorithm: One of 'BWA', 'Minimap2', 'BLASTN'
         index_prefix: Path prefix for the cached index files
+        codon_matches: If True, also run Prokka and merge its matches (codon-aware annotation)
+        include_hypothetical: When codon_matches=True with similar protein matching,
+            include hits annotated as "hypothetical protein"
+        protein_exact_match: Prokka-level — if True, require 100% protein identity;
+            if False, allow ≥95% protein identity
     """
     algo_normalized = algorithm.lower()
 
-    # step 2 — get FeatureLibrary from permanent cache
-    # exact matches are read-only on library docs -> use permanent cache
-    # similar matches mutate library docs (variant creation) -> use fresh copies from XML cache
-    if exact_match:
-        feature_library = library_cache.get_feature_library_for_subset(library_paths)
-    else:
+    # step 2 — get FeatureLibrary
+    # Variants get created if (a) similar DNA match (DNA mismatch allowed),
+    # (b) similar protein match within Prokka, or (c) Prokka augmentation
+    # (synonymous codons can yield DNA-different matches).
+    # Variant creation needs a mutable doc, so use fresh copies in those cases.
+    if codon_matches or not exact_match or not protein_exact_match:
         feature_library = library_cache.get_fresh_feature_library_for_subset(library_paths)
+    else:
+        feature_library = library_cache.get_feature_library_for_subset(library_paths)
 
-    # parse target SBOL content (from user, temporary)
     target_doc = sbol2.Document()
     try:
         target_doc.readString(sbol_content)
@@ -354,6 +392,15 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
             inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
             # temp files cleaned up automatically when TemporaryDirectory exits
 
+        # step 4b — optional Prokka augmentation (codon-aware protein matching).
+        # Prokka uses the protein-level exact-match flag, not the DNA-level one.
+        if codon_matches:
+            prokka_mode = _prokka_mode_for(protein_exact_match, include_hypothetical)
+            prokka_inline, prokka_rc = _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length)
+            prokka_mapper = ProkkaTableFeatureMapper()
+            inline_matches = prokka_mapper.extend_list(inline_matches, prokka_inline)
+            rc_matches = prokka_mapper.extend_list(rc_matches, prokka_rc)
+
         # step 5 — parse alignment into SBOL annotations
         annotator = FeatureAnnotatorSimple(feature_library, inline_matches, rc_matches)
         target_library = FeatureLibrary([target_doc])
@@ -366,6 +413,58 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
 
     except Exception as e:
         return status.HTTP_500_INTERNAL_SERVER_ERROR, f'Error during annotation: {str(e)}', None
+
+def _prokka_mode_for(exact_match: bool, include_hypothetical: bool) -> str:
+    """
+    Map UI flags to Prokka's 3 modes.
+
+      exact_match=True             -> 'exact'   (only 100% protein identity; synonymous codons)
+      exact_match=False, hyp=False -> 'similar' (keep any identity_pct (including 100%), exclude hypothetical proteins)
+      exact_match=False, hyp=True  -> 'all'     (keep every row regardless of identity or product name)
+    """
+    if exact_match:
+        return 'exact'
+    elif not include_hypothetical:
+        return 'similar'
+    else:
+        return 'all'
+
+def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
+    """
+    Run Prokka against the target SBOL doc and extract matches.
+
+    Prokka uses hardcoded paths (./database_protein.fasta, ./PROKKA_SYNBICT/),
+    so calls are serialized via _prokka_lock.
+
+    Returns (inline_matches, rc_matches) for merging with the main aligner's results.
+    """
+    with _prokka_lock:
+        # Stage the protein database at the path Prokka expects
+        protein_fasta_src = library_cache.get_protein_fasta_path(library_paths)
+        shutil.copyfile(protein_fasta_src, os.path.abspath("./database_protein.fasta"))
+
+        # Run Prokka — outputs to ./PROKKA_SYNBICT/
+        ProkkaAligner(target_doc).align()
+
+        outdir = Path("PROKKA_SYNBICT")
+        blast_files = sorted(outdir.glob("PROKKA_SYNBICT.proteins.tmp.*.blast"))
+        if not blast_files:
+            raise RuntimeError("Prokka produced no BLAST output (is prokka installed?)")
+
+        gff_path = str(outdir / "PROKKA_SYNBICT.gff")
+        blast_path = str(blast_files[-1])
+
+        final_df = ProkkaParser(gff_path, blast_path).parse_gff_and_blast()
+
+        # Map BLASTP protein IDs (CDS_000001 etc.) back to library component identities
+        extractor = library_cache.get_feature_extractor_for_subset(library_paths)
+        final_df["ids_sequence"] = [
+            extractor.cds_id_map.get(pid) for pid in final_df['protein_id']
+        ]
+
+        return ProkkaTableFeatureMapper().extract_matches(
+            final_df, min_feature_length=min_feature_length, mode=prokka_mode
+        )
 
 def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
@@ -655,6 +754,7 @@ def annotate_sequence():
 
     # get algorithm and match parameters
     algorithm = request_data.get('algorithm', 'FlashText')
+    allow_similar_dna_matches = request_data.get('allowSimilarDNAMatches', False)
     allow_similar_matches = request_data.get('allowSimilarMatches', False)
     codon_matches = request_data.get('codonMatches', False)
     include_hypothetical = request_data.get('includeHypothetical', False)
@@ -662,7 +762,7 @@ def annotate_sequence():
     if clean_document:
         sbol_content = run_synbio2easy(sbol_content)
 
-    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}...")
+    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_dna_matches={allow_similar_dna_matches}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}...")
 
     try:
         if algorithm == 'FlashText':
@@ -676,18 +776,22 @@ def annotate_sequence():
             )
 
             if not library_paths:
-                return {"sbol": sbol_content, "error_message": "No valid local libraries selected. Alignment algorithms (BWA, Minimap2, BLASTN) require local library files."}, status.HTTP_400_BAD_REQUEST
+                return {"sbol": sbol_content, "error_message": f"No libraries could be loaded for {algorithm}. Selected: {part_library_file_names}, unresolved: {skipped}"}, status.HTTP_400_BAD_REQUEST
 
             if skipped:
-                print(f"Skipped non-local libraries: {skipped}")
+                logger.warning(f"Could not resolve libraries (skipping): {skipped}")
 
             # step 3 — get or create cached index (keyed by algorithm + library subset hash)
             index_prefix, fasta_path = index_manager.get_or_create_index(algorithm, library_paths)
 
-            # steps 4-5 — align + annotate
-            exact_match = not allow_similar_matches
+            # steps 4-5 — align + annotate (with optional Prokka augmentation)
+            # DNA aligner uses similar-DNA flag; Prokka uses similar-protein flag.
+            dna_exact_match = not allow_similar_dna_matches
+            protein_exact_match = not allow_similar_matches
             error_code, error_message, anno_lib_assoc = run_synbict_all(
-                sbol_content, library_paths, exact_match, algorithm, index_prefix
+                sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
+                codon_matches=codon_matches, include_hypothetical=include_hypothetical,
+                protein_exact_match=protein_exact_match
             )
 
         if error_code:

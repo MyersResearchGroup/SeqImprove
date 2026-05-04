@@ -11,6 +11,7 @@ This module provides efficient caching mechanisms for SBOL libraries and alignme
 import hashlib
 import json
 import os
+import re
 import shutil
 import threading
 import time
@@ -18,6 +19,7 @@ from collections import OrderedDict
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Set
+import requests
 import sbol2
 
 from sequences_to_features import FeatureLibrary
@@ -310,6 +312,102 @@ class LibraryCache:
         """Get fresh (mutable) copies of documents from in-memory XML cache."""
         return [self.get_fresh_document(fp) for fp in file_paths]
 
+    def get_feature_extractor_for_subset(self, file_paths: List[str]) -> FeatureExtractor:
+        """
+        Build a FeatureExtractor over the given libraries.
+
+        Used by Prokka annotation, which needs FeatureExtractor.cds_id_map to
+        translate BLASTP protein hit IDs (CDS_000001 etc.) back to library
+        component identities.
+        """
+        docs = self.get_documents_for_libraries(file_paths)
+        return FeatureExtractor(docs)
+
+    def get_protein_fasta_path(self, file_paths: List[str]) -> str:
+        """
+        Get path to a cached protein FASTA built from the given libraries.
+
+        Prokka requires a protein database file as input (--proteins). The FASTA
+        is keyed by the combined hash of library contents — same library subset
+        reuses the same file.
+        """
+        sorted_paths = sorted(os.path.abspath(p) for p in file_paths)
+        library_hashes = [self.get_library_hash(p) for p in sorted_paths]
+        subset_hash = hashlib.sha256(":".join(library_hashes).encode('utf-8')).hexdigest()[:16]
+
+        protein_dir = self.cache_dir / "protein"
+        protein_path = protein_dir / f"{subset_hash}.fasta"
+
+        with self._lock:
+            if protein_path.exists():
+                return str(protein_path.resolve())
+
+            protein_dir.mkdir(parents=True, exist_ok=True)
+            extractor = self.get_feature_extractor_for_subset(sorted_paths)
+            extractor.write_protein_fasta(str(protein_path))
+            return str(protein_path.resolve())
+
+    def materialize_remote_library(self, url: str) -> Optional[str]:
+        """
+        Ensure a SynBioHub library is available on disk so alignment algorithms
+        (BWA / Minimap2 / BLASTN) can index it.
+
+        Canonicalizes the URL (strips api. prefix), fetches via api.synbiohub.org
+        to bypass Cloudflare, and writes the SBOL XML under
+        <cache_dir>/remote/<hash>.xml. Subsequent calls reuse the cached file.
+
+        Returns the absolute path to the cached XML, or None on failure.
+        """
+        canonical = re.sub(r'^(https?://)api\.', r'\1', url)
+        url_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:16]
+        remote_dir = self.cache_dir / "remote"
+        cached_path = remote_dir / f"{url_hash}.xml"
+        abs_path = str(cached_path.resolve()) if cached_path.exists() else os.path.abspath(str(cached_path))
+
+        with self._lock:
+            # already loaded into permanent cache
+            if abs_path in self._documents:
+                return abs_path
+
+            # disk file exists but not loaded — load it
+            if cached_path.exists():
+                try:
+                    self.get_document(abs_path)
+                    return abs_path
+                except Exception as e:
+                    print(f"Warning: cached remote library at {abs_path} unreadable ({e}), refetching")
+
+            # fetch from SynBioHub via api. subdomain (bypasses Cloudflare)
+            remote_dir.mkdir(parents=True, exist_ok=True)
+            fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
+            try:
+                response = requests.get(fetch_url, headers={"Accept": "text/plain"}, timeout=300)
+            except requests.exceptions.RequestException as e:
+                print(f"Failed to fetch remote library '{canonical}': {e}")
+                return None
+
+            if response.status_code != 200:
+                print(f"SynBioHub returned HTTP {response.status_code} for '{fetch_url}'")
+                return None
+
+            try:
+                cached_path.write_text(response.text, encoding='utf-8')
+            except OSError as e:
+                print(f"Failed to write remote library to {cached_path}: {e}")
+                return None
+
+            try:
+                self.get_document(abs_path)
+                print(f"Materialized remote library '{canonical}' -> {abs_path}")
+                return abs_path
+            except Exception as e:
+                print(f"Failed to parse remote library '{canonical}': {e}")
+                try:
+                    cached_path.unlink()
+                except OSError:
+                    pass
+                return None
+
     def resolve_library_paths(self, names: List[str], library_dir: str = None) -> Tuple[List[str], List[str]]:
         """
         Resolve library display names to absolute file paths.
@@ -317,7 +415,7 @@ class LibraryCache:
         Handles:
         - Plain filenames ("iGEM.xml") -> looked up in name map
         - Absolute paths -> returned as-is if they exist
-        - SynBioHub URLs -> skipped (returned in second list)
+        - SynBioHub URLs -> fetched and cached on disk via materialize_remote_library
 
         Returns:
             Tuple of (resolved_paths, skipped_names)
@@ -326,9 +424,13 @@ class LibraryCache:
         skipped = []
 
         for name in names:
-            # skip SynBioHub URLs
+            # SynBioHub URL — fetch and cache to disk so alignment can index it
             if 'synbiohub.org' in name or name.startswith('http'):
-                skipped.append(name)
+                materialized = self.materialize_remote_library(name)
+                if materialized:
+                    resolved.append(materialized)
+                else:
+                    skipped.append(name)
                 continue
 
             # check name map first
