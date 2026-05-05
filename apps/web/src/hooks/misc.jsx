@@ -1,9 +1,16 @@
 import { useMantineTheme } from "@mantine/core";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { generateCyclicalColors, getSearchParams } from "../modules/util";
+import { isEmbedded, onEmbedChange } from "../modules/embedded";
 
 export function useSearchParams() {
     return useMemo(() => getSearchParams(), [window.location.search])
+}
+
+export function useIsEmbedded() {
+    const [embedded, setEmbedded] = useState(isEmbedded());
+    useEffect(() => onEmbedChange(() => setEmbedded(isEmbedded())), []);
+    return embedded;
 }
 
 export function useRandomColor(level) {
