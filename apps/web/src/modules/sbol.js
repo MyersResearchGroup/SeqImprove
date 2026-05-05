@@ -297,6 +297,10 @@ export function getExistingSequenceAnnotations(componentDefinition) {
 
 
 export function parseTextAnnotations(description) {
+    if (!description) {
+        return { buffer: new TextBuffer(""), annotations: [] }
+    }
+
     // Use a buffer to replace annotations with their regular text
     const reverseBuffer = new TextBuffer(description)
 
