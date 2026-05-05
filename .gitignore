@@ -41,3 +41,5 @@ yarn-error.log*
 auto-save-list
 tramp
 .\#*
+# local embed harness
+apps/web/test-embed.html

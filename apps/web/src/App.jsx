@@ -7,6 +7,7 @@ import { MantineProvider, Center, Box, Text, Space } from '@mantine/core'
 import { getSearchParams } from './modules/util'
 import { bootAPIserver } from "./modules/api"
 import { FILE_TYPES } from "./modules/fileTypes"
+import { isEmbedded, getInitialPayload, onEmbedChange, postToParent } from "./modules/embedded"
 
 export default function App() {
 
@@ -28,6 +29,21 @@ export default function App() {
         const paramsUri = getSearchParams().complete_sbol
         paramsUri && loadSBOL(paramsUri, FILE_TYPES.URL)
     }, [isFileEdited]);
+
+    useEffect(() => {
+        let handled = false
+        const consume = (data) => {
+            if (handled) return
+            handled = true
+            if (data?.sbol) {
+                loadSBOL(data.sbol, FILE_TYPES.SBOL2).finally(() => {
+                    postToParent("graphServiceLoadedSBOL")
+                })
+            }
+        }
+        if (isEmbedded()) consume(getInitialPayload())
+        return onEmbedChange(consume)
+    }, []);
 
     // name change effect - disabled to prevent displayId from being reset
     // useEffect(() => {

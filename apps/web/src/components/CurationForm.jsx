@@ -1,6 +1,7 @@
 import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea, Menu, Modal, TextInput, PasswordInput, Loader, Center, Select, SegmentedControl, Checkbox, TypographyStylesProvider } from '@mantine/core'
 import { useStore, mutateDocument, mutateDocumentForDisplayID } from '../modules/store'
-import { useCyclicalColors } from "../hooks/misc"
+import { useCyclicalColors, useIsEmbedded } from "../hooks/misc"
+import { postToParent } from "../modules/embedded"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
 import TypeSelection from "./TypeSelection"
@@ -15,7 +16,7 @@ import TextAnnotationModal from './TextAnnotationModal'
 import { TbDownload, TbUpload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
 import References from './References'
-import { FaHome, FaPencilAlt, FaTimes, FaCheck } from 'react-icons/fa'
+import { FaHome, FaPencilAlt, FaTimes, FaCheck, FaChevronDown } from 'react-icons/fa'
 import { useState } from "react"
 import { showErrorNotification, showNotificationSuccess } from "../modules/util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
@@ -510,8 +511,29 @@ export default function CurationForm({ }) {
         });
     };
         
+    const embedded = useIsEmbedded();
+
+    const handleSaveToSuite = async () => {
+        if (sequence && !isValid(sequence)) {
+            showErrorNotification("SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.");
+            return;
+        }
+        try {
+            if (isEditingName) {
+                await handleEndNameEdit(false);
+            }
+            const sbol = useStore.getState().exportDocument(false);
+            postToParent({ sbol, source: "seqimprove" });
+            showNotificationSuccess("Saved to SynBioSuite", "Your SBOL was sent to the host app.");
+        } catch (err) {
+            const message = err?.message ?? String(err);
+            postToParent({ error: { message } });
+            showErrorNotification("Failed to save", message);
+        }
+    };
+
     const logout = useStore(s => s.logout);
-    const [ synBioHubs, setSynBioHubs ] = useState([]);    
+    const [ synBioHubs, setSynBioHubs ] = useState([]);
 
     const loadSynBioHubs = async () => {
         const response = await fetch("https://wor.synbiohub.org/instances");
@@ -524,14 +546,34 @@ export default function CurationForm({ }) {
         if (!sequence || typeof sequence !== 'string') {
             return false;
         }
-        
+
         const validChars = /^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-\s]+$/i;
         if (sequence.match(validChars) === null) {
             return false;
         }
-        
+
         return true;
     }
+
+    const checkSequenceValidity = () => {
+        if (sequence && !isValid(sequence)) {
+            showErrorNotification("SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.");
+        }
+    };
+
+    const exportMenuItems = (!sequence || isValid(sequence)) && (
+        <Menu.Dropdown>
+            <Menu.Item onClick={exportDocument}>
+                Download SBOL2 {<TbDownload />}
+            </Menu.Item>
+            <Menu.Item onClick={() => {
+                loadSynBioHubs();
+                setIsInteractingWithSynBioHub(true);
+            }}>
+                Upload to SynBioHub {<TbUpload />}
+            </Menu.Item>
+        </Menu.Dropdown>
+    );
 
     return (
         <Tabs defaultValue="overview" variant="pills" styles={tabStyles}>
@@ -613,31 +655,41 @@ export default function CurationForm({ }) {
                                  Log out
                              </Button> :
                              <p></p>
-                            }                        
-                            <Menu shadow="md" width={200}>
-                                <Menu.Target>
-                                    <Button onClick={()=>{
-                                        // only show validation error if sequence exists but is invalid
-                                        // don't show error if sequence is just undefined/not loaded
-                                        if(sequence && !isValid(sequence)){
-                                            const errMessage = "SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases."
-                                            showErrorNotification(errMessage);
-                                        }
-                                    }}>Export Document</Button>
-                                </Menu.Target>
-
-                                {(!sequence || isValid(sequence)) && <Menu.Dropdown> 
-                                    <Menu.Item onClick={exportDocument}> 
-                                        Download SBOL2 {<TbDownload />}
-                                    </Menu.Item>
-                                    <Menu.Item onClick={() => {
-                                                   loadSynBioHubs();
-                                                   setIsInteractingWithSynBioHub(true);
-                                               }}>
-                                        Upload to SynBioHub {<TbUpload />}
-                                    </Menu.Item>
-                                </Menu.Dropdown>}
-                            </Menu>
+                            }
+                            {embedded ? (
+                                <Group spacing={0}>
+                                    <Button
+                                        onClick={handleSaveToSuite}
+                                        sx={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                                    >
+                                        Save to Working Directory
+                                    </Button>
+                                    <Menu shadow="md" width={200}>
+                                        <Menu.Target>
+                                            <Button
+                                                onClick={checkSequenceValidity}
+                                                px={10}
+                                                sx={{
+                                                    borderTopLeftRadius: 0,
+                                                    borderBottomLeftRadius: 0,
+                                                    borderLeft: "1px solid rgba(255,255,255,0.35)",
+                                                }}
+                                                aria-label="More export options"
+                                            >
+                                                <FaChevronDown size={12} />
+                                            </Button>
+                                        </Menu.Target>
+                                        {exportMenuItems}
+                                    </Menu>
+                                </Group>
+                            ) : (
+                                <Menu shadow="md" width={200}>
+                                    <Menu.Target>
+                                        <Button onClick={checkSequenceValidity}>Export Document</Button>
+                                    </Menu.Target>
+                                    {exportMenuItems}
+                                </Menu>
+                            )}
                         </Group>
                         </Group>
                         </Container>
