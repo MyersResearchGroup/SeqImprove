@@ -523,7 +523,7 @@ export default function CurationForm({ }) {
                 await handleEndNameEdit(false);
             }
             const sbol = useStore.getState().exportDocument(false);
-            postToParent({ sbol, source: "seqimprove" });
+            postToParent({ sbol, displayID: workingDisplayID, source: "seqimprove" });
             showNotificationSuccess("Saved to SynBioSuite", "Your SBOL was sent to the host app.");
         } catch (err) {
             const message = err?.message ?? String(err);
