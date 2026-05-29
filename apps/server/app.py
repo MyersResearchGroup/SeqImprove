@@ -55,9 +55,6 @@ from library_cache import (
     LibraryCache, IndexManager
 )
 
-uris = []
-sbh_file_prefixes = []
-
 # cache instances — initialized in setup(), used throughout the app
 library_cache: LibraryCache = None
 index_manager: IndexManager = None
@@ -92,42 +89,6 @@ def setup():
     print(f"Loaded {len(FEATURE_LIBRARIES)} libraries into cache")
     print(f"Available libraries: {library_cache.get_available_library_names()}")
 
-    # read in collections from synbiohub (use api. subdomain to bypass Cloudflare)
-    sbh_collections = "https://api.synbiohub.org/rootcollections"
-    try:
-        sbhresponse = requests.get(sbh_collections, timeout=10)
-    except requests.exceptions.RequestException as e:
-        print(f"Warning: Could not connect to SynBioHub: {e}")
-        return
-
-    # extract uris from json
-    if sbhresponse.status_code == 200:
-        sbh_str = json.dumps(sbhresponse.json())
-        sbh_data = json.loads(sbh_str)
-
-        global uris
-        global sbh_file_prefixes
-
-        uris = [item['uri'] for item in sbh_data]
-        sbh_file_prefixes = [item['displayId'] for item in sbh_data]
-
-        # remove large part libraries that break the http requests
-        for uri in ['https://synbiohub.org/public/bsu/bsu_collection/1',
-              'https://synbiohub.org/public/igem/igem_collection/1',
-              'https://synbiohub.org/public/iGEMDistributions/iGEMDistributions_collection/1',
-              'https://synbiohub.org/public/igem_feature_libraries/igem_feature_libraries_collection/1']:
-            if uri in uris:
-                uris.remove(uri)
-
-        for sbh_file_prefix in ['bsu_collection',
-                                'igem_collection',
-                                'iGEMDistributions_collection',
-                                'igem_feature_libraries_collection']:
-            if sbh_file_prefix in sbh_file_prefixes:
-                sbh_file_prefixes.remove(sbh_file_prefix)
-    else:
-        print(f"Failed to retrieve data from SynBioHub: {sbhresponse.status_code}")
-
 app = Flask(__name__) # app = Quart(__name__)
 CORS(app)
 app.before_first_request(setup)
@@ -157,24 +118,6 @@ def create_feature_library(part_library_file_name):
         if canonical in FEATURE_LIBRARIES:
             logger.info(f"Library '{canonical}' found in cache.")
             return FEATURE_LIBRARIES[canonical]
-
-        # Check if there's a locally-bundled file for this URI
-        # uris always contains canonical synbiohub.org URLs
-        # uris is fetched from api.synbiohub.org/rootcollections, 
-        # which lists all root collections in synbiohub.org, 
-        # including the feature libraries. So if the URI is in uris, 
-        # we know it's a synbiohub collection and we can check for a local file. If it's not in uris, then it's either not a synbiohub collection or it's a new one that was added after the server started, and in either case we should try to fetch it on demand.
-        if canonical in uris:
-            uri_index = uris.index(canonical)
-            local_name = sbh_file_prefixes[uri_index] + '.xml'
-            feature_libraries_dir = "./assets/synbict/feature-libraries"
-            feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, local_name))
-            if os.path.exists(feature_library_path):
-                feature_doc = sbol2.Document()
-                feature_doc.read(feature_library_path)
-                FEATURE_LIBRARIES[canonical] = FeatureLibrary([feature_doc])
-                logger.info(f"Loaded local library '{local_name}' for '{canonical}'")
-                return FEATURE_LIBRARIES[canonical]
 
         # Library not in cache — fetch on demand using api.synbiohub.org to bypass Cloudflare
         fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
