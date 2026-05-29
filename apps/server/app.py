@@ -95,15 +95,18 @@ def setup():
     # read in collections from synbiohub (use api. subdomain to bypass Cloudflare)
     sbh_collections = "https://api.synbiohub.org/rootcollections"
     try:
-        sbhresponse = requests.get(sbh_collections, timeout=10)
+        sbhresponse = requests.get(sbh_collections, headers={"Accept": "application/json"}, timeout=10)
     except requests.exceptions.RequestException as e:
         print(f"Warning: Could not connect to SynBioHub: {e}")
         return
 
     # extract uris from json
     if sbhresponse.status_code == 200:
-        sbh_str = json.dumps(sbhresponse.json())
-        sbh_data = json.loads(sbh_str)
+        try:
+            sbh_data = sbhresponse.json()
+        except ValueError as e:
+            print(f"Warning: SynBioHub returned a non-JSON response: {e}")
+            return
 
         global uris
         global sbh_file_prefixes
