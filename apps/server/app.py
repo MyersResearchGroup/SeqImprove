@@ -786,6 +786,9 @@ def import_library():
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
             FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
+            # Stage the same SBOL on disk so BLASTN/BWA/Minimap2 can index it
+            # without a second (anonymous, possibly failing) fetch.
+            library_cache.cache_remote_library_content(collectionURL, response.text)
             logger.info(f"Imported library URI '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
             return {"success": True, "cachedUrl": collectionURL, "librariesInCache": list(FEATURE_LIBRARIES.keys())}
         except Exception as e:
@@ -826,6 +829,7 @@ def update_document_properties():
     new_source = request_data.get('source')
 
     try:
+        
         # create SBOL document using Python sbol2 library
         doc = sbol2.Document()
         doc.readString(sbol_content)
