@@ -193,6 +193,7 @@ export async function fetchAnnotateSequence({
   allowSimilarMatches,
   codonMatches,
   includeHypothetical,
+  isCircular,
 }) {
   console.log("Annotating sequence...");
 
@@ -214,6 +215,7 @@ export async function fetchAnnotateSequence({
           allowSimilarMatches: allowSimilarMatches,
           codonMatches: codonMatches,
           includeHypothetical: includeHypothetical,
+          isCircular: isCircular,
         }),
         timeout: 320000,
       }
@@ -285,7 +287,16 @@ export async function fetchAnnotateSequence({
             .map((sa) => ({
               name: sa.displayName,
               id: sa.persistentIdentity,
-              location: [sa.rangeMin - 1, sa.rangeMax], // convert to 0 based indexing to match javascript array indices
+              // Envelope (min start..max end across all ranges) — used by callers
+              // that just need a single position for navigation/selection.
+              location: [sa.rangeMin - 1, sa.rangeMax],
+              // All Range objects — needed by the highlighter so wrap-around
+              // features on circular plasmids render as two separate blocks
+              // instead of one big block covering the whole envelope.
+              // SBOL Range.start is 1-based, but SYNBICT2 writes start=0 for
+              // the wrap-around continuation Range — clamp to 0 so the
+              // 0-based array index doesn't go negative.
+              locations: sa.rangeLocations.map((r) => [Math.max(0, r.start - 1), r.end]),
               componentInstance: sa.component,
               featureLibrary: sa.component.definition.persistentIdentity,
               enabled: true,

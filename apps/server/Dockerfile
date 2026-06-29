@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # --- SYNBICT install via conda env ---
 # Clone the SYNBICT2 branch which has the new aligners (Prokka/Minimap2/Blast/MmSeq/VSearch)
 # and the updated environment.yml.
+# The ADD line below busts Docker's layer cache whenever SYNBICT2's HEAD SHA
+# changes upstream — without it, `docker build` reuses the cached `git clone`
+# layer and silently skips new commits.
+ADD https://api.github.com/repos/SD2E/SYNBICT/commits/SYNBICT2 /tmp/synbict-commit.json
 RUN git clone -b SYNBICT2 https://github.com/SD2E/SYNBICT /SYNBICT
 WORKDIR /SYNBICT
 

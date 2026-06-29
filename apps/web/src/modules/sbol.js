@@ -291,7 +291,13 @@ export function getExistingSequenceAnnotations(componentDefinition) {
     return componentDefinition.sequenceAnnotations.map(sa => ({
         id: sa.persistentIdentity,
         name: sa.displayName,
-        location: [sa.locations[0].start - 1, sa.locations[0].end], // convert to 0 based indexing to match javascript array indices
+        // Envelope from the first range — kept for backward compatibility.
+        location: [sa.locations[0].start - 1, sa.locations[0].end],
+        // All locations as [start, end] pairs — wrap-around features on
+        // circular plasmids have two ranges; the highlighter renders each.
+        // Clamp start-1 to 0 so SYNBICT2's `start=0` wrap-around Range
+        // doesn't produce a negative array index.
+        locations: sa.locations.map(loc => [Math.max(0, loc.start - 1), loc.end]),
     }))
 }
 

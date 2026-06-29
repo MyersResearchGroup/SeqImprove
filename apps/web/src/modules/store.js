@@ -222,6 +222,7 @@ export const useStore = create((set, get) => ({
                 allowSimilarMatches: args[3],
                 codonMatches: args[4],
                 includeHypothetical: args[5],
+                isCircular: args[6],
             }) ?? [];
 
             let { fetchedAnnotations = [], synbictDoc } = result;
