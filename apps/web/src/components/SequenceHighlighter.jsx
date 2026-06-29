@@ -11,17 +11,19 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
     
     const delimiters = annotations
         .reduce((delimiters, annotation) => {
-            return delimiters.concat({
-                loc: annotation.location[0],
-                anno: annotation,
-                beg: true
-            }, {
-                loc: annotation.location[1],
-                anno: annotation,
-                beg: false,            
-            });
+            // Each annotation may have multiple ranges (wrap-around features on
+            // circular plasmids). Emit a beg/end delimiter pair for each range
+            // so both halves of the feature get highlighted, not just the
+            // bounding envelope. Fall back to the singular `location` for
+            // annotations produced by older code paths.
+            const ranges = annotation.locations ?? [annotation.location];
+            const pairs = ranges.flatMap(([start, end]) => [
+                { loc: start, anno: annotation, beg: true },
+                { loc: end, anno: annotation, beg: false },
+            ]);
+            return delimiters.concat(pairs);
         }, [])
-        .sort((a,b) => a.loc < b.loc ? -1 : a.loc == b.loc ? 0 : 1);    
+        .sort((a,b) => a.loc < b.loc ? -1 : a.loc == b.loc ? 0 : 1);
 
     const sequenceSections = delimiters.reduce((seqSections, delimiter) => {
         let i = seqSections.length - 1;

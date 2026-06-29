@@ -265,7 +265,8 @@ def clean_target_document(target_doc: sbol2.Document) -> sbol2.Document:
 def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bool, algorithm: str,
                     index_prefix: str, codon_matches: bool = False,
                     include_hypothetical: bool = False,
-                    protein_exact_match: bool = True) -> tuple[Optional[int], Optional[str], Optional[List]]:
+                    protein_exact_match: bool = True,
+                    is_circular: bool = False) -> tuple[Optional[int], Optional[str], Optional[List]]:
     """
     Run annotation with alignment-based algorithms (BWA, Minimap2, BLASTN), with
     optional Prokka augmentation for protein-level matching.
@@ -311,29 +312,59 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
 
     min_feature_length = 10
 
+    # Circular-target support (SYNBICT2 API): if the user marked the sequence
+    # circular OR the SBOL ComponentDefinition is typed SO_CIRCULAR, append a
+    # prefix the length of the longest feature so origin-spanning hits align
+    # as one contiguous block. After mapping, normalize_circular_matches drops
+    # duplicate hits in the overlap and rewrites end coords > target_length so
+    # the annotator emits a two-Range (wrap-around) SequenceAnnotation.
+    query_seq = None
+    target_length = None
+    target_cd = target_doc.componentDefinitions[0] if len(target_doc.componentDefinitions) else None
+    effective_is_circular = bool(target_cd is not None and (is_circular or sbol2.SO_CIRCULAR in target_cd.types))
+    if effective_is_circular and target_cd is not None:
+        from sequences_to_features.sbol_utils import sbol_sequence
+        target_seq = sbol_sequence(target_doc)
+        target_length = len(target_seq)
+        max_feature_length = max(
+            (len(f.nucleotides) for f in feature_library.features), default=0)
+        overlap = max(0, min(max_feature_length - 1, target_length))
+        if overlap > 0:
+            query_seq = target_seq + target_seq[:overlap]
+        # Persist the topology on the doc so downstream annotators preserve it.
+        if sbol2.SO_CIRCULAR not in target_cd.types:
+            target_cd.types = target_cd.types + [sbol2.SO_CIRCULAR]
+        logger.info(f"Annotating {target_cd.displayId} as circular (origin overlap {overlap} bp)")
+
     try:
         # step 4 — align query to temp directory (not index cache dir)
         with tempfile.TemporaryDirectory(prefix="seqimprove_align_") as tmp_dir:
             if algo_normalized == 'bwa':
                 output_path = os.path.join(tmp_dir, 'aligned.sam')
                 aligner = BwaAligner(index_prefix)
-                aligner.align(target_doc, output_path, exact_match)
+                aligner.align(target_doc, output_path, exact_match, query_seq=query_seq)
                 mapper = SAMFeatureMapper(output_path)
             elif algo_normalized == 'minimap2':
                 output_path = os.path.join(tmp_dir, 'aligned.sam')
                 aligner = Minimap2Aligner(index_prefix)
-                aligner.align(target_doc, output_path, exact_match)
+                aligner.align(target_doc, output_path, exact_match, query_seq=query_seq)
                 mapper = SAMFeatureMapper(output_path)
             elif algo_normalized == 'blastn':
                 output_path = os.path.join(tmp_dir, 'aligned.txt')
                 aligner = BlastAligner(index_prefix)
-                aligner.align(target_doc, output_path, exact_match)
+                aligner.align(target_doc, output_path, exact_match, query_seq=query_seq)
                 mapper = TableFeatureMapper(output_path)
             else:
                 return status.HTTP_400_BAD_REQUEST, f'Algorithm {algorithm} not supported', None
 
             inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
             # temp files cleaned up automatically when TemporaryDirectory exits
+
+        # Normalize origin-spanning hits back into the circular reference frame.
+        if effective_is_circular and query_seq is not None:
+            from sequences_to_features.sequences_to_features import normalize_circular_matches
+            inline_matches = normalize_circular_matches(inline_matches, target_length)
+            rc_matches = normalize_circular_matches(rc_matches, target_length)
 
         # step 4b — optional Prokka augmentation (codon-aware protein matching).
         # Prokka uses the protein-level exact-match flag, not the DNA-level one.
@@ -701,11 +732,12 @@ def annotate_sequence():
     allow_similar_matches = request_data.get('allowSimilarMatches', False)
     codon_matches = request_data.get('codonMatches', False)
     include_hypothetical = request_data.get('includeHypothetical', False)
+    is_circular = request_data.get('isCircular', False)
 
     if clean_document:
         sbol_content = run_synbio2easy(sbol_content)
 
-    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_dna_matches={allow_similar_dna_matches}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}...")
+    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_dna_matches={allow_similar_dna_matches}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}, is_circular={is_circular}...")
 
     try:
         if algorithm == 'FlashText':
@@ -734,7 +766,7 @@ def annotate_sequence():
             error_code, error_message, anno_lib_assoc = run_synbict_all(
                 sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
                 codon_matches=codon_matches, include_hypothetical=include_hypothetical,
-                protein_exact_match=protein_exact_match
+                protein_exact_match=protein_exact_match, is_circular=is_circular
             )
 
         if error_code:

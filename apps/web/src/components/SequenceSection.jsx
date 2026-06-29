@@ -270,6 +270,7 @@ function Annotations({ colors }) {
     const [allowSimilarMatches, setAllowSimilarMatches] = useState(false);
     const [codonMatches, setCodonMatches] = useState(false);
     const [includeHypothetical, setIncludeHypothetical] = useState(false);
+    const [isCircular, setIsCircular] = useState(false);
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -294,7 +295,7 @@ function Annotations({ colors }) {
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
             return
         }
-        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical)
+        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical, isCircular)
     }
 
     const handleClose = (library) => {removeLibrary(library)};
@@ -413,6 +414,25 @@ function Annotations({ colors }) {
                 />
                 <Tooltip
                     label="Include features labeled as hypothetical or uncharacterized in the annotation results"
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Group mt="sm" spacing="xs">
+                <Checkbox
+                    label="Circular sequence"
+                    checked={isCircular}
+                    onChange={(event) => setIsCircular(event.currentTarget.checked)}
+                />
+                <Tooltip
+                    label="Treat the target as a circular plasmid so features spanning the origin are detected (applies to BWA, Minimap2, BLASTN)"
                     position="right"
                     withArrow
                     multiline
