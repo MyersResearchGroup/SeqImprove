@@ -300,6 +300,22 @@ function Annotations({ colors }) {
 
     const handleClose = (library) => {removeLibrary(library)};
 
+    // FlashText does not support the alignment-based match options below
+    // (similar/codon/protein matching, circular). Disable and reset them when
+    // it is selected so stale values are never sent to the backend.
+    const isFlashText = selectedAlgorithm === 'FlashText';
+
+    const handleAlgorithmChange = (value) => {
+        setSelectedAlgorithm(value);
+        if (value === 'FlashText') {
+            setSimilarDNAMatches(false);
+            setCodonMatches(false);
+            setAllowSimilarMatches(false);
+            setIncludeHypothetical(false);
+            setIsCircular(false);
+        }
+    };
+
     return (
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
             {annotations.map((anno, i) =>
@@ -327,7 +343,7 @@ function Annotations({ colors }) {
                 label="Algorithm"
                 placeholder="Select algorithm"
                 value={selectedAlgorithm}
-                onChange={setSelectedAlgorithm}
+                onChange={handleAlgorithmChange}
                 data={[
                     { value: 'FlashText', label: 'FlashText' },
                     { value: 'BWA', label: 'BWA' },
@@ -340,6 +356,7 @@ function Annotations({ colors }) {
                 <Checkbox
                     label="Similar DNA Sequence Matches"
                     checked={similarDNAMatches}
+                    disabled={isFlashText}
                     onChange={(event) => setSimilarDNAMatches(event.currentTarget.checked)}
                 />
                 <Tooltip
@@ -359,6 +376,7 @@ function Annotations({ colors }) {
                 <Checkbox
                     label="Codon Matches"
                     checked={codonMatches}
+                    disabled={isFlashText}
                     onChange={(event) => {
                         const checked = event.currentTarget.checked;
                         setCodonMatches(checked);
@@ -385,7 +403,7 @@ function Annotations({ colors }) {
                 <Checkbox
                     label="Similar Protein Matches"
                     checked={allowSimilarMatches}
-                    disabled={!codonMatches}
+                    disabled={isFlashText || !codonMatches}
                     onChange={(event) => {
                         const checked = event.currentTarget.checked;
                         setAllowSimilarMatches(checked);
@@ -409,7 +427,7 @@ function Annotations({ colors }) {
                 <Checkbox
                     label="Include Hypothetical"
                     checked={includeHypothetical}
-                    disabled={!allowSimilarMatches}
+                    disabled={isFlashText || !allowSimilarMatches}
                     onChange={(event) => setIncludeHypothetical(event.currentTarget.checked)}
                 />
                 <Tooltip
@@ -429,6 +447,7 @@ function Annotations({ colors }) {
                 <Checkbox
                     label="Circular sequence"
                     checked={isCircular}
+                    disabled={isFlashText}
                     onChange={(event) => setIsCircular(event.currentTarget.checked)}
                 />
                 <Tooltip
