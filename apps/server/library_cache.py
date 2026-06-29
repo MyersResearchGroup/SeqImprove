@@ -408,6 +408,41 @@ class LibraryCache:
                     pass
                 return None
 
+    def cache_remote_library_content(self, url: str, sbol_text: str) -> Optional[str]:
+        """
+        Write already-fetched SBOL content to the disk cache so alignment
+        algorithms (BWA / Minimap2 / BLASTN) can index it without a redundant
+        anonymous fetch. Called from /api/importUserLibrary after a successful
+        authenticated fetch — also makes private libraries reachable for BLASTN.
+
+        Returns the absolute path to the cached XML, or None on failure.
+        """
+        canonical = re.sub(r'^(https?://)api\.', r'\1', url)
+        url_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:16]
+        remote_dir = self.cache_dir / "remote"
+        cached_path = remote_dir / f"{url_hash}.xml"
+        abs_path = str(cached_path.resolve()) if cached_path.exists() else os.path.abspath(str(cached_path))
+
+        with self._lock:
+            remote_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                cached_path.write_text(sbol_text, encoding='utf-8')
+            except OSError as e:
+                print(f"Failed to write imported library to {cached_path}: {e}")
+                return None
+
+            try:
+                self.get_document(abs_path)
+                print(f"Cached imported library '{canonical}' -> {abs_path}")
+                return abs_path
+            except Exception as e:
+                print(f"Failed to parse imported library '{canonical}': {e}")
+                try:
+                    cached_path.unlink()
+                except OSError:
+                    pass
+                return None
+
     def resolve_library_paths(self, names: List[str], library_dir: str = None) -> Tuple[List[str], List[str]]:
         """
         Resolve library display names to absolute file paths.
