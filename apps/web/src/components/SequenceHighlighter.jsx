@@ -9,7 +9,11 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
         forceUpdate()
     }, [annotations, sequence, wordSize])
     
+    // An unchecked annotation is not highlighted at all -- it contributes no
+    // delimiters, so the sequence it covers renders as plain text. (It used to
+    // be drawn in a lightened shade, which still colored the sequence.)
     const delimiters = annotations
+        .filter(annotation => isActive(annotation.id))
         .reduce((delimiters, annotation) => {
             // Each annotation may have multiple ranges (wrap-around features on
             // circular plasmids). Emit a beg/end delimiter pair for each range
@@ -69,8 +73,11 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
                         'p', 
                         {
                             style: {fontFamily: "monospace", fontSize: "14px"}, 
-                            onClick: e => {                                 
-                                if (e.target.tagName == 'SPAN') {                                                                        
+                            // Only active annotations are rendered, so clicking a
+                            // highlighted stretch always turns those annotations
+                            // off. Re-enabling is done from the checkbox list.
+                            onClick: e => {
+                                if (e.target.tagName == 'SPAN') {
                                     const idx = parseInt(e.target.dataset.seqSectionIdx, 10);
                               
                                     sequenceSections[idx].annotations.forEach(anno => {
@@ -84,12 +91,12 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
                                 'span',
                                 {
                                     style: {
-                                        backgroundColor: colorFromAnnotations(seqSection.annotations, isActive),
+                                        backgroundColor: colorFromAnnotations(seqSection.annotations),
                                         cursor: "pointer",
                                         borderStyle: "solid",
                                         borderRadius: "1px",
                                         borderWidth: "1px 0 1px 0",
-                                        borderColor: darker(colorFromAnnotations(seqSection.annotations, isActive)),
+                                        borderColor: darker(colorFromAnnotations(seqSection.annotations)),
                                     },
                                     'data-seq-section-idx': i,
                                     key: i,
@@ -105,15 +112,17 @@ export default function SequenceHighlighter({ sequence, annotations, onChange, i
     )
 }
 
-function colorFromAnnotations(annotations, isActive) {
+// Only active annotations ever reach here -- inactive ones are filtered out
+// before delimiters are built, so there is no "inactive" shade to compute.
+function colorFromAnnotations(annotations) {
     // return annotations[0].color;
     let rgbCollection = [];
 
-    annotations.forEach(({ color, id }) => {        
+    annotations.forEach(({ color }) => {
         // Create a dummy element to apply the color
         const dummyElement = document.createElement('div');
-        dummyElement.style.color = (isActive(id) ? color : lighter(color));
-        
+        dummyElement.style.color = color;
+
         document.body.appendChild(dummyElement);
 
         // Get the computed RGB values
@@ -179,30 +188,7 @@ function darker(color) {
     return rgbString    
 }
 
-function lighter(color) {
-    // Create a dummy element to apply the color
-    const dummyElement = document.createElement('div')
-    dummyElement.style.color = color
-    
-    document.body.appendChild(dummyElement)
-
-    // Get the computed RGB values
-    const computedColor = window.getComputedStyle(dummyElement).color
-    const rgbValues = computedColor.match(/\d+/g).map(Number)
-  
-    // remove dummy element
-    document.body.removeChild(dummyElement)
-
-    // Calculate lighter RGB values
-    const lighterRgbValues = rgbValues.map(value => Math.floor((255 - value) * 0.8 + value))
-  
-    // Convert RGB to RGB string format
-    const rgbString = `rgb(${lighterRgbValues.join(', ')})`
-
-    return rgbString
-}
-
-function insertSpaces(wordSize, sequenceParts) {    
+function insertSpaces(wordSize, sequenceParts) {
     let result = new Array(sequenceParts.length);
     let jump = wordSize;
     
