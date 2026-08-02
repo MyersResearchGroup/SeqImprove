@@ -336,28 +336,47 @@ function Annotations({ colors }) {
         }
     };
 
+    // Part annotations (Components) are listed above bare sequence features
+    // (SequenceFeatures). The original index is carried along because `colors`
+    // is indexed by position in `annotations` -- reordering the display must not
+    // change which color an annotation gets, or the list and the sequence
+    // highlighter would disagree.
+    const indexedAnnotations = annotations.map((anno, i) => ({ anno, i }));
+    const partAnnotations = indexedAnnotations.filter(({ anno }) => anno.isPart);
+    const featureAnnotations = indexedAnnotations.filter(({ anno }) => !anno.isPart);
+
+    const renderAnnotation = ({ anno, i }) => (
+        <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name + '_' + i}>
+            <AnnotationCheckbox
+                title={anno.name}
+                color={colors[i]}
+                active={isActive(anno.id) ? 1 : 0}
+                onChange={val => setActive(anno.id, val)}
+            />
+
+            {anno.featureLibrary &&
+             <MyToolTip
+                featureLibrary={ anno.featureLibrary.endsWith('.xml')
+                    ? anno.featureLibrary.replace(/_/g, ' ').slice(0, -4)
+                    : anno.featureLibrary}
+             >
+             </MyToolTip>}
+
+            <Copier anno={anno} sequence={sequence} />
+        </Group>
+    );
+
     return (
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
-            {annotations.map((anno, i) =>
-                <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name + '_' + i}>
-                    <AnnotationCheckbox
-                        title={anno.name}
-                        color={colors[i]}
-                        active={isActive(anno.id) ? 1 : 0}
-                        onChange={val => setActive(anno.id, val)}                        
-                    />
+            {/* Headings only appear once there is something in both groups --
+                with a single group the labels are just noise. */}
+            {partAnnotations.length > 0 && featureAnnotations.length > 0 &&
+             <Text size="xs" color="dimmed" weight={600} mb={4}>Part Annotations</Text>}
+            {partAnnotations.map(renderAnnotation)}
 
-                    {anno.featureLibrary &&
-                     <MyToolTip
-                        featureLibrary={ anno.featureLibrary.endsWith('.xml')
-                            ? anno.featureLibrary.replace(/_/g, ' ').slice(0, -4)
-                            : anno.featureLibrary}
-                     >
-                     </MyToolTip>}
-                    
-                <Copier anno={anno} sequence={sequence} />   
-                </Group>              
-            )}
+            {partAnnotations.length > 0 && featureAnnotations.length > 0 &&
+             <Text size="xs" color="dimmed" weight={600} mt={10} mb={4}>Sequence Annotations</Text>}
+            {featureAnnotations.map(renderAnnotation)}
 
             <Select
                 label="Algorithm"
