@@ -7,27 +7,58 @@ import { fetchConvertGenbankToSBOL2 } from '../modules/api'
 import { FILE_TYPES } from '../modules/fileTypes'
 // import { Graph, S2ComponentDefinition, SBOL2GraphView, genbankToSBOL2 } from "sbolgraph"
 
+// Escape the five XML predefined entities so header text with &, <, >, " or '
+// can't produce invalid SBOL when interpolated into the template below.
+function escapeXml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
 function parseFasta(fastaContent) {
-    // split sequence from description line
-    const [ descriptionLine, ...sequenceLines ] = fastaContent.split('\n');
-    // grab first "word" from description line
-    const [ first, ...rest ] = descriptionLine.split(' ');
-    if (first[0] !== '>') {
-        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, expected '>' on line 1", null];
+    // Normalize line endings (handles \n, \r\n, and bare \r) so a Windows FASTA
+    // doesn't leave stray \r on the header or embedded in the sequence.
+    const lines = fastaContent.split(/\r\n|\r|\n/);
+    // The header is the first non-blank line and must start with '>'.
+    const headerIndex = lines.findIndex(l => l.trim() !== '');
+    const headerLine = headerIndex >= 0 ? lines[headerIndex].trim() : '';
+    if (headerLine[0] !== '>') {
+        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, expected '>' on line 1", []];
     }
-    const firstWord = first.slice(1);
+    // Header (minus '>'): first whitespace-delimited token is the id, the
+    // remainder is the description.
+    const [ first, ...rest ] = headerLine.slice(1).trim().split(/\s+/);
+    const firstWord = first ?? '';
+    if (!firstWord) {
+        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, header has no identifier", []];
+    }
     const description = rest.join(' ');
     // convert first word to sbol compliant displayId
     const displayId = (firstWord[0].match(/[a-z_]/i) ? firstWord[0] : '_') + firstWord.slice(1).replace(/\W/g, '_');
-    // join and validate sequence
-    const sequence = sequenceLines.join('');
+    // Sequence = every line after the header up to the next record ('>'),
+    // stripped of all whitespace so blank lines / wrapping don't corrupt it.
+    const bodyLines = lines.slice(headerIndex + 1);
+    const nextRecordIndex = bodyLines.findIndex(line => line[0] === '>');
+    const sequenceLines = nextRecordIndex < 0 ? bodyLines : bodyLines.slice(0, nextRecordIndex);
+    const sequence = sequenceLines.join('').replace(/\s/g, '');
+
+    // Warnings never block the upload, they just tell the user what we did.
+    const warnings = [];
+    // SeqImprove models a single component, so a multi-record FASTA can only
+    // contribute its first record — say so instead of dropping the rest silently.
+    if (nextRecordIndex >= 0) {
+        const ignored = bodyLines.slice(nextRecordIndex).filter(line => line[0] === '>').length;
+        warnings.push(`This FASTA contains ${ignored + 1} records. Only the first ("${firstWord}") was imported; the other ${ignored} ${ignored === 1 ? 'was' : 'were'} ignored.`);
+    }
     // currently is blocking the upload when include invalid chars
     // only show the warning without blocking the uploading
     if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-]+$/i) === null) {
-        //show warning
-        return [{ displayId, description, sequence }, null, "Sequence includes invalid characters."]
+        warnings.push("Sequence includes invalid characters.");
     }
-    return [{ displayId, description, sequence }, null, null]
+    return [{ displayId, description, sequence }, null, warnings]
 }
 
 function compileFastaToSBOL({ displayId, description, sequence }) {
@@ -38,7 +69,7 @@ function compileFastaToSBOL({ displayId, description, sequence }) {
     <sbol:displayId>${displayId}</sbol:displayId>
     <sbol:version>1</sbol:version>
     <dcterms:title>${displayId}</dcterms:title>    
-    <dcterms:description>${description}</dcterms:description>
+    <dcterms:description>${escapeXml(description)}</dcterms:description>
     <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
     <sbol:sequence rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence/1"/>
   </sbol:ComponentDefinition>
@@ -46,7 +77,7 @@ function compileFastaToSBOL({ displayId, description, sequence }) {
     <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence"/>
     <sbol:displayId>${displayId}</sbol:displayId>
     <sbol:version>1</sbol:version>
-    <sbol:elements>${sequence}</sbol:elements>
+    <sbol:elements>${escapeXml(sequence)}</sbol:elements>
     <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
   </sbol:Sequence>
 </rdf:RDF>`
@@ -175,14 +206,12 @@ export default function UploadForm() {
                         return;
                     }
                 }
-                const [ fastaDoc, err, warning ] = parseFasta(fileContent);
+                const [ fastaDoc, err, warnings ] = parseFasta(fileContent);
                 if (err) {
                     showErrorNotification(err);
                     return;
                 }
-                if (warning) {
-                    showWarningNotification(warning);
-                }               
+                warnings.forEach(warning => showWarningNotification(warning));
                 const sbolContent = compileFastaToSBOL(fastaDoc);
                 loadSBOL(sbolContent, FILE_TYPES.FASTA);
                 break;
