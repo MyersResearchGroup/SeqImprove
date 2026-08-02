@@ -142,11 +142,10 @@ export async function createSBOLDocument(sbolContent) {
         document.root.richDescription = document.root.description
     }
     
-    // initialize title as display ID if one doesn't exist
-    if (!document.root.title) {
-        document.root.title = document.root.displayId
-    }
-    
+    // The title is deliberately NOT defaulted to the display ID. A document
+    // with no name should read as having no name, so the user enters a real one
+    // instead of finding the field pre-filled with a value they never chose.
+
     return document
 }
 

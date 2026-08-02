@@ -2,7 +2,7 @@ import { Box, Button, Center, FileInput, Group, LoadingOverlay, NativeSelect, Se
 import { useForm } from '@mantine/form'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { useStore } from '../modules/store'
-import { showErrorNotification, showWarningNotification } from '../modules/util'
+import { showErrorNotification, showWarningNotification, validDisplayID } from '../modules/util'
 import { fetchConvertGenbankToSBOL2 } from '../modules/api'
 import { FILE_TYPES } from '../modules/fileTypes'
 import { HOMESPACE } from '../modules/homespace'
@@ -62,14 +62,18 @@ function parseFasta(fastaContent) {
     return [{ displayId, description, sequence }, null, warnings]
 }
 
-function compileFastaToSBOL({ displayId, description, sequence }) {
+// Builds a minimal SBOL2 document. Used both by the FASTA import and by "From
+// Scratch". `description` and `sequence` are empty for a from-scratch part, and
+// no dcterms:title is written unless a name is supplied -- a new document must
+// not arrive with placeholder values the user has to delete.
+function compileSBOL({ displayId, name = '', description = '', sequence = '' }) {
+    const title = name ? `\n    <dcterms:title>${escapeXml(name)}</dcterms:title>` : '';
     return `<?xml version="1.0" ?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:igem="http://wiki.synbiohub.org/wiki/Terms/igem#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:gbconv="http://sbols.org/genBankConversion#" xmlns:genbank="http://www.ncbi.nlm.nih.gov/genbank#" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <sbol:ComponentDefinition rdf:about="${HOMESPACE}/${displayId}/1">
     <sbol:persistentIdentity rdf:resource="${HOMESPACE}/${displayId}"/>
     <sbol:displayId>${displayId}</sbol:displayId>
-    <sbol:version>1</sbol:version>
-    <dcterms:title>${displayId}</dcterms:title>    
+    <sbol:version>1</sbol:version>${title}
     <dcterms:description>${escapeXml(description)}</dcterms:description>
     <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
     <sbol:sequence rdf:resource="${HOMESPACE}/${displayId}_Sequence/1"/>
@@ -110,6 +114,7 @@ export default function UploadForm() {
             url: "",
             file: null,
             file_t: "SBOL2",
+            displayId: "",
         },
         validate: {
             url: (value, values) => {
@@ -124,6 +129,17 @@ export default function UploadForm() {
                 return true
             },
             file: (value, values) => values.method == Methods.Upload && !value,
+            // The displayId is fixed at creation time and can't be changed
+            // afterwards, so it has to be valid before the document exists.
+            displayId: (value, values) => {
+                if (values.method != Methods.FromScratch)
+                    return null
+                if (!value?.trim())
+                    return "A display ID is required"
+                if (!validDisplayID(value.trim()))
+                    return "Letters, digits and underscores only, and it can't start with a digit"
+                return null
+            },
         }
     });
 
@@ -147,6 +163,14 @@ export default function UploadForm() {
                                {...form.getInputProps("url")}
                            />
                        </>,
+        [Methods.FromScratch]: <>
+                                   <TextInput
+                                       label="Display ID"
+                                       description="Permanent — it identifies the part and can't be changed later."
+                                       placeholder="e.g. my_promoter"
+                                       {...form.getInputProps("displayId")}
+                                   />
+                               </>,
     };
 
     const handleSubmit = async values => {        
@@ -213,7 +237,7 @@ export default function UploadForm() {
                     return;
                 }
                 warnings.forEach(warning => showWarningNotification(warning));
-                const sbolContent = compileFastaToSBOL(fastaDoc);
+                const sbolContent = compileSBOL(fastaDoc);
                 loadSBOL(sbolContent, FILE_TYPES.FASTA);
                 break;
             case "GenBank":
@@ -270,8 +294,10 @@ export default function UploadForm() {
                 values.url + '/sbol';
             loadSBOL(url);
             break;
-        case Methods.FromScratch:          
-            loadSBOL(window.location.origin + "/From_Scratch.xml");
+        case Methods.FromScratch:
+            // Built from the display ID entered above rather than loaded from a
+            // fixture, so the new document has no placeholder name/description.
+            loadSBOL(compileSBOL({ displayId: values.displayId.trim() }), FILE_TYPES.FROM_SCRATCH);
             break;
         default:
             break;

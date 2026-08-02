@@ -21,14 +21,9 @@ import { useState } from "react"
 import { showErrorNotification, showNotificationSuccess } from "../modules/util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import { createSBOLDocument } from '../modules/sbol'
-import { updateDocumentProperties } from '../modules/api'
 import FormSection from './FormSection'
 
-function validDisplayID(displayID) {
-    return displayID.match(/^[a-z_]\w+$/i);
-}
-
-function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs, isEditingName, handleEndNameEdit}) {     
+function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs}) {     
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
 
     return (
@@ -41,8 +36,6 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
             {isLoggedInToSynBioHub ?
              <SynBioHubClientUpload 
                  setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} 
-                 isEditingName={isEditingName}
-                 handleEndNameEdit={handleEndNameEdit}
              /> :
              <SynBioHubClientLogin synBioHubs={synBioHubs} />
             }            
@@ -132,7 +125,7 @@ export function SynBioHubClientLogin({ synBioHubs }) {
     );
 }
 
-function SynBioHubClientUpload({ setIsInteractingWithSynBioHub, isEditingName, handleEndNameEdit }) {        
+function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
     const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
     const [inputError, setInputError] = useState(false);
@@ -266,10 +259,6 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub, isEditingName, h
                                                                          params.append('overwrite_merge', overwrite ? 1 : 0);
                                     
                                     // create a Blob from the text - get fresh XML at export time
-                                    // ensure any pending displayId/name changes are applied first
-                                    if (isEditingName) {
-                                        await handleEndNameEdit(false);
-                                    }
                                     const currentXml = useStore.getState().exportDocument(false);
                                     const blob = new Blob([currentXml], { type: 'text/plain' });
                                      params.append('file', blob, 'file.txt');
@@ -327,10 +316,6 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub, isEditingName, h
                                   params.append('overwrite_merge', overwrite ? 3 : 2);                                                                                                                       
                                   params.append('rootCollections', rootCollectionURI);
                                   // create a Blob from the text - get fresh XML at export time
-                                  // ensure pending displayId/name changes are applied first
-                                  if (isEditingName) {
-                                      await handleEndNameEdit(false);
-                                  }
                                   const currentXml = useStore.getState().exportDocument(false);
                                   const blob = new Blob([currentXml], { type: 'text/plain' });
                                   params.append('file', blob, 'example.txt');
@@ -370,7 +355,9 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub, isEditingName, h
 export default function CurationForm({ }) {
 
     const displayId = useStore(s => s.document?.root.displayId)
-    const name = useStore(s => s.document?.root.title || s.document?.root.displayId)
+    // The real title only -- no falling back to displayId, which would show a
+    // name the user never entered.
+    const name = useStore(s => s.document?.root.title)
     const richDescription = useStore(s => s.document?.root.richDescription)
     const source = useStore(s => s.document?.root.source)
 
@@ -416,61 +403,10 @@ export default function CurationForm({ }) {
     //     })
     // }, [])
 
-    const [ isEditingName, setIsEditingName ] = useState(false);
-    const [ workingName, setWorkingName ] = useState(name);
-    const [ workingDisplayID, setWorkingDisplayID ] = useState(displayId);
-    const [ nameIsReadOnly, setNameIsReadOnly ] = useState(false);
-    
     // source editing state
     const [ isEditingSource, setIsEditingSource ] = useState(false);
     const [ workingSource, setWorkingSource ] = useState(source);
     const [ sourceError, setSourceError ] = useState(false);
-
-    const handleStartNameEdit = () => {
-        setIsEditingName(true);
-        setWorkingName(name);
-        setWorkingDisplayID(displayId);
-    };
-    
-    const handleEndNameEdit = async (cancelled = false) => {
-        if (cancelled) {
-            setIsEditingName(false);
-            return;
-        }
-
-        if (!workingName || workingName.trim().length === 0) {
-            showErrorNotification("Name cannot be empty.", "Please provide a valid name.");
-            return;
-        }
-
-        if (!validDisplayID(workingDisplayID)) {
-            showErrorNotification("DisplayID should contain only alphanumeric characters and underscores. The first character cannot be a number.");
-            return;
-        }
-
-        setIsEditingName(false);       
-
-        // use Python sbol2 library via API
-        const sbolContent = useStore.getState().sbolContent;
-        const result = await updateDocumentProperties(sbolContent, workingName, workingDisplayID);
-        
-        if (result.error) {
-            showErrorNotification("Failed to update document", result.error);
-            return;
-        }
-
-        // update the document with the new SBOL content
-        await useStore.getState().replaceDocumentForIDChange(result.sbolContent);
-        
-        // add small delay to ensure state is fully updated
-        await new Promise(resolve => setTimeout(resolve, 10));
-        
-        // refresh working values to reflect the updated document
-        const updatedDisplayId = useStore.getState().document?.root.displayId;
-        const updatedName = useStore.getState().document?.root.title || updatedDisplayId;
-        setWorkingDisplayID(updatedDisplayId);
-        setWorkingName(updatedName);
-    };
 
     const handleStartSourceEdit = () => {
         setIsEditingSource(true);
@@ -519,11 +455,8 @@ export default function CurationForm({ }) {
             return;
         }
         try {
-            if (isEditingName) {
-                await handleEndNameEdit(false);
-            }
             const sbol = useStore.getState().exportDocument(false);
-            postToParent({ sbol, displayID: workingDisplayID, source: "seqimprove" });
+            postToParent({ sbol, displayID: displayId, source: "seqimprove" });
             showNotificationSuccess("Saved to SynBioSuite", "Your SBOL was sent to the host app.");
         } catch (err) {
             const message = err?.message ?? String(err);
@@ -587,66 +520,16 @@ export default function CurationForm({ }) {
                                 </ActionIcon>
                             </Tooltip>
                             <Group>
-                                {isEditingName ?
-                                 <Group direction="column" spacing={12}>
-                                     <Group spacing={0} align="flex-start">
-                                         <Text size="xs" color="dimmed" mb={4}>Display ID</Text>
-                                     </Group>
-                                     <Textarea
-                                         autosize
-                                         maxrows={1}
-                                         value={workingDisplayID}
-                                         onChange={event => {
-                                             setWorkingDisplayID(event.currentTarget.value);
-                                         }}
-                                         styles={{ input: { font: "18px monospace" } }}
-                                         placeholder="Display ID"
-                                     />
-                                     <Group spacing={0} align="flex-start">
-                                         <Text size="xs" color="dimmed" mb={4}>Name</Text>
-                                     </Group>
-                                     <Textarea
-                                         autosize
-                                         maxrows={1}
-                                         value={workingName}
-                                         onChange={event => {
-                                             setWorkingName(event.currentTarget.value);
-                                         }}
-                                         styles={{ input: { font: "18px monospace" } }}
-                                         placeholder="Document name"
-                                     />
-                                 </Group> :
-                                 <Title order={3}>{displayId}</Title>
-                                }                                
-                                {isEditingName ? 
-                                 <Group spacing={6}>
-                                     <ActionIcon onClick={() => handleEndNameEdit(true)} color="red"><FaTimes /></ActionIcon>
-                                     <ActionIcon onClick={() => handleEndNameEdit(false)} color="green"><FaCheck /></ActionIcon>
-                                 </Group> : !nameIsReadOnly &&
-                                 <ActionIcon onClick={handleStartNameEdit}><FaPencilAlt /></ActionIcon>} 
+                                {/* The display ID is fixed when the document is
+                                    created and is never editable here -- it is
+                                    entered on the upload form. */}
+                                <Title order={3}>{displayId}</Title>
                             </Group>
                             <Tabs.List>
-                                <Tabs.Tab value="overview" onClick={() => {
-                                              setNameIsReadOnly(false);                                              
-                                          }}>Overview</Tabs.Tab>
-                                <Tabs.Tab value="sequence" onClick={() => {
-                                              if (isEditingName) {
-                                                  handleEndNameEdit(true);
-                                              }
-                                              setNameIsReadOnly(true);
-                                          }}>Sequence</Tabs.Tab>
-                                <Tabs.Tab value="text" onClick={() => {
-                                              if (isEditingName) {
-                                                  handleEndNameEdit(true);                                              
-                                              }
-                                              setNameIsReadOnly(true);
-                                          }}>Text</Tabs.Tab>
-                                <Tabs.Tab value="proteins" onClick={() => {
-                                              if (isEditingName) {
-                                                  handleEndNameEdit(true);                                                  
-                                              }
-                                              setNameIsReadOnly(true);
-                                          }}>Proteins</Tabs.Tab>
+                                <Tabs.Tab value="overview">Overview</Tabs.Tab>
+                                <Tabs.Tab value="sequence">Sequence</Tabs.Tab>
+                                <Tabs.Tab value="text">Text</Tabs.Tab>
+                                <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
                             </Tabs.List>
                             {isLoggedInToSynBioHub ?
                              <Button variant="subtle"
@@ -700,13 +583,15 @@ export default function CurationForm({ }) {
                             onClose={() => setIsInteractingWithSynBioHub(false)}
                             setOpened={setIsInteractingWithSynBioHub}                            
                             synBioHubs={synBioHubs}
-                            isEditingName={isEditingName}
-                            handleEndNameEdit={handleEndNameEdit}
                         />                        
                         <Container>
                             <Tabs.Panel value="overview" pt={20}>
                                 <SplitPanel
                                     left={<>
+                                              {/* Read-only here -- the name is edited on the Text page. */}
+                                              <Title order={5} mb={10}>Name</Title>
+                                              <Text color="dimmed">{name || "No name specified"}</Text>
+                                              <Space h={20} />
                                               <Title order={5} mb={10}>Description</Title>
                                               <Text color="dimmed">
                                                   <ReactMarkdown linkTarget="_blank">
