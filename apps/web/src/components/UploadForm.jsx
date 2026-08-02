@@ -63,9 +63,9 @@ function parseFasta(fastaContent) {
 }
 
 // Builds a minimal SBOL2 document. Used both by the FASTA import and by "From
-// Scratch". `description` and `sequence` are empty for a from-scratch part, and
-// no dcterms:title is written unless a name is supplied -- a new document must
-// not arrive with placeholder values the user has to delete.
+// Scratch". `description` and `sequence` are empty for a from-scratch plasmid,
+// and no dcterms:title is written unless a name is supplied -- a new document
+// must not arrive with placeholder values the user has to delete.
 function compileSBOL({ displayId, name = '', description = '', sequence = '' }) {
     const title = name ? `\n    <dcterms:title>${escapeXml(name)}</dcterms:title>` : '';
     return `<?xml version="1.0" ?>
@@ -115,6 +115,7 @@ export default function UploadForm() {
             file: null,
             file_t: "SBOL2",
             displayId: "",
+            name: "",
         },
         validate: {
             url: (value, values) => {
@@ -166,9 +167,15 @@ export default function UploadForm() {
         [Methods.FromScratch]: <>
                                    <TextInput
                                        label="Display ID"
-                                       description="Permanent — it identifies the part and can't be changed later."
-                                       placeholder="e.g. my_promoter"
+                                       description="Identifies the plasmid — permanent, it can't be changed later. Letters, digits and underscores only; it can't start with a digit."
+                                       placeholder="e.g. SrpR_RBS_S3_gate"
                                        {...form.getInputProps("displayId")}
+                                   />
+                                   <TextInput
+                                       label="Name"
+                                       description="A readable name for the plasmid. Spaces are fine here. Optional — you can add or change it later on the Text page."
+                                       placeholder="e.g. SrpR RBS S3 gate"
+                                       {...form.getInputProps("name")}
                                    />
                                </>,
     };
@@ -297,7 +304,10 @@ export default function UploadForm() {
         case Methods.FromScratch:
             // Built from the display ID entered above rather than loaded from a
             // fixture, so the new document has no placeholder name/description.
-            loadSBOL(compileSBOL({ displayId: values.displayId.trim() }), FILE_TYPES.FROM_SCRATCH);
+            loadSBOL(compileSBOL({
+                displayId: values.displayId.trim(),
+                name: values.name.trim(),
+            }), FILE_TYPES.FROM_SCRATCH);
             break;
         default:
             break;
