@@ -194,6 +194,8 @@ export async function fetchAnnotateSequence({
   codonMatches,
   includeHypothetical,
   isCircular,
+  dnaIdentityThreshold,
+  applyNms,
 }) {
   console.log("Annotating sequence...");
 
@@ -216,6 +218,8 @@ export async function fetchAnnotateSequence({
           codonMatches: codonMatches,
           includeHypothetical: includeHypothetical,
           isCircular: isCircular,
+          dnaIdentityThreshold: dnaIdentityThreshold,
+          applyNms: applyNms,
         }),
         timeout: 320000,
       }

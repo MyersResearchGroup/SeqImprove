@@ -226,6 +226,8 @@ export const useStore = create((set, get) => ({
                 codonMatches: args[4],
                 includeHypothetical: args[5],
                 isCircular: args[6],
+                dnaIdentityThreshold: args[7],
+                applyNms: args[8],
             }) ?? [];
 
             let { fetchedAnnotations = [], synbictDoc } = result;

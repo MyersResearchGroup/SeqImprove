@@ -1,6 +1,6 @@
 import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Box, Checkbox, CloseButton, Flex, Grid, SegmentedControl, Select, Title } from '@mantine/core';
+import { Box, Checkbox, CloseButton, Flex, Grid, NumberInput, SegmentedControl, Select, Title } from '@mantine/core';
 import { Button, Center, Group, Stack, Loader, Modal, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight, FaInfoCircle, FaTrash } from "react-icons/fa"
@@ -17,6 +17,11 @@ import { SynBioHubClientLogin } from "./CurationForm";
 import { importLibrary, checkLibraryCache } from "../modules/api";
 
 const WORDSIZE = 8;
+
+// Issue #158: the DNA identity threshold starts at its ceiling and the user may
+// only relax it downward. Kept in sync with SYNBICT's own default (pid_threshold)
+// so the CLI and the web app agree on what an unconfigured run does.
+const DEFAULT_DNA_IDENTITY = 95;
 
 function isValidUrl(string) {
     try {
@@ -272,6 +277,15 @@ function Annotations({ colors }) {
     const [codonMatches, setCodonMatches] = useState(false);
     const [includeHypothetical, setIncludeHypothetical] = useState(false);
     const [isCircular, setIsCircular] = useState(false);
+    // Minimum coverage-weighted DNA identity for a hit to be kept. Only consulted
+    // when similar (non-exact) DNA matching is on -- an exact match is 100% by
+    // definition. Starts at the ceiling; the user can only relax it downward.
+    const [dnaIdentity, setDnaIdentity] = useState(DEFAULT_DNA_IDENTITY);
+    // Non-maximum suppression: drop a hit that substantially overlaps a
+    // higher-scoring one, so one locus collapses to its single best reference.
+    // Off by default, matching SYNBICT -- NMS discards nested parts, which suits
+    // circuit reconstruction but not exhaustive annotation.
+    const [applyNms, setApplyNms] = useState(false);
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -296,7 +310,7 @@ function Annotations({ colors }) {
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
             return
         }
-        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical, isCircular)
+        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical, isCircular, dnaIdentity, applyNms)
     }
 
     const handleClose = (library) => {removeLibrary(library)};
@@ -324,6 +338,9 @@ function Annotations({ colors }) {
     // (similar/codon/protein matching, circular). Disable and reset them when
     // it is selected so stale values are never sent to the backend.
     const isFlashText = selectedAlgorithm === 'FlashText';
+    // pid_threshold / apply_nms exist only on SYNBICT's TableFeatureMapper,
+    // which is the BLASTN path. SAMFeatureMapper (BWA/Minimap2) has neither.
+    const isBlastn = selectedAlgorithm === 'BLASTN';
 
     const handleAlgorithmChange = (value) => {
         setSelectedAlgorithm(value);
@@ -400,6 +417,55 @@ function Annotations({ colors }) {
                 />
                 <Tooltip
                     label="Allow DNA-level matches with 95%+ sequence identity instead of requiring exact DNA matches (applies to BWA, Minimap2, BLASTN)"
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            {/* Both of these reach SYNBICT's TableFeatureMapper, which only the
+                BLASTN path uses -- BWA/Minimap2 go through SAMFeatureMapper,
+                which has no such parameters. Disabled elsewhere so the controls
+                can't imply an effect they don't have. */}
+            <Group mt="sm" spacing="xs">
+                <NumberInput
+                    label="DNA Identity (%)"
+                    value={dnaIdentity}
+                    onChange={value => setDnaIdentity(value ?? DEFAULT_DNA_IDENTITY)}
+                    min={0}
+                    max={DEFAULT_DNA_IDENTITY}
+                    step={1}
+                    precision={0}
+                    disabled={!isBlastn || !similarDNAMatches}
+                    sx={{ width: 120 }}
+                />
+                <Tooltip
+                    label="Minimum coverage-weighted identity (identical bases / reference length) for a match to be kept. Starts at 95% and can only be lowered. Requires BLASTN with similar DNA matching — an exact match is 100% by definition."
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Group mt="sm" spacing="xs">
+                <Checkbox
+                    label="NMS"
+                    checked={applyNms}
+                    disabled={!isBlastn}
+                    onChange={(event) => setApplyNms(event.currentTarget.checked)}
+                />
+                <Tooltip
+                    label="Non-maximum suppression: when several parts match the same locus, keep only the highest-scoring one instead of reporting nested/overlapping duplicates. BLASTN only."
                     position="right"
                     withArrow
                     multiline

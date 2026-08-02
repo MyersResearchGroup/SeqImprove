@@ -272,7 +272,9 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
                     index_prefix: str, codon_matches: bool = False,
                     include_hypothetical: bool = False,
                     protein_exact_match: bool = True,
-                    is_circular: bool = False) -> tuple[Optional[int], Optional[str], Optional[List]]:
+                    is_circular: bool = False,
+                    dna_identity_threshold: float = 95.0,
+                    apply_nms: bool = False) -> tuple[Optional[int], Optional[str], Optional[List]]:
     """
     Run annotation with alignment-based algorithms (BWA, Minimap2, BLASTN), with
     optional Prokka augmentation for protein-level matching.
@@ -294,6 +296,10 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
             include hits annotated as "hypothetical protein"
         protein_exact_match: Prokka-level — if True, require 100% protein identity;
             if False, allow ≥95% protein identity
+        dna_identity_threshold: Minimum coverage-weighted DNA identity (percent) for a
+            hit to be kept. BLASTN only, and only consulted when exact_match is False.
+        apply_nms: Non-maximum suppression — drop a hit that substantially overlaps a
+            higher-scoring one, collapsing each locus to its best part. BLASTN only.
     """
     algo_normalized = algorithm.lower()
 
@@ -345,6 +351,7 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
     try:
         # step 4 — align query to temp directory (not index cache dir)
         with tempfile.TemporaryDirectory(prefix="seqimprove_align_") as tmp_dir:
+            mapper_kwargs = {}
             if algo_normalized == 'bwa':
                 output_path = os.path.join(tmp_dir, 'aligned.sam')
                 aligner = BwaAligner(index_prefix)
@@ -360,10 +367,14 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
                 aligner = BlastAligner(index_prefix)
                 aligner.align(target_doc, output_path, exact_match, query_seq=query_seq)
                 mapper = TableFeatureMapper(output_path)
+                # Only TableFeatureMapper accepts these; SAMFeatureMapper
+                # (BWA/Minimap2) has no identity threshold or NMS support.
+                mapper_kwargs = {'pid_threshold': dna_identity_threshold,
+                                 'apply_nms': apply_nms}
             else:
                 return status.HTTP_400_BAD_REQUEST, f'Algorithm {algorithm} not supported', None
 
-            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match)
+            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match, **mapper_kwargs)
             # temp files cleaned up automatically when TemporaryDirectory exits
 
         # Normalize origin-spanning hits back into the circular reference frame.
@@ -738,11 +749,19 @@ def annotate_sequence():
     codon_matches = request_data.get('codonMatches', False)
     include_hypothetical = request_data.get('includeHypothetical', False)
     is_circular = request_data.get('isCircular', False)
+    # BLASTN-only knobs (#158). Clamp the threshold so a bad client value can't
+    # silently disable filtering or reject every hit.
+    try:
+        dna_identity_threshold = float(request_data.get('dnaIdentityThreshold', 95.0))
+    except (TypeError, ValueError):
+        dna_identity_threshold = 95.0
+    dna_identity_threshold = min(100.0, max(0.0, dna_identity_threshold))
+    apply_nms = bool(request_data.get('applyNms', False))
 
     if clean_document:
         sbol_content = run_synbio2easy(sbol_content)
 
-    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_dna_matches={allow_similar_dna_matches}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}, is_circular={is_circular}...")
+    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_dna_matches={allow_similar_dna_matches}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}, is_circular={is_circular}, dna_identity_threshold={dna_identity_threshold}, apply_nms={apply_nms}...")
 
     try:
         if algorithm == 'FlashText':
@@ -771,7 +790,8 @@ def annotate_sequence():
             error_code, error_message, anno_lib_assoc = run_synbict_all(
                 sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
                 codon_matches=codon_matches, include_hypothetical=include_hypothetical,
-                protein_exact_match=protein_exact_match, is_circular=is_circular
+                protein_exact_match=protein_exact_match, is_circular=is_circular,
+                dna_identity_threshold=dna_identity_threshold, apply_nms=apply_nms
             )
 
         if error_code:
