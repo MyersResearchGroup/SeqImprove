@@ -252,6 +252,25 @@ export const useStore = create((set, get) => ({
         }
     },
 
+    /**
+     * Drop every sequence annotation, both from the SBOL document and from the
+     * candidate list. loadSequenceAnnotations appends to the list (it only skips
+     * exact duplicates), so without this a second run against a different
+     * library or algorithm piles its results on top of the first run's.
+     *
+     * Annotations are removed from the document with the same helper
+     * exportDocument uses for disabled annotations, so the component, its
+     * definition and its sequence go too -- not just the SequenceAnnotation.
+     */
+    clearSequenceAnnotations: () => {
+        mutateDocument(set, state => {
+            get().sequenceAnnotations.forEach(anno => {
+                removeAnnotationWithDefinition(state.document.root, anno.id);
+            });
+        });
+        set({ sequenceAnnotations: [] });
+    },
+
     // ...createAsyncAdapter(set, "SequenceAnnotations", async () => {
     //     // fetch sequence annotations from API
     //     const fetchedAnnotations = await fetchAnnotateSequence(get().document.serializeXML()) ?? [] // get().sbolContent

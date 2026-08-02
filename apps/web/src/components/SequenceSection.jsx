@@ -3,7 +3,7 @@ import { useForceUpdate } from "@mantine/hooks"
 import { Box, Checkbox, CloseButton, Flex, Grid, SegmentedControl, Select, Title } from '@mantine/core';
 import { Button, Center, Group, Stack, Loader, Modal, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
-import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight, FaInfoCircle } from "react-icons/fa"
+import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight, FaInfoCircle, FaTrash } from "react-icons/fa"
 import { mutateDocument, mutateSequencePartLibrariesSelected, useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
@@ -221,6 +221,7 @@ function Annotations({ colors }) {
     const [loadSequenceAnnotations, loading] = useAsyncLoader("SequenceAnnotations");
     useStore(s => s.document?.root?.sequenceAnnotations);    // force rerender from document change
     const loadSBOL = useStore(s => s.loadSBOL);
+    const clearSequenceAnnotations = useStore(s => s.clearSequenceAnnotations)
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
     const sequence = useStore(s => s.document?.root.sequence)?.toLowerCase()
@@ -299,6 +300,25 @@ function Annotations({ colors }) {
     }
 
     const handleClose = (library) => {removeLibrary(library)};
+
+    // Annotation runs accumulate -- loadSequenceAnnotations appends and only
+    // skips exact duplicates. Clearing first is what lets you re-annotate with
+    // a different library or algorithm and see just that run's results.
+    const handleClearAnnotationsClick = () => openConfirmModal({
+        title: "Clear all annotations?",
+        children: (
+            <Text size="sm">
+                This removes all {annotations.length} sequence annotation{annotations.length == 1 ? "" : "s"} from
+                the document. Nothing else about the part changes, and you can annotate
+                again with a different library or algorithm.
+            </Text>
+        ),
+        labels: { confirm: "Clear", cancel: "Cancel" },
+        onCancel: () => { },
+        onConfirm: clearSequenceAnnotations,
+        confirmProps: { color: "red" },
+        centered: true,
+    });
 
     // FlashText does not support the alignment-based match options below
     // (similar/codon/protein matching, circular). Disable and reset them when
@@ -549,6 +569,17 @@ function Annotations({ colors }) {
                     onClick={handleAnalyzeSequenceClick}
                     sx={{ borderRadius: 6 }}
                />
+            }
+
+            {annotations.length > 0 && !loading &&
+             <NavLink
+                 label="Clear Annotations"
+                 icon={<FaTrash />}
+                 variant="subtle"
+                 color="red"
+                 onClick={handleClearAnnotationsClick}
+                 sx={{ borderRadius: 6 }}
+             />
             }
         </FormSection>
     )
