@@ -338,9 +338,9 @@ function Annotations({ colors }) {
     // (similar/codon/protein matching, circular). Disable and reset them when
     // it is selected so stale values are never sent to the backend.
     const isFlashText = selectedAlgorithm === 'FlashText';
-    // pid_threshold / apply_nms exist only on SYNBICT's TableFeatureMapper,
-    // which is the BLASTN path. SAMFeatureMapper (BWA/Minimap2) has neither.
-    const isBlastn = selectedAlgorithm === 'BLASTN';
+    // The identity threshold and NMS reach the aligner-based mappers, which
+    // FlashText (a literal keyword matcher) does not use.
+    const supportsAlignmentTuning = !isFlashText;
 
     const handleAlgorithmChange = (value) => {
         setSelectedAlgorithm(value);
@@ -428,10 +428,8 @@ function Annotations({ colors }) {
                 </Tooltip>
             </Group>
 
-            {/* Both of these reach SYNBICT's TableFeatureMapper, which only the
-                BLASTN path uses -- BWA/Minimap2 go through SAMFeatureMapper,
-                which has no such parameters. Disabled elsewhere so the controls
-                can't imply an effect they don't have. */}
+            {/* Both reach every alignment-based mapper (BWA, Minimap2, BLASTN).
+                FlashText matches literal keywords and has no notion of either. */}
             <Group mt="sm" spacing="xs">
                 <NumberInput
                     label="DNA Identity (%)"
@@ -441,11 +439,11 @@ function Annotations({ colors }) {
                     max={DEFAULT_DNA_IDENTITY}
                     step={1}
                     precision={0}
-                    disabled={!isBlastn || !similarDNAMatches}
+                    disabled={!supportsAlignmentTuning || !similarDNAMatches}
                     sx={{ width: 120 }}
                 />
                 <Tooltip
-                    label="Minimum coverage-weighted identity (identical bases / reference length) for a match to be kept. Starts at 95% and can only be lowered. Requires BLASTN with similar DNA matching — an exact match is 100% by definition."
+                    label="Minimum coverage-weighted identity (identical bases / reference length) for a match to be kept. Starts at 95% and can only be lowered. Requires similar DNA matching — an exact match is 100% by definition."
                     position="right"
                     withArrow
                     multiline
@@ -461,11 +459,11 @@ function Annotations({ colors }) {
                 <Checkbox
                     label="NMS"
                     checked={applyNms}
-                    disabled={!isBlastn}
+                    disabled={!supportsAlignmentTuning}
                     onChange={(event) => setApplyNms(event.currentTarget.checked)}
                 />
                 <Tooltip
-                    label="Non-maximum suppression: when several parts match the same locus, keep only the highest-scoring one instead of reporting nested/overlapping duplicates. BLASTN only."
+                    label="Non-maximum suppression: when several parts match the same locus, keep only the highest-scoring one instead of reporting nested/overlapping duplicates."
                     position="right"
                     withArrow
                     multiline

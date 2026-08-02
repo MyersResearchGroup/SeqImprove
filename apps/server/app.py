@@ -297,9 +297,9 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
         protein_exact_match: Prokka-level — if True, require 100% protein identity;
             if False, allow ≥95% protein identity
         dna_identity_threshold: Minimum coverage-weighted DNA identity (percent) for a
-            hit to be kept. BLASTN only, and only consulted when exact_match is False.
+            hit to be kept. Only consulted when exact_match is False.
         apply_nms: Non-maximum suppression — drop a hit that substantially overlaps a
-            higher-scoring one, collapsing each locus to its best part. BLASTN only.
+            higher-scoring one, collapsing each locus to its best part.
     """
     algo_normalized = algorithm.lower()
 
@@ -351,7 +351,10 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
     try:
         # step 4 — align query to temp directory (not index cache dir)
         with tempfile.TemporaryDirectory(prefix="seqimprove_align_") as tmp_dir:
-            mapper_kwargs = {}
+            # Both mappers accept these -- SAMFeatureMapper gained them so the
+            # identity threshold and NMS behave the same on every aligner.
+            mapper_kwargs = {'pid_threshold': dna_identity_threshold,
+                             'apply_nms': apply_nms}
             if algo_normalized == 'bwa':
                 output_path = os.path.join(tmp_dir, 'aligned.sam')
                 aligner = BwaAligner(index_prefix)
@@ -367,10 +370,6 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
                 aligner = BlastAligner(index_prefix)
                 aligner.align(target_doc, output_path, exact_match, query_seq=query_seq)
                 mapper = TableFeatureMapper(output_path)
-                # Only TableFeatureMapper accepts these; SAMFeatureMapper
-                # (BWA/Minimap2) has no identity threshold or NMS support.
-                mapper_kwargs = {'pid_threshold': dna_identity_threshold,
-                                 'apply_nms': apply_nms}
             else:
                 return status.HTTP_400_BAD_REQUEST, f'Algorithm {algorithm} not supported', None
 
