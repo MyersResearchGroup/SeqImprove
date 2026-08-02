@@ -7,6 +7,7 @@ import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL, deleteL
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
 import { FILE_TYPES } from "./fileTypes"
+import { CLEANED_URI_PREFIXES } from "./homespace"
 
 
 // create store
@@ -75,7 +76,9 @@ export const useStore = create((set, get) => ({
             let isUriCleaned = false
             let nameChanged = false
 
-            if (document.root.uriChain.includes("https://seqimprove.synbiohub.org") || document.root.uriChain.includes("https://charmme.synbiohub.org")) isUriCleaned = true
+            // uriChain is a ';'-joined string, so this is a substring test.
+            // Legacy homespaces count as cleaned -- see CLEANED_URI_PREFIXES.
+            if (CLEANED_URI_PREFIXES.some(prefix => document.root.uriChain.includes(prefix))) isUriCleaned = true
 
             set({
                 // ...result,

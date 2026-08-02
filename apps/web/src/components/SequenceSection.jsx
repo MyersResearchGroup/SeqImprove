@@ -265,7 +265,7 @@ function Annotations({ colors }) {
     const removeLibrary = useStore(s => s.removeImportedLibrary)
 
     // Algorithm and match mode state
-    const [selectedAlgorithm, setSelectedAlgorithm] = useState('FlashText');
+    const [selectedAlgorithm, setSelectedAlgorithm] = useState('BLASTN');
     const [similarDNAMatches, setSimilarDNAMatches] = useState(false);
     const [allowSimilarMatches, setAllowSimilarMatches] = useState(false);
     const [codonMatches, setCodonMatches] = useState(false);

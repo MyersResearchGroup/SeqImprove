@@ -2,9 +2,9 @@ import { set } from "lodash"
 import { Graph, S2ComponentDefinition, S2ComponentInstance, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
 import { mutateDocument, useAsyncLoader, useStore } from "./store"
+import { HOMESPACE } from "./homespace"
 
-//change to seqimprove.synbiohub.org?
-const Prefix = "https://seqimprove.org/"
+const Prefix = `${HOMESPACE}/`
 
 const Predicates = {
     RichDescription: `${Prefix}richDescription`,

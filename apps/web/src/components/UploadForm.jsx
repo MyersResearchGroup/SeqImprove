@@ -5,6 +5,7 @@ import { useStore } from '../modules/store'
 import { showErrorNotification, showWarningNotification } from '../modules/util'
 import { fetchConvertGenbankToSBOL2 } from '../modules/api'
 import { FILE_TYPES } from '../modules/fileTypes'
+import { HOMESPACE } from '../modules/homespace'
 // import { Graph, S2ComponentDefinition, SBOL2GraphView, genbankToSBOL2 } from "sbolgraph"
 
 // Escape the five XML predefined entities so header text with &, <, >, " or '
@@ -64,17 +65,17 @@ function parseFasta(fastaContent) {
 function compileFastaToSBOL({ displayId, description, sequence }) {
     return `<?xml version="1.0" ?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:igem="http://wiki.synbiohub.org/wiki/Terms/igem#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:gbconv="http://sbols.org/genBankConversion#" xmlns:genbank="http://www.ncbi.nlm.nih.gov/genbank#" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <sbol:ComponentDefinition rdf:about="https://seqimprove.synbiohub.org/${displayId}/1">
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/${displayId}"/>
+  <sbol:ComponentDefinition rdf:about="${HOMESPACE}/${displayId}/1">
+    <sbol:persistentIdentity rdf:resource="${HOMESPACE}/${displayId}"/>
     <sbol:displayId>${displayId}</sbol:displayId>
     <sbol:version>1</sbol:version>
     <dcterms:title>${displayId}</dcterms:title>    
     <dcterms:description>${escapeXml(description)}</dcterms:description>
     <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
-    <sbol:sequence rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence/1"/>
+    <sbol:sequence rdf:resource="${HOMESPACE}/${displayId}_Sequence/1"/>
   </sbol:ComponentDefinition>
-  <sbol:Sequence rdf:about="https://seqimprove.synbiohub.org/${displayId}_Sequence/1">
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence"/>
+  <sbol:Sequence rdf:about="${HOMESPACE}/${displayId}_Sequence/1">
+    <sbol:persistentIdentity rdf:resource="${HOMESPACE}/${displayId}_Sequence"/>
     <sbol:displayId>${displayId}</sbol:displayId>
     <sbol:version>1</sbol:version>
     <sbol:elements>${escapeXml(sequence)}</sbol:elements>

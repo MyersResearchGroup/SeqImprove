@@ -63,10 +63,16 @@ index_manager: IndexManager = None
 # For alignment algorithms, use library_cache.get_feature_library_for_subset() instead
 FEATURE_LIBRARIES = {}
 
+# Homespace SeqImprove mints its URIs under. Single source of truth -- it is the
+# pySBOL2 homespace, the SynBio2Easy cleaning namespace, and the URI prefix given
+# to the SBOL validator when converting GenBank.
+HOMESPACE = 'https://seqimprove.org'
+HOMESPACE_PREFIX = HOMESPACE + '/'
+
 def setup():
     print("Initializing the app...")
     # set pySBOL configuration parameters
-    sbol2.setHomespace('http://seqimprove.synbiohub.org')
+    sbol2.setHomespace(HOMESPACE)
     sbol2.Config.setOption('validate', True)
     sbol2.Config.setOption('sbol_typed_uris', False)
 
@@ -559,7 +565,6 @@ def convert_genbank_to_sbol2(genbank_content, uri_prefix):
     Convert GenBank content to SBOL2 using the online SBOL Validator API.
     """
     SBOL_VALIDATOR_URL = "https://validator.sbolstandard.org/validate/"
-    uri_prefix = 'https://seqimprove.synbiohub.org/'
     
     # prepare the request payload 
     request_payload = {
@@ -625,7 +630,7 @@ def convert_genbank_to_sbol2(genbank_content, uri_prefix):
         raise Exception(f"Error during GenBank to SBOL2 conversion: {str(e)}")
 
 def run_synbio2easy(sbol_content):
-    namespace = 'https://seqimprove.synbiohub.org'
+    namespace = HOMESPACE
 
     try:
         with tempfile.NamedTemporaryFile() as input_file:
@@ -693,7 +698,7 @@ def genbank_to_sbol2():
     print("BEGINNING CONVERSION")
     if ('GenBankContent' in request_data):
         genbank_content = request_data['GenBankContent']
-        uri_prefix = 'https://seqimprove.synbiohub.org/'  
+        uri_prefix = HOMESPACE_PREFIX
         try:
             sbol2_content = convert_genbank_to_sbol2(genbank_content, uri_prefix)
         except Exception as e:
@@ -727,7 +732,7 @@ def annotate_sequence():
     logger.info(f"Available FEATURE_LIBRARIES keys: {list(FEATURE_LIBRARIES.keys())}")
 
     # get algorithm and match parameters
-    algorithm = request_data.get('algorithm', 'FlashText')
+    algorithm = request_data.get('algorithm', 'BLASTN')
     allow_similar_dna_matches = request_data.get('allowSimilarDNAMatches', False)
     allow_similar_matches = request_data.get('allowSimilarMatches', False)
     codon_matches = request_data.get('codonMatches', False)
