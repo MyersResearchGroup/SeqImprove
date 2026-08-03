@@ -20,7 +20,8 @@ import tempfile
 import requests
 import re, sys
 from sequences_to_features import FeatureAnnotater, load_sbol, FeatureLibrary, download_sequences
-from sequences_to_features.Annotator import SAMFeatureMapper, TableFeatureMapper, ProkkaTableFeatureMapper
+from sequences_to_features.Annotator import (SAMFeatureMapper, TableFeatureMapper,
+                                             ProkkaTableFeatureMapper, suppress_short_matches)
 from sequences_to_features.FeatureAnnotatorBase import FeatureAnnotatorSimple
 from sequences_to_features.FeatureExtractor import FeatureExtractor
 from sequences_to_features import BwaAligner, Minimap2Aligner, BlastAligner, ProkkaAligner, ProkkaParser
@@ -399,8 +400,15 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
         with tempfile.TemporaryDirectory(prefix="seqimprove_align_") as tmp_dir:
             # Both mappers accept these -- SAMFeatureMapper gained them so the
             # identity threshold and NMS behave the same on every aligner.
+            # For a circular target NMS has to compare hits on the circle, not on
+            # the extended query: an origin-spanning feature aligns as one block
+            # ending past target_length, so in linear coordinates it sits entirely
+            # to the right of the parts near the 5' end and never suppresses them,
+            # while it does suppress their equivalents at the 3' end.
+            nms_target_length = target_length if (effective_is_circular and query_seq is not None) else None
             mapper_kwargs = {'pid_threshold': dna_identity_threshold,
-                             'apply_nms': apply_nms}
+                             'apply_nms': apply_nms,
+                             'target_length': nms_target_length}
             if algo_normalized == 'bwa':
                 output_path = os.path.join(tmp_dir, 'aligned.sam')
                 aligner = BwaAligner(index_prefix)
@@ -431,6 +439,13 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
                                                 max_length=SHORT_FEATURE_MAX_LENGTH)
             short_query = query_seq if query_seq is not None else target_seq
             short_inline, short_rc = short_matcher.extract_matches(short_query)
+            if apply_nms:
+                # The mapper ran NMS over its own candidates before this pass, so
+                # the short hits have to be suppressed here or they would sit on
+                # top of the longer parts NMS just collapsed.
+                short_inline, short_rc = suppress_short_matches(
+                    inline_matches + rc_matches, short_inline, short_rc,
+                    target_length=nms_target_length)
             inline_matches = inline_matches + short_inline
             rc_matches = rc_matches + short_rc
             logger.info("Short-feature pass (%s-%s bp) added %s inline / %s rc matches",
