@@ -235,10 +235,20 @@ export const useStore = create((set, get) => ({
 
             // The server ran clean_target_document, which drops every annotation
             // that references a Component -- i.e. the output of earlier runs --
-            // and keeps bare ones (a GenBank import's own features). Mirror that
-            // here, or the list would keep showing annotations the returned
-            // document no longer contains.
-            const survivors = get().sequenceAnnotations.filter(anno => !anno.isPart);
+            // and keeps bare ones (a GenBank import's own features).
+            //
+            // Don't just assume that: reconcile against the document we got back.
+            // An older server wipes bare annotations too, and trusting the
+            // assumption left them in the list as ghosts -- still shown, still
+            // checkable, but absent from the document, so they silently vanished
+            // from the export. Keeping only what the document actually contains
+            // means the list is honest whichever server is running. Checkbox
+            // state is preserved for the ones that survive.
+            const docAnnotationIds = new Set(
+                (synbictDoc?.root?.sequenceAnnotations ?? []).map(sa => sa.persistentIdentity)
+            );
+            const survivors = get().sequenceAnnotations
+                .filter(anno => !anno.isPart && docAnnotationIds.has(anno.id));
 
             set({
                 sequenceAnnotations: produce(survivors, draft => {

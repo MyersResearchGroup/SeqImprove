@@ -130,10 +130,13 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
     const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
     const [inputError, setInputError] = useState(false);
     const [ isLoading, setIsLoading ] = useState(false);
-    const [ id, setID ] = useState("collection_id");
-    const [ version, setVersion ] = useState("1");
-    const [ name, setName ] = useState("the name");
-    const [ description, setDescription ] = useState("The description");
+    // Placeholders rather than values: a pre-filled field reads as an answer,
+    // and "the name" / "The description" get submitted verbatim by anyone who
+    // doesn't notice. Same reasoning as the no-default-values rule in #198.
+    const [ id, setID ] = useState("");
+    const [ version, setVersion ] = useState("");
+    const [ name, setName ] = useState("");
+    const [ description, setDescription ] = useState("");
     const [ citations, setCitations ] = useState([]);
     const [ rootCollectionsLoaded, setRootCollectionsLoaded ] = useState(false);
     const [ rootCollectionsIDs, setRootCollectionsIDs ] = useState([]);
@@ -189,6 +192,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                  <Group>
                      <TextInput                   
                          label="ID"
+                         placeholder="collection_id"
                          value={id}
                          description="And identifier for the Collection: Alphanumeric and underscores only, ex. BBa_R0010"
                          onChange={(e) => {
@@ -222,6 +226,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                      />
                      <TextInput
                          label="Name"
+                         placeholder="Name of the submission"
                          value={name}
                          description="The name of the submission"
                          onChange={(e) => setName(e.currentTarget.value)}
@@ -230,6 +235,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                      />
                      <Textarea
                          label="Description"
+                         placeholder="What this collection contains"
                          value={description}
                          onChange={(e) => setDescription(e.currentTarget.value)}
                          withAsterisk
@@ -247,7 +253,18 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                      />
                      <Checkbox checked={overwrite} label="Overwrite?" description="Overwrite if submission exists" onChange={(event) => setOverwrite(event.currentTarget.checked)} />
                      <Button onClick={async () => {
-                                 if (inputErrorID || inputErrorVersion) {
+                                 // Nothing is pre-filled any more, and the per-field
+                                 // validators only run on change -- so a field the
+                                 // user never touched would otherwise submit empty.
+                                 const missing = [
+                                     ['ID', id], ['Version', version],
+                                     ['Name', name], ['Description', description],
+                                 ].filter(([, v]) => !v.trim()).map(([label]) => label);
+
+                                 if (missing.length) {
+                                     showErrorNotification("Missing required fields",
+                                                           `Please fill in: ${missing.join(', ')}.`);
+                                 } else if (inputErrorID || inputErrorVersion) {
                                      showErrorNotification("Invalid Input", "Please address the issue and then submit.");
                                  } else {
                                      const params = new FormData();

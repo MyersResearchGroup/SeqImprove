@@ -272,12 +272,17 @@ export default function UploadForm() {
                     }
                 }
                 const genbank_text = fileContent;                
-                const { sbol2_content, err1 } = await fetchConvertGenbankToSBOL2(genbank_text);
-                if (!err1) {
-                    loadSBOL(sbol2_content, FILE_TYPES.GENBANK);    
-                } else {
-                    console.error(err1);
-                    switch (err1) {
+                // The API returns `err`, not `err1`. Destructuring the wrong name
+                // made this branch unreachable: every failed conversion fell into
+                // the success path and called loadSBOL("") instead, so the user
+                // saw a generic parse error while the SBOL validator's actual
+                // complaint was discarded.
+                // (named convertErr because `err` is already taken by the FASTA
+                // branch -- switch cases share one block scope)
+                const { err: convertErr, sbol2_content } = await fetchConvertGenbankToSBOL2(genbank_text);
+                if (convertErr) {
+                    console.error(convertErr);
+                    switch (convertErr) {
                     case TypeError:
                         showErrorNotification("There was a problem processing your GenBank file. It may not be valid.");
                         break;
@@ -288,9 +293,18 @@ export default function UploadForm() {
                         showErrorNotification("There was a problem processing your GenBank file. This could be an internal server error.");
                         break;
                     default:
-                        showErrorNotification("There was a problem processing your GenBank file.");
-                    }                 
+                        // Anything else is the converter's own message -- show it,
+                        // it names the feature or field that could not convert.
+                        showErrorNotification("GenBank conversion failed", String(convertErr));
+                    }
+                    return;
                 }
+                if (!sbol2_content) {
+                    showErrorNotification("GenBank conversion failed",
+                                          "The converter returned an empty document.");
+                    return;
+                }
+                loadSBOL(sbol2_content, FILE_TYPES.GENBANK);
                 break;
             }
                                   

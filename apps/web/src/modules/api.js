@@ -254,14 +254,6 @@ export async function fetchAnnotateSequence({
         return { fetchedAnnotations: [], synbictDoc: null };
     }
 
-    // create and load original doc
-    const originalDoc = new SBOL2GraphView(new Graph());
-    await originalDoc.loadString(sbolContent);
-
-    // make a list of persistentIds to avoid
-    const originalAnnotations = originalDoc.rootComponentDefinitions[0].sequenceAnnotations
-        .map(sa => sa.persistentIdentity.slice(0, -2)) //synbict increments a number at the end of the persistent identities, so we cut off the last 2 chars to compare
-
     let annotations = [];
     let synbictDoc = null;
 
@@ -282,13 +274,20 @@ export async function fetchAnnotateSequence({
         // concatenate new annotations to result
         annotations = annotations.concat(
           annDoc.rootComponentDefinitions[0].sequenceAnnotations
-            // filter annotations already in original document
-            .filter(
-              (sa) =>
-                !originalAnnotations.includes(
-                  sa.persistentIdentity.slice(0, -2)
-                )
-            )
+            // This run's output is exactly the Component-backed annotations in
+            // the returned document: the server ran clean_target_document, which
+            // deleted the previous run's before annotating.
+            //
+            // Do NOT filter against the document we sent. After the first run it
+            // contains the previous run's annotations, and SYNBICT reuses their
+            // persistent identities, so every result would be discarded --
+            // observed as 8 annotations, then 0, then 3 over three runs.
+            //
+            // Bare (Component-less) annotations came with the uploaded file,
+            // survive cleaning, and are already in the store from load time, so
+            // they must not be re-added here. Excluding them also keeps
+            // `sa.component.definition` below from dereferencing undefined.
+            .filter((sa) => sa.component)
             // just return the info we need
             .map((sa) => ({
               name: sa.displayName,
