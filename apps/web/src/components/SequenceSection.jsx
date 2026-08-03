@@ -23,6 +23,14 @@ const WORDSIZE = 8;
 // so the CLI and the web app agree on what an unconfigured run does.
 const DEFAULT_DNA_IDENTITY = 95;
 
+// Issue #208. Shortest library feature that may be annotated. SYNBICT splits the
+// search at 14 bp: aligners handle >=14, an exhaustive substring search handles
+// 9-13, and below 9 a motif is too short to be specific -- hence the floor.
+// The default sits on that floor so nothing the annotator can find is excluded
+// by default; raise it to cut short-part noise.
+const DEFAULT_MIN_FEATURE_LENGTH = 9;
+const MIN_FEATURE_LENGTH_FLOOR = 9;
+
 function isValidUrl(string) {
     try {
         new URL(string);
@@ -286,6 +294,7 @@ function Annotations({ colors }) {
     // Off by default, matching SYNBICT -- NMS discards nested parts, which suits
     // circuit reconstruction but not exhaustive annotation.
     const [applyNms, setApplyNms] = useState(false);
+    const [minFeatureLength, setMinFeatureLength] = useState(DEFAULT_MIN_FEATURE_LENGTH);
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -310,21 +319,25 @@ function Annotations({ colors }) {
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
             return
         }
-        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical, isCircular, dnaIdentity, applyNms)
+        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical, isCircular, dnaIdentity, applyNms, minFeatureLength)
     }
 
     const handleClose = (library) => {removeLibrary(library)};
 
-    // Annotation runs accumulate -- loadSequenceAnnotations appends and only
-    // skips exact duplicates. Clearing first is what lets you re-annotate with
-    // a different library or algorithm and see just that run's results.
+    // Removes only what an analysis run produced. Annotations that came with the
+    // uploaded file (GenBank features, which reference no Component) are left
+    // alone -- uncheck those individually to keep them out of the export.
+    const runAnnotationCount = annotations.filter(anno => anno.isPart).length;
+    const fileAnnotationCount = annotations.length - runAnnotationCount;
     const handleClearAnnotationsClick = () => openConfirmModal({
-        title: "Clear all annotations?",
+        title: "Clear annotations from analysis?",
         children: (
             <Text size="sm">
-                This removes all {annotations.length} sequence annotation{annotations.length == 1 ? "" : "s"} from
-                the document. Nothing else about the part changes, and you can annotate
-                again with a different library or algorithm.
+                This removes the {runAnnotationCount} annotation{runAnnotationCount == 1 ? "" : "s"} found
+                by analysis.
+                {fileAnnotationCount > 0 &&
+                 ` The ${fileAnnotationCount} annotation${fileAnnotationCount == 1 ? "" : "s"} that came with your file ` +
+                 `${fileAnnotationCount == 1 ? "is" : "are"} kept — uncheck ${fileAnnotationCount == 1 ? "it" : "them"} to leave ${fileAnnotationCount == 1 ? "it" : "them"} out of the export.`}
             </Text>
         ),
         labels: { confirm: "Clear", cancel: "Cancel" },
@@ -407,6 +420,29 @@ function Annotations({ colors }) {
                     { value: 'BLASTN', label: 'BLASTN' }
                 ]}
             />
+
+            <Group mt="sm" spacing="xs">
+                <NumberInput
+                    label="Minimum Feature Length (bp)"
+                    value={minFeatureLength}
+                    onChange={value => setMinFeatureLength(value ?? DEFAULT_MIN_FEATURE_LENGTH)}
+                    min={MIN_FEATURE_LENGTH_FLOOR}
+                    step={1}
+                    precision={0}
+                    sx={{ width: 120 }}
+                />
+                <Tooltip
+                    label="Library parts shorter than this are not annotated. Lower it to pick up short parts such as RBSs and terminators; raise it to cut noise. Applies to every algorithm."
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
 
             <Group mt="sm" spacing="xs">
                 <Checkbox
@@ -654,7 +690,7 @@ function Annotations({ colors }) {
                />
             }
 
-            {annotations.length > 0 && !loading &&
+            {runAnnotationCount > 0 && !loading &&
              <NavLink
                  label="Clear Annotations"
                  icon={<FaTrash />}

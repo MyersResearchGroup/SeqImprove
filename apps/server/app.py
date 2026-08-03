@@ -5,6 +5,7 @@ from flask_api import status
 # from quart import Quart
 import sbol2
 import logging
+import inspect
 import os
 import asyncio
 import shutil
@@ -23,6 +24,7 @@ from sequences_to_features.Annotator import SAMFeatureMapper, TableFeatureMapper
 from sequences_to_features.FeatureAnnotatorBase import FeatureAnnotatorSimple
 from sequences_to_features.FeatureExtractor import FeatureExtractor
 from sequences_to_features import BwaAligner, Minimap2Aligner, BlastAligner, ProkkaAligner, ProkkaParser
+from sequences_to_features.ShortFeatureMatcher import ShortFeatureMatcher
 from waitress import serve
 
 conda_bin = os.path.expanduser("~/miniconda3/envs/synbict_conda/bin")
@@ -66,11 +68,36 @@ FEATURE_LIBRARIES = {}
 # Homespace SeqImprove mints its URIs under. Single source of truth -- it is the
 # pySBOL2 homespace, the SynBio2Easy cleaning namespace, and the URI prefix given
 # to the SBOL validator when converting GenBank.
+# Shortest library feature that may be annotated (#208). 9 bp is SYNBICT's own
+# ShortFeatureMatcher floor -- below that a motif is too short to be specific --
+# so defaulting here keeps the web app and the annotator in agreement. Note this
+# means the short-feature pass runs by default. SYNBICT's CLI default is 40.
+DEFAULT_MIN_FEATURE_LENGTH = 9
+# Longest feature handled by the exhaustive short-feature search; the aligners
+# take over from SHORT_FEATURE_MAX_LENGTH + 1 upward. Matches SYNBICT's split.
+SHORT_FEATURE_MAX_LENGTH = 13
+# Shortest *target* sequence worth annotating -- a different thing from
+# min_feature_length, which bounds the library feature. SYNBICT's
+# annotate() calls this parameter min_target_length. Any real plasmid clears it;
+# it exists to skip degenerate targets.
+MIN_TARGET_LENGTH = 10
+
 HOMESPACE = 'https://seqimprove.org'
 HOMESPACE_PREFIX = HOMESPACE + '/'
 
 def setup():
     print("Initializing the app...")
+
+    # There are several SYNBICT checkouts on a typical dev box (the standalone
+    # clone, a nested copy under the SeqImprove repo, old pip/egg installs) and
+    # they carry different function signatures. Log which one actually got
+    # imported -- a mismatch here shows up much later as a confusing
+    # "unexpected keyword argument" from deep inside the annotator.
+    import sequences_to_features as _stf
+    from sequences_to_features.Annotator import TableFeatureMapper as _TFM
+    logger.info("SYNBICT loaded from: %s", getattr(_stf, "__file__", "?"))
+    logger.info("TableFeatureMapper.extract_matches%s",
+                inspect.signature(_TFM.extract_matches))
     # set pySBOL configuration parameters
     sbol2.setHomespace(HOMESPACE)
     sbol2.Config.setOption('validate', True)
@@ -224,14 +251,22 @@ def clean_target_document(target_doc: sbol2.Document) -> sbol2.Document:
     if primary_comp is None:
         return target_doc
 
-    # clear existing sequence annotations and sub-components from the primary component
-    # this gives SYNBICT a clean slate to work with
-    annotations_to_remove = list(primary_comp.sequenceAnnotations)
+    # Clear the annotations a previous SYNBICT run produced, so re-annotating
+    # doesn't compound on itself. A SYNBICT annotation always references a
+    # Component (the library part it matched); a bare SequenceAnnotation with no
+    # Component came with the uploaded file -- a GenBank import produces exactly
+    # those, since GenBank features carry no component identity. Those are the
+    # user's own data and must survive re-analysis.
+    annotations_to_remove = [anno for anno in primary_comp.sequenceAnnotations
+                             if anno.component]
+    kept = len(primary_comp.sequenceAnnotations) - len(annotations_to_remove)
     for anno in annotations_to_remove:
         try:
             primary_comp.sequenceAnnotations.remove(anno.identity)
         except Exception:
             pass
+    if kept:
+        logger.info("clean_target_document: kept %s pre-existing annotation(s) with no Component", kept)
 
     components_to_remove = list(primary_comp.components)
     for comp in components_to_remove:
@@ -274,7 +309,8 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
                     protein_exact_match: bool = True,
                     is_circular: bool = False,
                     dna_identity_threshold: float = 95.0,
-                    apply_nms: bool = False) -> tuple[Optional[int], Optional[str], Optional[List]]:
+                    apply_nms: bool = False,
+                    min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH) -> tuple[Optional[int], Optional[str], Optional[List]]:
     """
     Run annotation with alignment-based algorithms (BWA, Minimap2, BLASTN), with
     optional Prokka augmentation for protein-level matching.
@@ -300,6 +336,8 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
             hit to be kept. Only consulted when exact_match is False.
         apply_nms: Non-maximum suppression — drop a hit that substantially overlaps a
             higher-scoring one, collapsing each locus to its best part.
+        min_feature_length: Shortest library feature that may be annotated. Filters the
+            aligner hits, the Prokka pass and the annotator alike.
     """
     algo_normalized = algorithm.lower()
 
@@ -322,21 +360,20 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
     # clean the target document to remove existing annotations from previous runs
     target_doc = clean_target_document(target_doc)
 
-    min_feature_length = 10
-
     # Circular-target support (SYNBICT2 API): if the user marked the sequence
     # circular OR the SBOL ComponentDefinition is typed SO_CIRCULAR, append a
     # prefix the length of the longest feature so origin-spanning hits align
     # as one contiguous block. After mapping, normalize_circular_matches drops
     # duplicate hits in the overlap and rewrites end coords > target_length so
     # the annotator emits a two-Range (wrap-around) SequenceAnnotation.
+    from sequences_to_features.sbol_utils import sbol_sequence
+
     query_seq = None
     target_length = None
     target_cd = target_doc.componentDefinitions[0] if len(target_doc.componentDefinitions) else None
+    target_seq = sbol_sequence(target_doc) if target_cd is not None else None
     effective_is_circular = bool(target_cd is not None and (is_circular or sbol2.SO_CIRCULAR in target_cd.types))
     if effective_is_circular and target_cd is not None:
-        from sequences_to_features.sbol_utils import sbol_sequence
-        target_seq = sbol_sequence(target_doc)
         target_length = len(target_seq)
         max_feature_length = max(
             (len(f.nucleotides) for f in feature_library.features), default=0)
@@ -347,6 +384,15 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
         if sbol2.SO_CIRCULAR not in target_cd.types:
             target_cd.types = target_cd.types + [sbol2.SO_CIRCULAR]
         logger.info(f"Annotating {target_cd.displayId} as circular (origin overlap {overlap} bp)")
+
+    # Seed-based aligners cannot report a match shorter than ~14 bp against a
+    # plasmid-length query, so SYNBICT's curate() splits the search: the aligner
+    # takes [14, inf) and an exhaustive substring search takes
+    # [min_feature_length, 13]. app.py previously did neither -- it passed
+    # min_feature_length straight to the aligner and ran no short-feature pass,
+    # so anything under 14 bp was silently unfindable however low the floor was
+    # set. Mirrored here so the minimum-length control means something below 14.
+    aligner_min_length = max(min_feature_length, SHORT_FEATURE_MAX_LENGTH + 1)
 
     try:
         # step 4 — align query to temp directory (not index cache dir)
@@ -373,8 +419,23 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
             else:
                 return status.HTTP_400_BAD_REQUEST, f'Algorithm {algorithm} not supported', None
 
-            inline_matches, rc_matches = mapper.extract_matches(min_feature_length, exact_match, **mapper_kwargs)
+            inline_matches, rc_matches = mapper.extract_matches(aligner_min_length, exact_match, **mapper_kwargs)
             # temp files cleaned up automatically when TemporaryDirectory exits
+
+        # Exhaustive exact search for the short features the aligner cannot see.
+        # Always exact, in both orientations -- approximate matching of a <14 bp
+        # motif is not specific enough to be useful.
+        if min_feature_length <= SHORT_FEATURE_MAX_LENGTH and target_seq is not None:
+            short_matcher = ShortFeatureMatcher(feature_library,
+                                                min_length=min_feature_length,
+                                                max_length=SHORT_FEATURE_MAX_LENGTH)
+            short_query = query_seq if query_seq is not None else target_seq
+            short_inline, short_rc = short_matcher.extract_matches(short_query)
+            inline_matches = inline_matches + short_inline
+            rc_matches = rc_matches + short_rc
+            logger.info("Short-feature pass (%s-%s bp) added %s inline / %s rc matches",
+                        min_feature_length, SHORT_FEATURE_MAX_LENGTH,
+                        len(short_inline), len(short_rc))
 
         # Normalize origin-spanning hits back into the circular reference frame.
         if effective_is_circular and query_seq is not None:
@@ -396,7 +457,10 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
         target_library = FeatureLibrary([target_doc])
         output_library = FeatureLibrary([])
 
-        annotator.annotate(inline_matches, rc_matches, target_library, min_feature_length,
+        # 4th positional arg is min_target_length, not min_feature_length -- it
+        # gates the target sequence, not the library features. Passing
+        # min_feature_length here worked only because plasmids always clear it.
+        annotator.annotate(inline_matches, rc_matches, target_library, MIN_TARGET_LENGTH,
                          in_place=True, output_library=output_library, output_matches=False)
 
         return None, None, [[target_doc.writeString(), "All_Libraries"]]
@@ -456,7 +520,8 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
             final_df, min_feature_length=min_feature_length, mode=prokka_mode
         )
 
-def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[Optional[int], Optional[str], Optional[str]]:
+def run_synbict(sbol_content: str, part_library_file_names: list[str],
+                min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
 
     for part_lib_f_name in part_library_file_names:            
@@ -481,12 +546,8 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str]) -> tuple[
                 # feature_library = FEATURE_LIBRARIES[0]
                 feature_library = create_feature_library(part_lib_f_name)
                 print(f"The key of feature library is {part_lib_f_name}")
-                min_feature_length = 10
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
-                # replace
-                min_target_length = 10  
-                # replace 
-                annotated_identities = annotater.annotate(target_library, min_target_length, in_place=True)
+                annotated_identities = annotater.annotate(target_library, MIN_TARGET_LENGTH, in_place=True)
 
                 # The pySBOL2 library hasn't implemented the necessary functionality to retrieve sequence annotations,
                 # so instead I'm serializing the document and grabbing the sequence annotations using the sbolgraph
@@ -756,16 +817,23 @@ def annotate_sequence():
         dna_identity_threshold = 95.0
     dna_identity_threshold = min(100.0, max(0.0, dna_identity_threshold))
     apply_nms = bool(request_data.get('applyNms', False))
+    try:
+        min_feature_length = int(request_data.get('minFeatureLength', DEFAULT_MIN_FEATURE_LENGTH))
+    except (TypeError, ValueError):
+        min_feature_length = DEFAULT_MIN_FEATURE_LENGTH
+    # 0 disables the filter in SYNBICT; anything negative is meaningless.
+    min_feature_length = max(0, min_feature_length)
 
     if clean_document:
         sbol_content = run_synbio2easy(sbol_content)
 
-    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_dna_matches={allow_similar_dna_matches}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}, is_circular={is_circular}, dna_identity_threshold={dna_identity_threshold}, apply_nms={apply_nms}...")
+    print(f"Running SYNBICT with algorithm={algorithm}, allow_similar_dna_matches={allow_similar_dna_matches}, allow_similar_matches={allow_similar_matches}, codon_matches={codon_matches}, include_hypothetical={include_hypothetical}, is_circular={is_circular}, dna_identity_threshold={dna_identity_threshold}, apply_nms={apply_nms}, min_feature_length={min_feature_length}...")
 
     try:
         if algorithm == 'FlashText':
             # use original flashtext-based method
-            error_code, error_message, anno_lib_assoc = run_synbict(sbol_content, part_library_file_names)
+            error_code, error_message, anno_lib_assoc = run_synbict(sbol_content, part_library_file_names,
+                                                                     min_feature_length=min_feature_length)
         else:
             # resolve library names to absolute paths via LibraryCache
             feature_libraries_dir = "./assets/synbict/feature-libraries"
@@ -790,7 +858,8 @@ def annotate_sequence():
                 sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
                 codon_matches=codon_matches, include_hypothetical=include_hypothetical,
                 protein_exact_match=protein_exact_match, is_circular=is_circular,
-                dna_identity_threshold=dna_identity_threshold, apply_nms=apply_nms
+                dna_identity_threshold=dna_identity_threshold, apply_nms=apply_nms,
+                min_feature_length=min_feature_length
             )
 
         if error_code:

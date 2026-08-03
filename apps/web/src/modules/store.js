@@ -228,12 +228,20 @@ export const useStore = create((set, get) => ({
                 isCircular: args[6],
                 dnaIdentityThreshold: args[7],
                 applyNms: args[8],
+                minFeatureLength: args[9],
             }) ?? [];
 
             let { fetchedAnnotations = [], synbictDoc } = result;
 
+            // The server ran clean_target_document, which drops every annotation
+            // that references a Component -- i.e. the output of earlier runs --
+            // and keeps bare ones (a GenBank import's own features). Mirror that
+            // here, or the list would keep showing annotations the returned
+            // document no longer contains.
+            const survivors = get().sequenceAnnotations.filter(anno => !anno.isPart);
+
             set({
-                sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
+                sequenceAnnotations: produce(survivors, draft => {
                     fetchedAnnotations.forEach(anno => {
                         // skip duplicates
                         if (!draft.find(a => a.id == anno.id)) {
@@ -265,12 +273,17 @@ export const useStore = create((set, get) => ({
      * definition and its sequence go too -- not just the SequenceAnnotation.
      */
     clearSequenceAnnotations: () => {
+        // Only what an analysis run produced -- the annotations that reference a
+        // Component. Bare ones came with the uploaded file (a GenBank import's
+        // own features) and are the user's data, so this button never touches
+        // them; uncheck those individually to leave them out of the export.
+        const runAnnotations = get().sequenceAnnotations.filter(anno => anno.isPart);
         mutateDocument(set, state => {
-            get().sequenceAnnotations.forEach(anno => {
+            runAnnotations.forEach(anno => {
                 removeAnnotationWithDefinition(state.document.root, anno.id);
             });
         });
-        set({ sequenceAnnotations: [] });
+        set({ sequenceAnnotations: get().sequenceAnnotations.filter(anno => !anno.isPart) });
     },
 
     // ...createAsyncAdapter(set, "SequenceAnnotations", async () => {

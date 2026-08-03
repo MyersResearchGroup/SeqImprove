@@ -196,6 +196,7 @@ export async function fetchAnnotateSequence({
   isCircular,
   dnaIdentityThreshold,
   applyNms,
+  minFeatureLength,
 }) {
   console.log("Annotating sequence...");
 
@@ -220,6 +221,7 @@ export async function fetchAnnotateSequence({
           isCircular: isCircular,
           dnaIdentityThreshold: dnaIdentityThreshold,
           applyNms: applyNms,
+          minFeatureLength: minFeatureLength,
         }),
         timeout: 320000,
       }
@@ -304,6 +306,10 @@ export async function fetchAnnotateSequence({
               componentInstance: sa.component,
               featureLibrary: sa.component.definition.persistentIdentity,
               enabled: true,
+              // Everything an annotation run produces references a Component.
+              // Bare (component-less) annotations only ever come from the
+              // uploaded file -- see getExistingSequenceAnnotations.
+              isPart: true,
             }))
         );
       })();
