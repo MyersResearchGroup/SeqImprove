@@ -167,7 +167,7 @@ export default function UploadForm() {
         [Methods.FromScratch]: <>
                                    <TextInput
                                        label="Display ID"
-                                       description="Identifies the plasmid — permanent, it can't be changed later. Letters, digits and underscores only; it can't start with a digit."
+                                       description="Identifies the sequence — permanent, it can't be changed later. Letters, digits and underscores only; it can't start with a digit."
                                        placeholder="e.g. SrpR_RBS_S3_gate"
                                        {...form.getInputProps("displayId")}
                                    />
