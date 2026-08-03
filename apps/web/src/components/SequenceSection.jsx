@@ -1,9 +1,9 @@
 import { useState, useEffect, forwardRef, createElement } from "react"
 import { useForceUpdate } from "@mantine/hooks"
-import { Box, Checkbox, CloseButton, Flex, Grid, SegmentedControl, Select, Title } from '@mantine/core';
+import { Box, Checkbox, CloseButton, Flex, Grid, NumberInput, SegmentedControl, Select, Title } from '@mantine/core';
 import { Button, Center, Group, Stack, Loader, Modal, NavLink, Space, CopyButton, ActionIcon, Tooltip, Textarea, MultiSelect, Text, Highlight} from "@mantine/core"
 import { FiDownloadCloud } from "react-icons/fi"
-import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight, FaInfoCircle } from "react-icons/fa"
+import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight, FaInfoCircle, FaTrash } from "react-icons/fa"
 import { mutateDocument, mutateSequencePartLibrariesSelected, useAsyncLoader, useStore } from "../modules/store"
 import AnnotationCheckbox from "./AnnotationCheckbox"
 import FormSection from "./FormSection"
@@ -17,6 +17,19 @@ import { SynBioHubClientLogin } from "./CurationForm";
 import { importLibrary, checkLibraryCache } from "../modules/api";
 
 const WORDSIZE = 8;
+
+// Issue #158: the DNA identity threshold starts at its ceiling and the user may
+// only relax it downward. Kept in sync with SYNBICT's own default (pid_threshold)
+// so the CLI and the web app agree on what an unconfigured run does.
+const DEFAULT_DNA_IDENTITY = 95;
+
+// Issue #208. Shortest library feature that may be annotated. SYNBICT splits the
+// search at 14 bp: aligners handle >=14, an exhaustive substring search handles
+// 9-13, and below 9 a motif is too short to be specific -- hence the floor.
+// The default sits on that floor so nothing the annotator can find is excluded
+// by default; raise it to cut short-part noise.
+const DEFAULT_MIN_FEATURE_LENGTH = 9;
+const MIN_FEATURE_LENGTH_FLOOR = 9;
 
 function isValidUrl(string) {
     try {
@@ -221,6 +234,7 @@ function Annotations({ colors }) {
     const [loadSequenceAnnotations, loading] = useAsyncLoader("SequenceAnnotations");
     useStore(s => s.document?.root?.sequenceAnnotations);    // force rerender from document change
     const loadSBOL = useStore(s => s.loadSBOL);
+    const clearSequenceAnnotations = useStore(s => s.clearSequenceAnnotations)
 
     const { isActive, setActive } = useStore(s => s.sequenceAnnotationActions)
     const sequence = useStore(s => s.document?.root.sequence)?.toLowerCase()
@@ -265,12 +279,22 @@ function Annotations({ colors }) {
     const removeLibrary = useStore(s => s.removeImportedLibrary)
 
     // Algorithm and match mode state
-    const [selectedAlgorithm, setSelectedAlgorithm] = useState('FlashText');
+    const [selectedAlgorithm, setSelectedAlgorithm] = useState('BLASTN');
     const [similarDNAMatches, setSimilarDNAMatches] = useState(false);
     const [allowSimilarMatches, setAllowSimilarMatches] = useState(false);
     const [codonMatches, setCodonMatches] = useState(false);
     const [includeHypothetical, setIncludeHypothetical] = useState(false);
     const [isCircular, setIsCircular] = useState(false);
+    // Minimum coverage-weighted DNA identity for a hit to be kept. Only consulted
+    // when similar (non-exact) DNA matching is on -- an exact match is 100% by
+    // definition. Starts at the ceiling; the user can only relax it downward.
+    const [dnaIdentity, setDnaIdentity] = useState(DEFAULT_DNA_IDENTITY);
+    // Non-maximum suppression: drop a hit that substantially overlaps a
+    // higher-scoring one, so one locus collapses to its single best reference.
+    // Off by default, matching SYNBICT -- NMS discards nested parts, which suits
+    // circuit reconstruction but not exhaustive annotation.
+    const [applyNms, setApplyNms] = useState(false);
+    const [minFeatureLength, setMinFeatureLength] = useState(DEFAULT_MIN_FEATURE_LENGTH);
 
 
     const AnnotationCheckboxContainer = forwardRef((props, ref) => (
@@ -295,15 +319,41 @@ function Annotations({ colors }) {
             showErrorNotification('Library not imported', `"${names}" is not cached on the server. Please import it using the SynBioHub button before analyzing.`)
             return
         }
-        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical, isCircular)
+        loadSequenceAnnotations(libs, selectedAlgorithm, similarDNAMatches, allowSimilarMatches, codonMatches, includeHypothetical, isCircular, dnaIdentity, applyNms, minFeatureLength)
     }
 
     const handleClose = (library) => {removeLibrary(library)};
+
+    // Removes only what an analysis run produced. Annotations that came with the
+    // uploaded file (GenBank features, which reference no Component) are left
+    // alone -- uncheck those individually to keep them out of the export.
+    const runAnnotationCount = annotations.filter(anno => anno.isPart).length;
+    const fileAnnotationCount = annotations.length - runAnnotationCount;
+    const handleClearAnnotationsClick = () => openConfirmModal({
+        title: "Clear annotations from analysis?",
+        children: (
+            <Text size="sm">
+                This removes the {runAnnotationCount} annotation{runAnnotationCount == 1 ? "" : "s"} found
+                by analysis.
+                {fileAnnotationCount > 0 &&
+                 ` The ${fileAnnotationCount} annotation${fileAnnotationCount == 1 ? "" : "s"} that came with your file ` +
+                 `${fileAnnotationCount == 1 ? "is" : "are"} kept — uncheck ${fileAnnotationCount == 1 ? "it" : "them"} to leave ${fileAnnotationCount == 1 ? "it" : "them"} out of the export.`}
+            </Text>
+        ),
+        labels: { confirm: "Clear", cancel: "Cancel" },
+        onCancel: () => { },
+        onConfirm: clearSequenceAnnotations,
+        confirmProps: { color: "red" },
+        centered: true,
+    });
 
     // FlashText does not support the alignment-based match options below
     // (similar/codon/protein matching, circular). Disable and reset them when
     // it is selected so stale values are never sent to the backend.
     const isFlashText = selectedAlgorithm === 'FlashText';
+    // The identity threshold and NMS reach the aligner-based mappers, which
+    // FlashText (a literal keyword matcher) does not use.
+    const supportsAlignmentTuning = !isFlashText;
 
     const handleAlgorithmChange = (value) => {
         setSelectedAlgorithm(value);
@@ -316,28 +366,47 @@ function Annotations({ colors }) {
         }
     };
 
+    // Part annotations (Components) are listed above bare sequence features
+    // (SequenceFeatures). The original index is carried along because `colors`
+    // is indexed by position in `annotations` -- reordering the display must not
+    // change which color an annotation gets, or the list and the sequence
+    // highlighter would disagree.
+    const indexedAnnotations = annotations.map((anno, i) => ({ anno, i }));
+    const partAnnotations = indexedAnnotations.filter(({ anno }) => anno.isPart);
+    const featureAnnotations = indexedAnnotations.filter(({ anno }) => !anno.isPart);
+
+    const renderAnnotation = ({ anno, i }) => (
+        <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name + '_' + i}>
+            <AnnotationCheckbox
+                title={anno.name}
+                color={colors[i]}
+                active={isActive(anno.id) ? 1 : 0}
+                onChange={val => setActive(anno.id, val)}
+            />
+
+            {anno.featureLibrary &&
+             <MyToolTip
+                featureLibrary={ anno.featureLibrary.endsWith('.xml')
+                    ? anno.featureLibrary.replace(/_/g, ' ').slice(0, -4)
+                    : anno.featureLibrary}
+             >
+             </MyToolTip>}
+
+            <Copier anno={anno} sequence={sequence} />
+        </Group>
+    );
+
     return (
         <FormSection title="Sequence Annotations" key="Sequence Annotations">
-            {annotations.map((anno, i) =>
-                <Group spacing="xs" sx={{ flexGrow: 1, }} key={anno.name + '_' + i}>
-                    <AnnotationCheckbox
-                        title={anno.name}
-                        color={colors[i]}
-                        active={isActive(anno.id) ? 1 : 0}
-                        onChange={val => setActive(anno.id, val)}                        
-                    />
+            {/* Headings only appear once there is something in both groups --
+                with a single group the labels are just noise. */}
+            {partAnnotations.length > 0 && featureAnnotations.length > 0 &&
+             <Text size="xs" color="dimmed" weight={600} mb={4}>Part Annotations</Text>}
+            {partAnnotations.map(renderAnnotation)}
 
-                    {anno.featureLibrary &&
-                     <MyToolTip
-                        featureLibrary={ anno.featureLibrary.endsWith('.xml')
-                            ? anno.featureLibrary.replace(/_/g, ' ').slice(0, -4)
-                            : anno.featureLibrary}
-                     >
-                     </MyToolTip>}
-                    
-                <Copier anno={anno} sequence={sequence} />   
-                </Group>              
-            )}
+            {partAnnotations.length > 0 && featureAnnotations.length > 0 &&
+             <Text size="xs" color="dimmed" weight={600} mt={10} mb={4}>Sequence Annotations</Text>}
+            {featureAnnotations.map(renderAnnotation)}
 
             <Select
                 label="Algorithm"
@@ -353,6 +422,29 @@ function Annotations({ colors }) {
             />
 
             <Group mt="sm" spacing="xs">
+                <NumberInput
+                    label="Minimum Feature Length (bp)"
+                    value={minFeatureLength}
+                    onChange={value => setMinFeatureLength(value ?? DEFAULT_MIN_FEATURE_LENGTH)}
+                    min={MIN_FEATURE_LENGTH_FLOOR}
+                    step={1}
+                    precision={0}
+                    sx={{ width: 120 }}
+                />
+                <Tooltip
+                    label="Library parts shorter than this are not annotated. Lower it to pick up short parts such as RBSs and terminators; raise it to cut noise. Applies to every algorithm."
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Group mt="sm" spacing="xs">
                 <Checkbox
                     label="Similar DNA Sequence Matches"
                     checked={similarDNAMatches}
@@ -361,6 +453,53 @@ function Annotations({ colors }) {
                 />
                 <Tooltip
                     label="Allow DNA-level matches with 95%+ sequence identity instead of requiring exact DNA matches (applies to BWA, Minimap2, BLASTN)"
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            {/* Both reach every alignment-based mapper (BWA, Minimap2, BLASTN).
+                FlashText matches literal keywords and has no notion of either. */}
+            <Group mt="sm" spacing="xs">
+                <NumberInput
+                    label="DNA Identity (%)"
+                    value={dnaIdentity}
+                    onChange={value => setDnaIdentity(value ?? DEFAULT_DNA_IDENTITY)}
+                    min={0}
+                    max={DEFAULT_DNA_IDENTITY}
+                    step={1}
+                    precision={0}
+                    disabled={!supportsAlignmentTuning || !similarDNAMatches}
+                    sx={{ width: 120 }}
+                />
+                <Tooltip
+                    label="Minimum coverage-weighted identity (identical bases / reference length) for a match to be kept. Starts at 95% and can only be lowered. Requires similar DNA matching — an exact match is 100% by definition."
+                    position="right"
+                    withArrow
+                    multiline
+                    width={250}
+                >
+                    <ActionIcon size="xs" variant="transparent" color="gray">
+                        <FaInfoCircle size={14} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Group mt="sm" spacing="xs">
+                <Checkbox
+                    label="NMS"
+                    checked={applyNms}
+                    disabled={!supportsAlignmentTuning}
+                    onChange={(event) => setApplyNms(event.currentTarget.checked)}
+                />
+                <Tooltip
+                    label="Non-maximum suppression: when several parts match the same locus, keep only the highest-scoring one instead of reporting nested/overlapping duplicates."
                     position="right"
                     withArrow
                     multiline
@@ -549,6 +688,17 @@ function Annotations({ colors }) {
                     onClick={handleAnalyzeSequenceClick}
                     sx={{ borderRadius: 6 }}
                />
+            }
+
+            {runAnnotationCount > 0 && !loading &&
+             <NavLink
+                 label="Clear Annotations"
+                 icon={<FaTrash />}
+                 variant="subtle"
+                 color="red"
+                 onClick={handleClearAnnotationsClick}
+                 sx={{ borderRadius: 6 }}
+             />
             }
         </FormSection>
     )

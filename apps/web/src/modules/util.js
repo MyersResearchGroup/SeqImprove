@@ -109,3 +109,12 @@ export function showServerErrorNotification() {
         autoClose: false,
     });
 }
+
+/**
+ * An SBOL-compliant displayId: letters, digits and underscores only, and it
+ * may not start with a digit. Shared by the upload form (where the displayId is
+ * entered) and anything that validates one afterwards.
+ */
+export function validDisplayID(displayID) {
+    return !!displayID?.match(/^[a-z_]\w*$/i);
+}

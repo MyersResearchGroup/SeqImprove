@@ -7,6 +7,7 @@ import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL, deleteL
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
 import { FILE_TYPES } from "./fileTypes"
+import { CLEANED_URI_PREFIXES } from "./homespace"
 
 
 // create store
@@ -75,7 +76,9 @@ export const useStore = create((set, get) => ({
             let isUriCleaned = false
             let nameChanged = false
 
-            if (document.root.uriChain.includes("https://seqimprove.synbiohub.org") || document.root.uriChain.includes("https://charmme.synbiohub.org")) isUriCleaned = true
+            // uriChain is a ';'-joined string, so this is a substring test.
+            // Legacy homespaces count as cleaned -- see CLEANED_URI_PREFIXES.
+            if (CLEANED_URI_PREFIXES.some(prefix => document.root.uriChain.includes(prefix))) isUriCleaned = true
 
             set({
                 // ...result,
@@ -223,12 +226,32 @@ export const useStore = create((set, get) => ({
                 codonMatches: args[4],
                 includeHypothetical: args[5],
                 isCircular: args[6],
+                dnaIdentityThreshold: args[7],
+                applyNms: args[8],
+                minFeatureLength: args[9],
             }) ?? [];
 
             let { fetchedAnnotations = [], synbictDoc } = result;
 
+            // The server ran clean_target_document, which drops every annotation
+            // that references a Component -- i.e. the output of earlier runs --
+            // and keeps bare ones (a GenBank import's own features).
+            //
+            // Don't just assume that: reconcile against the document we got back.
+            // An older server wipes bare annotations too, and trusting the
+            // assumption left them in the list as ghosts -- still shown, still
+            // checkable, but absent from the document, so they silently vanished
+            // from the export. Keeping only what the document actually contains
+            // means the list is honest whichever server is running. Checkbox
+            // state is preserved for the ones that survive.
+            const docAnnotationIds = new Set(
+                (synbictDoc?.root?.sequenceAnnotations ?? []).map(sa => sa.persistentIdentity)
+            );
+            const survivors = get().sequenceAnnotations
+                .filter(anno => !anno.isPart && docAnnotationIds.has(anno.id));
+
             set({
-                sequenceAnnotations: produce(get().sequenceAnnotations, draft => {
+                sequenceAnnotations: produce(survivors, draft => {
                     fetchedAnnotations.forEach(anno => {
                         // skip duplicates
                         if (!draft.find(a => a.id == anno.id)) {
@@ -247,6 +270,30 @@ export const useStore = create((set, get) => ({
         } finally {
             set({ loadingSequenceAnnotions: false });
         }
+    },
+
+    /**
+     * Drop every sequence annotation, both from the SBOL document and from the
+     * candidate list. loadSequenceAnnotations appends to the list (it only skips
+     * exact duplicates), so without this a second run against a different
+     * library or algorithm piles its results on top of the first run's.
+     *
+     * Annotations are removed from the document with the same helper
+     * exportDocument uses for disabled annotations, so the component, its
+     * definition and its sequence go too -- not just the SequenceAnnotation.
+     */
+    clearSequenceAnnotations: () => {
+        // Only what an analysis run produced -- the annotations that reference a
+        // Component. Bare ones came with the uploaded file (a GenBank import's
+        // own features) and are the user's data, so this button never touches
+        // them; uncheck those individually to leave them out of the export.
+        const runAnnotations = get().sequenceAnnotations.filter(anno => anno.isPart);
+        mutateDocument(set, state => {
+            runAnnotations.forEach(anno => {
+                removeAnnotationWithDefinition(state.document.root, anno.id);
+            });
+        });
+        set({ sequenceAnnotations: get().sequenceAnnotations.filter(anno => !anno.isPart) });
     },
 
     // ...createAsyncAdapter(set, "SequenceAnnotations", async () => {

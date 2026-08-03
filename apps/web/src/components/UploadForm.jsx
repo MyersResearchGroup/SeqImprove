@@ -2,51 +2,87 @@ import { Box, Button, Center, FileInput, Group, LoadingOverlay, NativeSelect, Se
 import { useForm } from '@mantine/form'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { useStore } from '../modules/store'
-import { showErrorNotification, showWarningNotification } from '../modules/util'
+import { showErrorNotification, showWarningNotification, validDisplayID } from '../modules/util'
 import { fetchConvertGenbankToSBOL2 } from '../modules/api'
 import { FILE_TYPES } from '../modules/fileTypes'
+import { HOMESPACE } from '../modules/homespace'
 // import { Graph, S2ComponentDefinition, SBOL2GraphView, genbankToSBOL2 } from "sbolgraph"
 
+// Escape the five XML predefined entities so header text with &, <, >, " or '
+// can't produce invalid SBOL when interpolated into the template below.
+function escapeXml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
 function parseFasta(fastaContent) {
-    // split sequence from description line
-    const [ descriptionLine, ...sequenceLines ] = fastaContent.split('\n');
-    // grab first "word" from description line
-    const [ first, ...rest ] = descriptionLine.split(' ');
-    if (first[0] !== '>') {
-        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, expected '>' on line 1", null];
+    // Normalize line endings (handles \n, \r\n, and bare \r) so a Windows FASTA
+    // doesn't leave stray \r on the header or embedded in the sequence.
+    const lines = fastaContent.split(/\r\n|\r|\n/);
+    // The header is the first non-blank line and must start with '>'.
+    const headerIndex = lines.findIndex(l => l.trim() !== '');
+    const headerLine = headerIndex >= 0 ? lines[headerIndex].trim() : '';
+    if (headerLine[0] !== '>') {
+        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, expected '>' on line 1", []];
     }
-    const firstWord = first.slice(1);
+    // Header (minus '>'): first whitespace-delimited token is the id, the
+    // remainder is the description.
+    const [ first, ...rest ] = headerLine.slice(1).trim().split(/\s+/);
+    const firstWord = first ?? '';
+    if (!firstWord) {
+        return [{ displayId: null, description: null, sequence: null }, "Invalid fasta file, header has no identifier", []];
+    }
     const description = rest.join(' ');
     // convert first word to sbol compliant displayId
     const displayId = (firstWord[0].match(/[a-z_]/i) ? firstWord[0] : '_') + firstWord.slice(1).replace(/\W/g, '_');
-    // join and validate sequence
-    const sequence = sequenceLines.join('');
+    // Sequence = every line after the header up to the next record ('>'),
+    // stripped of all whitespace so blank lines / wrapping don't corrupt it.
+    const bodyLines = lines.slice(headerIndex + 1);
+    const nextRecordIndex = bodyLines.findIndex(line => line[0] === '>');
+    const sequenceLines = nextRecordIndex < 0 ? bodyLines : bodyLines.slice(0, nextRecordIndex);
+    const sequence = sequenceLines.join('').replace(/\s/g, '');
+
+    // Warnings never block the upload, they just tell the user what we did.
+    const warnings = [];
+    // SeqImprove models a single component, so a multi-record FASTA can only
+    // contribute its first record — say so instead of dropping the rest silently.
+    if (nextRecordIndex >= 0) {
+        const ignored = bodyLines.slice(nextRecordIndex).filter(line => line[0] === '>').length;
+        warnings.push(`This FASTA contains ${ignored + 1} records. Only the first ("${firstWord}") was imported; the other ${ignored} ${ignored === 1 ? 'was' : 'were'} ignored.`);
+    }
     // currently is blocking the upload when include invalid chars
     // only show the warning without blocking the uploading
     if (sequence.match(/^[actguryswkmbdhvnacdefghiklmnpqrstvwy.-]+$/i) === null) {
-        //show warning
-        return [{ displayId, description, sequence }, null, "Sequence includes invalid characters."]
+        warnings.push("Sequence includes invalid characters.");
     }
-    return [{ displayId, description, sequence }, null, null]
+    return [{ displayId, description, sequence }, null, warnings]
 }
 
-function compileFastaToSBOL({ displayId, description, sequence }) {
+// Builds a minimal SBOL2 document. Used both by the FASTA import and by "From
+// Scratch". `description` and `sequence` are empty for a from-scratch plasmid,
+// and no dcterms:title is written unless a name is supplied -- a new document
+// must not arrive with placeholder values the user has to delete.
+function compileSBOL({ displayId, name = '', description = '', sequence = '' }) {
+    const title = name ? `\n    <dcterms:title>${escapeXml(name)}</dcterms:title>` : '';
     return `<?xml version="1.0" ?>
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:igem="http://wiki.synbiohub.org/wiki/Terms/igem#" xmlns:sbh="http://wiki.synbiohub.org/wiki/Terms/synbiohub#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:gbconv="http://sbols.org/genBankConversion#" xmlns:genbank="http://www.ncbi.nlm.nih.gov/genbank#" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:om="http://www.ontology-of-units-of-measure.org/resource/om-2/" xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <sbol:ComponentDefinition rdf:about="https://seqimprove.synbiohub.org/${displayId}/1">
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/${displayId}"/>
+  <sbol:ComponentDefinition rdf:about="${HOMESPACE}/${displayId}/1">
+    <sbol:persistentIdentity rdf:resource="${HOMESPACE}/${displayId}"/>
     <sbol:displayId>${displayId}</sbol:displayId>
-    <sbol:version>1</sbol:version>
-    <dcterms:title>${displayId}</dcterms:title>    
-    <dcterms:description>${description}</dcterms:description>
+    <sbol:version>1</sbol:version>${title}
+    <dcterms:description>${escapeXml(description)}</dcterms:description>
     <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
-    <sbol:sequence rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence/1"/>
+    <sbol:sequence rdf:resource="${HOMESPACE}/${displayId}_Sequence/1"/>
   </sbol:ComponentDefinition>
-  <sbol:Sequence rdf:about="https://seqimprove.synbiohub.org/${displayId}_Sequence/1">
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.synbiohub.org/${displayId}_Sequence"/>
+  <sbol:Sequence rdf:about="${HOMESPACE}/${displayId}_Sequence/1">
+    <sbol:persistentIdentity rdf:resource="${HOMESPACE}/${displayId}_Sequence"/>
     <sbol:displayId>${displayId}</sbol:displayId>
     <sbol:version>1</sbol:version>
-    <sbol:elements>${sequence}</sbol:elements>
+    <sbol:elements>${escapeXml(sequence)}</sbol:elements>
     <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
   </sbol:Sequence>
 </rdf:RDF>`
@@ -78,6 +114,8 @@ export default function UploadForm() {
             url: "",
             file: null,
             file_t: "SBOL2",
+            displayId: "",
+            name: "",
         },
         validate: {
             url: (value, values) => {
@@ -92,6 +130,17 @@ export default function UploadForm() {
                 return true
             },
             file: (value, values) => values.method == Methods.Upload && !value,
+            // The displayId is fixed at creation time and can't be changed
+            // afterwards, so it has to be valid before the document exists.
+            displayId: (value, values) => {
+                if (values.method != Methods.FromScratch)
+                    return null
+                if (!value?.trim())
+                    return "A display ID is required"
+                if (!validDisplayID(value.trim()))
+                    return "Letters, digits and underscores only, and it can't start with a digit"
+                return null
+            },
         }
     });
 
@@ -115,6 +164,20 @@ export default function UploadForm() {
                                {...form.getInputProps("url")}
                            />
                        </>,
+        [Methods.FromScratch]: <>
+                                   <TextInput
+                                       label="Display ID"
+                                       description="Identifies the plasmid — permanent, it can't be changed later. Letters, digits and underscores only; it can't start with a digit."
+                                       placeholder="e.g. SrpR_RBS_S3_gate"
+                                       {...form.getInputProps("displayId")}
+                                   />
+                                   <TextInput
+                                       label="Name"
+                                       description="A readable name for the plasmid. Spaces are fine here. Optional — you can add or change it later on the Text page."
+                                       placeholder="e.g. SrpR RBS S3 gate"
+                                       {...form.getInputProps("name")}
+                                   />
+                               </>,
     };
 
     const handleSubmit = async values => {        
@@ -175,15 +238,13 @@ export default function UploadForm() {
                         return;
                     }
                 }
-                const [ fastaDoc, err, warning ] = parseFasta(fileContent);
+                const [ fastaDoc, err, warnings ] = parseFasta(fileContent);
                 if (err) {
                     showErrorNotification(err);
                     return;
                 }
-                if (warning) {
-                    showWarningNotification(warning);
-                }               
-                const sbolContent = compileFastaToSBOL(fastaDoc);
+                warnings.forEach(warning => showWarningNotification(warning));
+                const sbolContent = compileSBOL(fastaDoc);
                 loadSBOL(sbolContent, FILE_TYPES.FASTA);
                 break;
             case "GenBank":
@@ -211,12 +272,17 @@ export default function UploadForm() {
                     }
                 }
                 const genbank_text = fileContent;                
-                const { sbol2_content, err1 } = await fetchConvertGenbankToSBOL2(genbank_text);
-                if (!err1) {
-                    loadSBOL(sbol2_content, FILE_TYPES.GENBANK);    
-                } else {
-                    console.error(err1);
-                    switch (err1) {
+                // The API returns `err`, not `err1`. Destructuring the wrong name
+                // made this branch unreachable: every failed conversion fell into
+                // the success path and called loadSBOL("") instead, so the user
+                // saw a generic parse error while the SBOL validator's actual
+                // complaint was discarded.
+                // (named convertErr because `err` is already taken by the FASTA
+                // branch -- switch cases share one block scope)
+                const { err: convertErr, sbol2_content } = await fetchConvertGenbankToSBOL2(genbank_text);
+                if (convertErr) {
+                    console.error(convertErr);
+                    switch (convertErr) {
                     case TypeError:
                         showErrorNotification("There was a problem processing your GenBank file. It may not be valid.");
                         break;
@@ -227,9 +293,18 @@ export default function UploadForm() {
                         showErrorNotification("There was a problem processing your GenBank file. This could be an internal server error.");
                         break;
                     default:
-                        showErrorNotification("There was a problem processing your GenBank file.");
-                    }                 
+                        // Anything else is the converter's own message -- show it,
+                        // it names the feature or field that could not convert.
+                        showErrorNotification("GenBank conversion failed", String(convertErr));
+                    }
+                    return;
                 }
+                if (!sbol2_content) {
+                    showErrorNotification("GenBank conversion failed",
+                                          "The converter returned an empty document.");
+                    return;
+                }
+                loadSBOL(sbol2_content, FILE_TYPES.GENBANK);
                 break;
             }
                                   
@@ -240,8 +315,13 @@ export default function UploadForm() {
                 values.url + '/sbol';
             loadSBOL(url);
             break;
-        case Methods.FromScratch:          
-            loadSBOL(window.location.origin + "/From_Scratch.xml");
+        case Methods.FromScratch:
+            // Built from the display ID entered above rather than loaded from a
+            // fixture, so the new document has no placeholder name/description.
+            loadSBOL(compileSBOL({
+                displayId: values.displayId.trim(),
+                name: values.name.trim(),
+            }), FILE_TYPES.FROM_SCRATCH);
             break;
         default:
             break;

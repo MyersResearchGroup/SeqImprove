@@ -2,9 +2,9 @@ import { set } from "lodash"
 import { Graph, S2ComponentDefinition, S2ComponentInstance, SBOL2GraphView } from "sbolgraph"
 import { TextBuffer } from "text-ranger"
 import { mutateDocument, useAsyncLoader, useStore } from "./store"
+import { HOMESPACE } from "./homespace"
 
-//change to seqimprove.synbiohub.org?
-const Prefix = "https://seqimprove.org/"
+const Prefix = `${HOMESPACE}/`
 
 const Predicates = {
     RichDescription: `${Prefix}richDescription`,
@@ -142,11 +142,10 @@ export async function createSBOLDocument(sbolContent) {
         document.root.richDescription = document.root.description
     }
     
-    // initialize title as display ID if one doesn't exist
-    if (!document.root.title) {
-        document.root.title = document.root.displayId
-    }
-    
+    // The title is deliberately NOT defaulted to the display ID. A document
+    // with no name should read as having no name, so the user enters a real one
+    // instead of finding the field pre-filled with a value they never chose.
+
     return document
 }
 
@@ -256,21 +255,21 @@ export function removeAnnotationWithDefinition(componentDefinition, id) {
 
     const annotation = componentDefinition.sequenceAnnotations.find(sa => sa.persistentIdentity == id)
     if (!annotation) return;
-    
+
+    // A bare sequence feature (a GenBank import, for instance) has no Component,
+    // and therefore no definition or sequence to clean up -- just the annotation
+    // itself. This used to return early in that case, which meant an unchecked
+    // GenBank feature was never actually removed on export.
     const associatedComponent = annotation.component
-    if (!associatedComponent) return;
-    
-    const definition = associatedComponent.definition
-    if (!definition) return;
-    
-    const sequences = definition.sequences
+    const definition = associatedComponent?.definition
+    const sequences = definition?.sequences
 
     if (sequences && sequences[0]) {
         sequences[0].destroy()
     }
     annotation.destroy()
-    associatedComponent.destroy()
-    definition.destroy()
+    associatedComponent?.destroy()
+    definition?.destroy()
 }
 
 export function incrementVersion(componentDefinition) {
@@ -298,6 +297,16 @@ export function getExistingSequenceAnnotations(componentDefinition) {
         // Clamp start-1 to 0 so SYNBICT2's `start=0` wrap-around Range
         // doesn't produce a negative array index.
         locations: sa.locations.map(loc => [Math.max(0, loc.start - 1), loc.end]),
+        // A SequenceAnnotation that points at a Component is a *part* annotation
+        // (the region is a known component). One without is a bare sequence
+        // feature -- what a GenBank import produces, since GenBank features
+        // carry no component identity.
+        isPart: !!sa.component,
+        // Part annotations describe components that are genuinely in the
+        // document, so they start checked. Bare features start unchecked, which
+        // is what #196 asks for on a GenBank import. This matters beyond the
+        // checkbox: exportDocument deletes everything left unchecked.
+        enabled: !!sa.component,
     }))
 }
 

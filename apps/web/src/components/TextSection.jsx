@@ -3,6 +3,8 @@ import { forwardRef, useMemo, useState } from "react"
 import { FaCheck, FaPencilAlt, FaPlus, FaTimes, FaArrowRight } from "react-icons/fa"
 import { FiDownloadCloud } from "react-icons/fi"
 import { mutateDocument, useAsyncLoader, useStore } from "../modules/store"
+import { updateDocumentProperties } from "../modules/api"
+import { showErrorNotification } from "../modules/util"
 import FormSection from "./FormSection"
 import TextAnnotationCheckbox from "./TextAnnotationCheckbox"
 import { openConfirmModal, openContextModal } from "@mantine/modals"
@@ -10,6 +12,85 @@ import { showNotification } from "@mantine/notifications"
 import { hasTrailingPunctuation, removeTrailingPunctuation } from "../modules/text"
 import RichDescription from "./RichDescription"
 import produce from "immer"
+
+
+/**
+ * Editing the part's name. It lives here rather than in the page header because
+ * the header now only shows the (permanent) display ID -- see issue #198.
+ *
+ * The name is stored as dcterms:title. Writing it goes through the same server
+ * round-trip the header used to use: updateDocumentProperties rewrites the SBOL
+ * and replaceDocumentForIDChange swaps in the result. The current displayId is
+ * passed through unchanged so only the title moves.
+ */
+function NameSection() {
+
+    const name = useStore(s => s.document?.root.title)
+    const displayId = useStore(s => s.document?.root.displayId)
+
+    const [isEditing, setIsEditing] = useState(false)
+    const [workingName, setWorkingName] = useState("")
+    const [isSaving, setIsSaving] = useState(false)
+
+    const handleStartEdit = () => {
+        setWorkingName(name ?? "")
+        setIsEditing(true)
+    }
+
+    const handleEndEdit = async (cancel = false) => {
+        if (cancel) {
+            setIsEditing(false)
+            return
+        }
+
+        const trimmed = workingName.trim()
+        if (!trimmed) {
+            showErrorNotification("Name cannot be empty.", "Please provide a valid name.")
+            return
+        }
+        if (trimmed === (name ?? "")) {
+            setIsEditing(false)
+            return
+        }
+
+        setIsSaving(true)
+        try {
+            const result = await updateDocumentProperties(useStore.getState().sbolContent, trimmed, displayId)
+            if (result.error) {
+                showErrorNotification("Failed to update name", result.error)
+                return
+            }
+            await useStore.getState().replaceDocumentForIDChange(result.sbolContent)
+            setIsEditing(false)
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    return (
+        <FormSection title="Name" rightSection={
+            isEditing ?
+                <Group spacing={6}>
+                    <ActionIcon onClick={() => handleEndEdit(true)} color="red" disabled={isSaving}><FaTimes /></ActionIcon>
+                    <ActionIcon onClick={() => handleEndEdit(false)} color="green" disabled={isSaving}>
+                        {isSaving ? <Loader size="xs" /> : <FaCheck />}
+                    </ActionIcon>
+                </Group> :
+                <ActionIcon onClick={handleStartEdit}><FaPencilAlt /></ActionIcon>
+        }>
+            {isEditing ?
+                <Textarea
+                    autosize
+                    maxRows={1}
+                    value={workingName}
+                    placeholder="Name of this part"
+                    onChange={event => setWorkingName(event.currentTarget.value)}
+                /> :
+                <Text color="dimmed">{name || "No name specified"}</Text>
+            }
+        </FormSection>
+    )
+}
 
 
 function Description({ colors }) {
@@ -215,6 +296,8 @@ function Description({ colors }) {
 
     return (
         <>
+            <NameSection />
+
             <FormSection title="Description" rightSection={
                 isEditingDescription ?
                     <Group spacing={6}>

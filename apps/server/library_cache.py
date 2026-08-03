@@ -735,6 +735,22 @@ class IndexManager:
             extractor = FeatureExtractor(library_docs)
             extractor.write_fasta(fasta_path)
 
+            # An empty FASTA makes makeblastdb (and bwa/minimap2) fail with a bare
+            # non-zero exit status, which surfaces to the user as an unreadable
+            # CalledProcessError. It means the selected libraries yielded no
+            # sequences at all -- typically a SynBioHub collection that came back
+            # as a bare Collection shell (members not resolvable), not real parts.
+            if os.path.getsize(fasta_path) == 0:
+                shutil.rmtree(index_dir, ignore_errors=True)
+                names = ', '.join(os.path.basename(p) for p in library_paths)
+                raise ValueError(
+                    f"No DNA sequences could be extracted from the selected "
+                    f"librar{'y' if len(library_paths) == 1 else 'ies'} ({names}). "
+                    f"A SynBioHub collection whose members are not accessible "
+                    f"returns only the collection itself, with no parts in it. "
+                    f"Check that the collection contains parts you have access to."
+                )
+
             # build index
             algo_map = {
                 'bwa': 'bwa',
