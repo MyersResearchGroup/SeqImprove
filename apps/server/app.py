@@ -226,22 +226,40 @@ def clean_target_document(target_doc: sbol2.Document) -> sbol2.Document:
     The function keeps only the primary component definition (the one we want to annotate)
     and removes everything else that was added by previous annotation runs.
     """
-    # find the primary component definition (the one we want to annotate)
-    # it should be the one with a sequence that's NOT a variant (_v\d+)
+    # Find the target: the ComponentDefinition nothing else points at.
+    #
+    # SYNBICT now copies the matched library parts into the annotated document so
+    # the file is self-contained (SD2E/SYNBICT e91d333), which means the document
+    # holds many CDs that all have sequences. Picking "the first CD with a
+    # sequence" would then latch onto whichever part happens to come first in
+    # iteration order -- and everything not picked is deleted below, so choosing
+    # wrong silently destroys the user's plasmid. A library part is always
+    # referenced by one of the target's Components; the target is referenced by
+    # nobody, and that holds whatever order the CDs are serialized in.
+    referenced = {comp.definition
+                  for comp_def in target_doc.componentDefinitions
+                  for comp in comp_def.components}
+    roots = [comp_def for comp_def in target_doc.componentDefinitions
+             if comp_def.identity not in referenced
+             and not re.search(r'_v\d+', comp_def.displayId)]
+
     primary_comp = None
-    for comp_def in target_doc.componentDefinitions:
-        # skip variants created by previous annotation runs
-        if re.search(r'_v\d+', comp_def.displayId):
-            continue
-        # check if this component has a sequence
+    # Prefer a root that carries a sequence -- that is the annotated plasmid.
+    for comp_def in roots:
         if comp_def.sequences and len(comp_def.sequences) > 0:
             primary_comp = comp_def
             break
 
+    if primary_comp is None and roots:
+        primary_comp = roots[0]
+
     if primary_comp is None:
-        # fallback: just take the first non-variant component
+        # No unreferenced CD (a malformed or fully circularly-referenced doc):
+        # fall back to the old heuristic rather than giving up.
         for comp_def in target_doc.componentDefinitions:
-            if not re.search(r'_v\d+', comp_def.displayId):
+            if re.search(r'_v\d+', comp_def.displayId):
+                continue
+            if comp_def.sequences and len(comp_def.sequences) > 0:
                 primary_comp = comp_def
                 break
 
@@ -460,8 +478,15 @@ def run_synbict_all(sbol_content: str, library_paths: list[str], exact_match: bo
         # 4th positional arg is min_target_length, not min_feature_length -- it
         # gates the target sequence, not the library features. Passing
         # min_feature_length here worked only because plasmids always clear it.
+        # in_place=False is what makes FeatureAnnotatorBase.annotate() set
+        # copy_definitions, so the matched library ComponentDefinitions (and their
+        # Sequences) are copied into the document instead of being left as
+        # references to SynBioHub URIs that aren't in the file. Without it the
+        # exported SBOL has dangling component->definition references and readers
+        # that resolve them -- SBOLCanvas -- fail on it. `in_place` has no other
+        # effect in annotate(); annotations still go into this same target_doc.
         annotator.annotate(inline_matches, rc_matches, target_library, MIN_TARGET_LENGTH,
-                         in_place=True, output_library=output_library, output_matches=False)
+                         in_place=False, output_library=output_library, output_matches=False)
 
         return None, None, [[target_doc.writeString(), "All_Libraries"]]
 
