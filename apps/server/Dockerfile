@@ -44,7 +44,13 @@ RUN pip install -r requirements.txt
 # ProkkaAligner.py uses shutil.which("prokka"); we just need it on PATH.
 # Conda already provides hmmer/aragorn/barrnap/minced/prodigal/perl-bioperl/gsl, so
 # the prokka binary will find its runtime deps via the active env.
-RUN wget -q https://github.com/tseemann/prokka/archive/refs/tags/v1.14.6.tar.gz \
+# This is a ~112 MB download and GitHub redirects it to codeload, which rate-limits
+# and returns transient 5xx on CI runners -- wget then exits 8 and the whole build
+# fails. Retry on exactly those statuses, and drop -q so the HTTP code shows up in
+# the build log instead of being swallowed (-nv still keeps the output short).
+RUN wget -nv --tries=5 --waitretry=15 --retry-connrefused \
+        --retry-on-http-error=408,429,500,502,503,504 \
+        https://github.com/tseemann/prokka/archive/refs/tags/v1.14.6.tar.gz \
  && tar xzf v1.14.6.tar.gz \
  && rm v1.14.6.tar.gz
 
