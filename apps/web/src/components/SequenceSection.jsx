@@ -262,15 +262,16 @@ function Annotations({ colors }) {
         { value: 'Eco1C1G1T1_collection.xml', label: 'Cello E. Coli Parts Collection'},
     ];
 
+    // Keep alphabetical by label.
     const localLibraries = [
         { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
+        { value: 'cello_library.xml', label: 'Cello Library' },
         { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
         { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
         { value: 'Itaconic_Acid_Pathway_Voigt_Lab_collection.xml', label: 'Itaconic Acid Pathway Voigt Lab Collection' },
         { value: 'MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml', label: 'MoClo Yeast Toolkit Dueber Lab Colletion' },
         { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
         { value: 'Pichia_MoClo_Toolkit_Lu_Lab_collection.xml', label: 'Pichia MoClo Toolkit Lu Lab Collection' },
-        { value: 'cello_library.xml', label: 'Cello Library' },
     ];
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
