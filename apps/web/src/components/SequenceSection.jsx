@@ -754,7 +754,11 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
             // is accessed via api.synbiohub.org, so strip the api. subdomain before filtering.
             const uriPrefix = synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, '$1');
             let regex = RegExp(uriPrefix.replace(/^https?/, 'https?') + "/(?:user|public)/.*");
-            const userRootCollections = _rootCollections.filter(collection => collection.uri.match(regex));
+            const userRootCollections = _rootCollections
+                  .filter(collection => collection.uri.match(regex))
+                  // SynBioHub returns root collections in an arbitrary order, so sort them by
+                  // displayId (what the Select actually shows) before they reach the dropdown.
+                  .sort((a, b) => (a.displayId || "").localeCompare(b.displayId || "", undefined, { sensitivity: "base", numeric: true }));
             setRootCollections(userRootCollections);
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
             setRootCollectionsLoaded(true);
