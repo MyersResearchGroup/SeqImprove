@@ -738,33 +738,35 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
 
     const xml = useStore(s => s.serializeXML());        
 
-    (async () => {        
-        if (!rootCollectionsLoaded) { // curl -X GET -H "Accept: text/plain" -H "X-authorization: 5ab3af6e-2ddd-4ac2-af76-d4285d2ffe03" https://synbiohub.org/rootCollections
-            console.log(synBioHubSessionToken);
-            const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {                
+    useEffect(() => {
+        if (rootCollectionsLoaded) return;
+
+        // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
+        (async () => {
+            const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {
                 method: "GET",
                 headers: {
                     "Accept": "text/plain",
                     "X-authorization": synBioHubSessionToken,
                 },
-            });            
+            });
 
             const _rootCollections = await response2.json();
-            
+
             // SynBioHub URIs use the canonical domain (e.g. synbiohub.org) even when the API
             // is accessed via api.synbiohub.org, so strip the api. subdomain before filtering.
             const uriPrefix = synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, '$1');
             let regex = RegExp(uriPrefix.replace(/^https?/, 'https?') + "/(?:user|public)/.*");
             const userRootCollections = _rootCollections
-                  .filter(collection => collection.uri.match(regex))
-                  // SynBioHub returns root collections in an arbitrary order, so sort them by
-                  // displayId (what the Select actually shows) before they reach the dropdown.
-                  .sort((a, b) => (a.displayId || "").localeCompare(b.displayId || "", undefined, { sensitivity: "base", numeric: true }));
+                .filter(collection => collection.uri.match(regex))
+                // SynBioHub returns root collections in an arbitrary order, so sort them by
+                // displayId (what the Select actually shows) before they reach the dropdown.
+                .sort((a, b) => (a.displayId || "").localeCompare(b.displayId || "", undefined, { sensitivity: "base", numeric: true }));
             setRootCollections(userRootCollections);
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
             setRootCollectionsLoaded(true);
-        }           
-    })();
+        })();
+    }, [rootCollectionsLoaded, synBioHubUrlPrefix, synBioHubSessionToken]);
 
     const [ inputErrorID, setInputErrorID ] = useState(false);
     const importedLibraries = useStore(s => s.importedLibraries)
