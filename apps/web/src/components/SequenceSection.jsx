@@ -262,15 +262,16 @@ function Annotations({ colors }) {
         { value: 'Eco1C1G1T1_collection.xml', label: 'Cello E. Coli Parts Collection'},
     ];
 
+    // Keep alphabetical by label.
     const localLibraries = [
         { value: 'Anderson_Promoters_Anderson_Lab_collection.xml', label: 'Anderson Promoters Anderson Lab Collection' },
+        { value: 'cello_library.xml', label: 'Cello Library' },
         { value: 'CIDAR_MoClo_Extension_Kit_Volume_I_Murray_Lab_collection.xml', label: 'CIDAR MoCLO Extension Kit Volume I Murray Lab Collection' },
         { value: 'CIDAR_MoClo_Toolkit_Densmore_Lab_collection.xml', label: 'CIDAR MoClo Toolkit Freemont Lab Collection' },
         { value: 'Itaconic_Acid_Pathway_Voigt_Lab_collection.xml', label: 'Itaconic Acid Pathway Voigt Lab Collection' },
         { value: 'MoClo_Yeast_Toolkit_Dueber_Lab_collection.xml', label: 'MoClo Yeast Toolkit Dueber Lab Colletion' },
         { value: 'Natural_and_Synthetic_Terminators_Voigt_Lab_collection.xml', label: 'Natural and Synthetic Terminators Voigt Lab Collection' },
         { value: 'Pichia_MoClo_Toolkit_Lu_Lab_collection.xml', label: 'Pichia MoClo Toolkit Lu Lab Collection' },
-        { value: 'cello_library.xml', label: 'Cello Library' },
     ];
 
     const [sequencePartLibrariesSelected, setSequencePartLibrariesSelected] = useState([]);
@@ -737,29 +738,35 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
 
     const xml = useStore(s => s.serializeXML());        
 
-    (async () => {        
-        if (!rootCollectionsLoaded) { // curl -X GET -H "Accept: text/plain" -H "X-authorization: 5ab3af6e-2ddd-4ac2-af76-d4285d2ffe03" https://synbiohub.org/rootCollections
-            console.log(synBioHubSessionToken);
-            const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {                
+    useEffect(() => {
+        if (rootCollectionsLoaded) return;
+
+        // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
+        (async () => {
+            const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {
                 method: "GET",
                 headers: {
                     "Accept": "text/plain",
                     "X-authorization": synBioHubSessionToken,
                 },
-            });            
+            });
 
             const _rootCollections = await response2.json();
-            
+
             // SynBioHub URIs use the canonical domain (e.g. synbiohub.org) even when the API
             // is accessed via api.synbiohub.org, so strip the api. subdomain before filtering.
             const uriPrefix = synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, '$1');
             let regex = RegExp(uriPrefix.replace(/^https?/, 'https?') + "/(?:user|public)/.*");
-            const userRootCollections = _rootCollections.filter(collection => collection.uri.match(regex));
+            const userRootCollections = _rootCollections
+                .filter(collection => collection.uri.match(regex))
+                // SynBioHub returns root collections in an arbitrary order, so sort them by
+                // displayId (what the Select actually shows) before they reach the dropdown.
+                .sort((a, b) => (a.displayId || "").localeCompare(b.displayId || "", undefined, { sensitivity: "base", numeric: true }));
             setRootCollections(userRootCollections);
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
             setRootCollectionsLoaded(true);
-        }           
-    })();
+        })();
+    }, [rootCollectionsLoaded, synBioHubUrlPrefix, synBioHubSessionToken]);
 
     const [ inputErrorID, setInputErrorID ] = useState(false);
     const importedLibraries = useStore(s => s.importedLibraries)
