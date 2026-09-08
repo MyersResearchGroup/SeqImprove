@@ -13,9 +13,11 @@ import json
 import os
 import re
 import shutil
+import tempfile
 import threading
 import time
 from collections import OrderedDict
+from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Set
@@ -105,8 +107,14 @@ class LibraryCache:
         self._documents: Dict[str, sbol2.Document] = {}  # abs_path -> document (permanent)
         self._xml_strings: Dict[str, str] = {}  # abs_path -> serialized XML (for fast fresh copies)
         self._feature_libraries: Dict[str, FeatureLibrary] = {}  # abs_path -> single-library FeatureLibrary
-        self._subset_feature_libraries: Dict[frozenset, FeatureLibrary] = {}  # frozenset(paths) -> merged FeatureLibrary
+        self._subset_feature_libraries: Dict[Tuple[frozenset, tuple], FeatureLibrary] = {}  # (frozenset(paths), content hashes) -> merged FeatureLibrary
         self._hashes: Dict[str, str] = {}  # abs_path -> content_hash
+        # Hash of the bytes actually parsed into _documents / _feature_libraries.
+        # Kept separate from _metadata because get_library_hash() refreshes the
+        # metadata entry as a side effect -- comparing against that could never
+        # detect a change (it compared the new hash with itself).
+        self._document_hashes: Dict[str, str] = {}
+        self._feature_library_hashes: Dict[str, str] = {}
         self._library_name_map: Dict[str, str] = {}  # filename -> abs_path (e.g. "iGEM.xml" -> "/full/path/iGEM.xml")
         self._metadata = self._load_metadata()
 
@@ -123,13 +131,33 @@ class LibraryCache:
         return CacheMetadata()
 
     def _save_metadata(self):
-        """Save cache metadata to disk."""
+        """Save cache metadata to disk, atomically.
+
+        Writing in place with open(..., 'w') truncates first, so a crash or a
+        concurrent writer leaves a half-written file; _load_metadata then hits
+        JSONDecodeError, silently returns empty metadata, and the whole index
+        cache is orphaned on the next boot. Write a sibling temp file and rename
+        it -- os.replace is atomic on POSIX, so readers see either the old file
+        or the new one, never a partial one.
+        """
         metadata_path = self.cache_dir / METADATA_FILE
+        tmp_path = None
         try:
-            with open(metadata_path, 'w') as f:
+            with tempfile.NamedTemporaryFile('w', dir=str(self.cache_dir),
+                                             prefix='.cache_metadata.', suffix='.tmp',
+                                             delete=False) as f:
+                tmp_path = f.name
                 json.dump(self._metadata.to_dict(), f, indent=2)
-        except IOError as e:
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_path, metadata_path)
+        except (IOError, OSError) as e:
             print(f"Warning: Could not save cache metadata: {e}")
+            if tmp_path:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
 
     def compute_file_hash(self, file_path: str) -> str:
         """Compute SHA256 hash of file contents."""
@@ -149,18 +177,13 @@ class LibraryCache:
         with self._lock:
             abs_path = os.path.abspath(file_path)
 
-            # check if we have a cached hash
-            if abs_path in self._hashes:
-                # verify file hasn't changed (check mtime as quick check)
-                cached_info = self._metadata.libraries.get(abs_path)
-                if cached_info:
-                    try:
-                        current_size = os.path.getsize(abs_path)
-                        if current_size == cached_info.file_size:
-                            return self._hashes[abs_path]
-                    except OSError:
-                        pass
-
+            # Always hash the bytes. The previous shortcut returned the cached
+            # hash whenever the file SIZE was unchanged, so a same-length edit --
+            # re-importing a SynBioHub library after changing a description, or
+            # any equal-size rewrite of the same path -- kept the stale hash, and
+            # with it the stale Document, FeatureLibrary and alignment index. The
+            # largest library here is 1.4 MB and hashes in ~14 ms, so the
+            # shortcut bought nothing and cost correctness.
             # compute fresh hash
             content_hash = self.compute_file_hash(abs_path)
             self._hashes[abs_path] = content_hash
@@ -200,16 +223,18 @@ class LibraryCache:
 
             # check if we need to reload
             if not force_reload and abs_path in self._documents:
-                cached_info = self._metadata.libraries.get(abs_path)
-                if cached_info and cached_info.content_hash == current_hash:
-                    # update access time
-                    cached_info.last_accessed = time.time()
+                if self._document_hashes.get(abs_path) == current_hash:
+                    cached_info = self._metadata.libraries.get(abs_path)
+                    if cached_info:
+                        cached_info.last_accessed = time.time()
                     return self._documents[abs_path]
+                print(f"Library changed on disk, reloading: {abs_path}")
 
             # load from disk (one-time cost per library)
             doc = sbol2.Document()
             doc.read(abs_path)
             self._documents[abs_path] = doc
+            self._document_hashes[abs_path] = current_hash
 
             # cache the XML string for fast fresh copies later
             self._xml_strings[abs_path] = doc.writeString()
@@ -258,15 +283,17 @@ class LibraryCache:
 
             # check if we need to reload
             if not force_reload and abs_path in self._feature_libraries:
-                cached_info = self._metadata.libraries.get(abs_path)
-                if cached_info and cached_info.content_hash == current_hash:
-                    cached_info.last_accessed = time.time()
+                if self._feature_library_hashes.get(abs_path) == current_hash:
+                    cached_info = self._metadata.libraries.get(abs_path)
+                    if cached_info:
+                        cached_info.last_accessed = time.time()
                     return self._feature_libraries[abs_path]
 
             # load fresh
             doc = self.get_document(abs_path, force_reload)
             feature_lib = FeatureLibrary([doc])
             self._feature_libraries[abs_path] = feature_lib
+            self._feature_library_hashes[abs_path] = current_hash
 
             return feature_lib
 
@@ -283,13 +310,30 @@ class LibraryCache:
         use get_fresh_feature_library_for_subset() instead.
         """
         with self._lock:
-            key = frozenset(os.path.abspath(p) for p in file_paths)
+            paths = frozenset(os.path.abspath(p) for p in file_paths)
+
+            # Key on the CONTENT of the libraries, not just their paths. Keying
+            # on paths alone meant this cache was never invalidated: once a
+            # subset had been built, updating any member library on SynBioHub and
+            # re-importing it left every later annotation running against the old
+            # parts, with nothing to signal that. Folding the content hashes into
+            # the key makes an updated library produce a different key, so the
+            # merged FeatureLibrary is rebuilt automatically.
+            hashes = tuple(sorted(self.get_library_hash(p) for p in paths))
+            key = (paths, hashes)
 
             if key in self._subset_feature_libraries:
                 return self._subset_feature_libraries[key]
 
-            docs = self.get_documents_for_libraries(list(key))
+            docs = self.get_documents_for_libraries(list(paths))
             feature_lib = FeatureLibrary(docs)
+
+            # Drop any previously cached entry for this same path set -- its
+            # content is now superseded and nothing will ask for it again.
+            for stale in [k for k in self._subset_feature_libraries
+                          if k[0] == paths and k != key]:
+                del self._subset_feature_libraries[stale]
+
             self._subset_feature_libraries[key] = feature_lib
             return feature_lib
 
@@ -347,7 +391,8 @@ class LibraryCache:
             extractor.write_protein_fasta(str(protein_path))
             return str(protein_path.resolve())
 
-    def materialize_remote_library(self, url: str) -> Optional[str]:
+    def materialize_remote_library(self, url: str, session_token: str = None,
+                                   force_refresh: bool = False) -> Optional[str]:
         """
         Ensure a SynBioHub library is available on disk so alignment algorithms
         (BWA / Minimap2 / BLASTN) can index it.
@@ -366,11 +411,11 @@ class LibraryCache:
 
         with self._lock:
             # already loaded into permanent cache
-            if abs_path in self._documents:
+            if abs_path in self._documents and not force_refresh:
                 return abs_path
 
             # disk file exists but not loaded — load it
-            if cached_path.exists():
+            if cached_path.exists() and not force_refresh:
                 try:
                     self.get_document(abs_path)
                     return abs_path
@@ -380,8 +425,15 @@ class LibraryCache:
             # fetch from SynBioHub via api. subdomain (bypasses Cloudflare)
             remote_dir.mkdir(parents=True, exist_ok=True)
             fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
+            # Forward the caller's SynBioHub session token when there is one.
+            # Without it this fetch is anonymous, so any private collection comes
+            # back 401 and the library is silently skipped -- it only ever worked
+            # when /api/importUserLibrary had already populated the disk cache.
+            headers = {"Accept": "text/plain"}
+            if session_token:
+                headers["X-authorization"] = session_token
             try:
-                response = requests.get(fetch_url, headers={"Accept": "text/plain"}, timeout=300)
+                response = requests.get(fetch_url, headers=headers, timeout=300)
             except requests.exceptions.RequestException as e:
                 print(f"Failed to fetch remote library '{canonical}': {e}")
                 return None
@@ -443,7 +495,8 @@ class LibraryCache:
                     pass
                 return None
 
-    def resolve_library_paths(self, names: List[str], library_dir: str = None) -> Tuple[List[str], List[str]]:
+    def resolve_library_paths(self, names: List[str], library_dir: str = None,
+                              session_token: str = None) -> Tuple[List[str], List[str]]:
         """
         Resolve library display names to absolute file paths.
 
@@ -461,7 +514,7 @@ class LibraryCache:
         for name in names:
             # SynBioHub URL — fetch and cache to disk so alignment can index it
             if 'synbiohub.org' in name or name.startswith('http'):
-                materialized = self.materialize_remote_library(name)
+                materialized = self.materialize_remote_library(name, session_token=session_token)
                 if materialized:
                     resolved.append(materialized)
                 else:
@@ -552,9 +605,17 @@ class IndexManager:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.max_indexes = max_indexes
 
-        self._lock = threading.RLock()
+        # Share LibraryCache's lock rather than holding a second one. Both classes
+        # mutate the SAME CacheMetadata object (assigned just below), so two
+        # independent locks provided no mutual exclusion at all: a thread inside
+        # LibraryCache._lock and one inside IndexManager._lock could write
+        # _metadata -- and _save_metadata -- concurrently. RLock is reentrant, so
+        # the nested acquisitions in this class remain safe.
+        self._lock = library_cache._lock
         self._access_order: OrderedDict[str, float] = OrderedDict()
         self._metadata = library_cache._metadata
+        # Indexes currently being read by an aligner; never evict these.
+        self._pinned: Dict[str, int] = {}
 
         # initialize access order from metadata
         self._init_access_order()
@@ -599,8 +660,17 @@ class IndexManager:
                 if not self._access_order:
                     break
 
-                # get oldest key
-                oldest_key = next(iter(self._access_order))
+                # Never evict an index an aligner is currently reading. Eviction
+                # rmtree's the directory while BWA/BLASTN may still have the files
+                # open, which surfaces as a mid-run "no such file" from the
+                # aligner. Skip pinned entries; if every entry is pinned there is
+                # nothing safe to reclaim, so let the cache overflow instead.
+                evictable = [k for k in self._access_order if not self._pinned.get(k)]
+                if not evictable:
+                    print("Index cache at capacity but every index is in use; "
+                          "skipping eviction this round")
+                    break
+                oldest_key = evictable[0]
 
                 # remove from disk
                 index_dir = self._get_index_dir(oldest_key)
@@ -718,6 +788,14 @@ class IndexManager:
         with self._lock:
             index_key = self._compute_index_key(algorithm, library_paths)
 
+            # Re-check under the lock. has_index() above runs unlocked, so two
+            # requests for the same uncached library set both see "missing", then
+            # queue on this lock and the second one rebuilds an index the first
+            # just finished -- wasted minutes of makeblastdb, plus a second
+            # eviction round that can discard a third user's index for nothing.
+            if self.has_index(algorithm, library_paths):
+                return self.get_index_paths(algorithm, library_paths)
+
             # evict oldest if at capacity
             self._evict_oldest()
 
@@ -796,6 +874,28 @@ class IndexManager:
         if self.has_index(algorithm, library_paths):
             return self.get_index_paths(algorithm, library_paths)
         return self.create_index(algorithm, library_paths)
+
+    @contextmanager
+    def pin_index(self, algorithm: str, library_paths: List[str]):
+        """Hold an index against eviction for the duration of a block.
+
+        get_or_create_index returns bare paths and releases the lock immediately,
+        but the aligner then reads those files for a long time with no lock held.
+        Wrap the alignment in this so a concurrent create_index cannot rmtree the
+        directory out from under a running BWA/Minimap2/BLASTN.
+        """
+        index_key = self._compute_index_key(algorithm, library_paths)
+        with self._lock:
+            self._pinned[index_key] = self._pinned.get(index_key, 0) + 1
+        try:
+            yield
+        finally:
+            with self._lock:
+                remaining = self._pinned.get(index_key, 1) - 1
+                if remaining > 0:
+                    self._pinned[index_key] = remaining
+                else:
+                    self._pinned.pop(index_key, None)
 
     def get_cache_stats(self) -> dict:
         """Get statistics about the index cache."""

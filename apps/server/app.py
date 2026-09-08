@@ -64,6 +64,11 @@ index_manager: IndexManager = None
 # FlashText FeatureLibrary dict (keyed by path or SynBioHub URL)
 # For alignment algorithms, use library_cache.get_feature_library_for_subset() instead
 FEATURE_LIBRARIES = {}
+# FEATURE_LIBRARIES is mutated by /api/importUserLibrary and /api/deleteUserLibrary
+# while annotation requests read it, on a multi-threaded waitress server. Without
+# this a check-then-read ("is it cached?" -> FEATURE_LIBRARIES[url]) can KeyError
+# when another request deletes the entry in between.
+_feature_libraries_lock = threading.RLock()
 
 # Homespace SeqImprove mints its URIs under. Single source of truth -- it is the
 # pySBOL2 homespace, the SynBio2Easy cleaning namespace, and the URI prefix given
@@ -148,9 +153,11 @@ def create_feature_library(part_library_file_name):
         logger.info(f"Creating feature library for: {canonical}")
 
         # Check if already in cache (user-imported or previous on-demand fetch)
-        if canonical in FEATURE_LIBRARIES:
+        with _feature_libraries_lock:
+            cached = FEATURE_LIBRARIES.get(canonical)
+        if cached is not None:
             logger.info(f"Library '{canonical}' found in cache.")
-            return FEATURE_LIBRARIES[canonical]
+            return cached
 
         # Library not in cache — fetch on demand using api.synbiohub.org to bypass Cloudflare
         fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
@@ -842,6 +849,9 @@ def annotate_sequence():
         dna_identity_threshold = 95.0
     dna_identity_threshold = min(100.0, max(0.0, dna_identity_threshold))
     apply_nms = bool(request_data.get('applyNms', False))
+    # Optional: lets a private SynBioHub library be re-fetched when it isn't
+    # already on disk. Never logged, never persisted.
+    session_token = request_data.get('sessionToken') or None
     try:
         min_feature_length = int(request_data.get('minFeatureLength', DEFAULT_MIN_FEATURE_LENGTH))
     except (TypeError, ValueError):
@@ -863,7 +873,8 @@ def annotate_sequence():
             # resolve library names to absolute paths via LibraryCache
             feature_libraries_dir = "./assets/synbict/feature-libraries"
             library_paths, skipped = library_cache.resolve_library_paths(
-                part_library_file_names, library_dir=feature_libraries_dir
+                part_library_file_names, library_dir=feature_libraries_dir,
+                session_token=session_token
             )
 
             if not library_paths:
@@ -879,13 +890,17 @@ def annotate_sequence():
             # DNA aligner uses similar-DNA flag; Prokka uses similar-protein flag.
             dna_exact_match = not allow_similar_dna_matches
             protein_exact_match = not allow_similar_matches
-            error_code, error_message, anno_lib_assoc = run_synbict_all(
-                sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
-                codon_matches=codon_matches, include_hypothetical=include_hypothetical,
-                protein_exact_match=protein_exact_match, is_circular=is_circular,
-                dna_identity_threshold=dna_identity_threshold, apply_nms=apply_nms,
-                min_feature_length=min_feature_length
-            )
+            # Hold the index for the whole alignment. Without this, another
+            # request creating a different index can evict (rmtree) the directory
+            # this aligner is still reading from.
+            with index_manager.pin_index(algorithm, library_paths):
+                error_code, error_message, anno_lib_assoc = run_synbict_all(
+                    sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
+                    codon_matches=codon_matches, include_hypothetical=include_hypothetical,
+                    protein_exact_match=protein_exact_match, is_circular=is_circular,
+                    dna_identity_threshold=dna_identity_threshold, apply_nms=apply_nms,
+                    min_feature_length=min_feature_length
+                )
 
         if error_code:
             return {"sbol": sbol_content, "error_message": error_message}, error_code
@@ -935,12 +950,17 @@ def import_library():
         try:
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
-            FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
+            with _feature_libraries_lock:
+                FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
             # Stage the same SBOL on disk so BLASTN/BWA/Minimap2 can index it
             # without a second (anonymous, possibly failing) fetch.
             library_cache.cache_remote_library_content(collectionURL, response.text)
-            logger.info(f"Imported library URI '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
-            return {"success": True, "cachedUrl": collectionURL, "librariesInCache": list(FEATURE_LIBRARIES.keys())}
+            logger.info(f"Imported library URI '{collectionURL}'")
+            # Deliberately does NOT return the full cache listing. That
+            # enumerated every library every user had imported, including the
+            # URLs of other people's private SynBioHub collections, to whoever
+            # happened to import something. Nothing in the frontend used it.
+            return {"success": True, "cachedUrl": collectionURL}
         except Exception as e:
             logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
             return {"error": f"Failed to parse library SBOL: {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -961,9 +981,12 @@ def remove_library():
     request_data = request.get_json()
     collectionURL = request_data['url']
 
-    if collectionURL in FEATURE_LIBRARIES:
-        del FEATURE_LIBRARIES[collectionURL]
-        logger.info(f"Deleted library '{collectionURL}'. Remaining: {list(FEATURE_LIBRARIES.keys())}")
+    with _feature_libraries_lock:
+        present = collectionURL in FEATURE_LIBRARIES
+        if present:
+            del FEATURE_LIBRARIES[collectionURL]
+    if present:
+        logger.info(f"Deleted library '{collectionURL}'.")
     else:
         logger.warning(f"Attempted to delete library not in cache: '{collectionURL}'. Available: {list(FEATURE_LIBRARIES.keys())}")
         return {"response": "Library does not exist"}
