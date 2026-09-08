@@ -6,20 +6,20 @@ person can also update their own private SynBioHub libraries and must be
 guaranteed to see their update on the next run.
 
 Branch: `multi_users`. Everything under "Fixed" is committed on this branch and
-has a reproduction test in the log below. Everything under "Needs a decision" is
-untouched — those need a product/architecture call before code.
+has a reproduction test in the log below. "Needs a decision" is what is left —
+it has shrunk as the tenancy work landed; what remains there genuinely needs a
+product or architecture call.
 
 ---
 
 ## The one-sentence summary
 
-**The server has no concept of a user.** `grep` for a session, a user id, or a
-principal anywhere in `apps/server/` returns exactly one hit: the SynBioHub token
-that `/api/importUserLibrary` uses for a single outbound fetch and then throws
-away. Every cache, every index and every library list is one global object shared
-by everyone. Requirements 1–3 (concurrent use) are now mostly safe; requirements
-4–5 (per-user private libraries with an update guarantee) cannot be finished
-without introducing an identity, which is the main open decision.
+**The server had no concept of a user.** Every cache, every index and every
+library list was one global object shared by everyone. There is now a principal
+(`identity.py`), private libraries are partitioned by owner while public ones
+stay shared, and the cache-invalidation and locking bugs behind requirements 1–4
+are fixed. What is left is mostly capacity and deployment shape, plus one real
+product question about sharing.
 
 ---
 
@@ -170,65 +170,135 @@ the frontend read the field. Removed, along with the same listing in the log lin
 
 ---
 
+## Fixed — round two (tenancy)
+
+### 9. There is now a principal  — *req 5*
+
+New `apps/server/identity.py`. `resolve_principal(session_token, instance)` maps
+the SynBioHub session the user already holds to a stable key by calling
+`/profile` with `X-authorization` (verified: that path is an auth endpoint — 401
+anonymously and with a bad token, versus 404 for a path that doesn't exist).
+
+Three deliberate choices:
+
+- The key is `(instance, username)`, **not** the token. Tokens rotate on every
+  login, so a token-derived key would give the same person a fresh cache
+  partition each session and re-fetch everything. The instance is part of the key
+  because a user can be logged into different SynBioHub deployments, where the
+  same username is a different account.
+- If the profile lookup fails the caller is **not** treated as anonymous — that
+  would hand them the shared partition. They fall back to a token-scoped key:
+  correct and private, just not reusable across sessions.
+- Resolved principals are cached for 15 minutes, so a burst of requests costs one
+  lookup and a revoked token stops working promptly.
+
+The frontend now sends `sessionToken` and `synBioHubUrlPrefix` on every library
+call and on annotate, via one `synBioHubCredentials()` helper.
+
+### 10. Private libraries are partitioned; public ones stay shared  — *req 5*
+
+This was gap **B**, the central hole: `remote/<sha256(url)>.xml` was keyed by URL
+alone, so content user A fetched with A's token was handed to any user B who
+named the same URL, with no authorization check.
+
+Visibility is decided the only way that is authoritative: **fetch the URL with no
+credentials — 200 means public, 401/403 means private**; anything else (network
+error, 5xx) is treated as private, the safe answer when we can't tell. Cached for
+10 minutes so a collection made private stops being served from the shared path.
+
+- public  → `remote/<url-hash>.xml`               (shared: one file, one index)
+- private → `remote/u/<principal>/<url-hash>.xml` (per owner)
+
+`FEATURE_LIBRARIES` is keyed the same way. Public sharing is kept deliberately:
+partitioning everything by user would multiply index builds and disk by the
+number of users, for data everyone is allowed to read anyway.
+
+Verified with two principals against the same private URL and the same public
+URL:
+
+```
+private  alice -> .cache/remote/u/u_alice/d0367cd3.xml
+private  bob   -> .cache/remote/u/u_bob/d0367cd3.xml     isolated
+         alice sees ['alice_secret_part'], bob sees ['bob_own_part']
+public   alice -> .cache/remote/22e6769a.xml
+public   bob   -> .cache/remote/22e6769a.xml             shared
+```
+
+### 11. Ownership checks on the library endpoints  — *req 5*
+
+- `/api/deleteUserLibrary` now deletes only the caller's own partition entry.
+  Previously any user could evict any library by naming its URL.
+- `/api/checkLibraryCache` answers for the caller's partition only. It was an
+  existence oracle: anyone could probe any URL and learn which private
+  collections other people had imported.
+
+### 12. Index builds no longer hold the global lock  — *req 2, 3*
+
+`create_index` held the cache lock across `makeblastdb`/`bwa index`, so one
+user's build froze **every** cache operation server-wide — other users' hash
+lookups, document reads, even index hits — for its full duration. On a 4-thread
+server that is most of the way to a stall.
+
+The FASTA write and the tool invocation now run in a scratch directory with no
+cache lock held; the finished index is moved into place under the lock. A
+per-index-key build lock keeps two callers wanting the *same* index from building
+it twice, while callers wanting *different* indexes proceed in parallel.
+
+Verified with 8 concurrent requests for 5 distinct indexes and a stubbed 0.4 s
+build: **0.56 s wall clock against 2.0 s+ if serialised**, exactly 5 indexes
+built, no leftover staging directories, metadata intact.
+
+### 13. `FEATURE_LIBRARIES` is bounded  — was gap J
+
+Imported collections accumulated one entry per (user, collection) with nothing to
+evict them — a leak that grows with every user, made worse by partitioning. Now
+an LRU capped at `MAX_REMOTE_FEATURE_LIBRARIES = 32`, touched on every cache hit.
+Locally preloaded libraries are a fixed set and are not subject to it.
+
+---
+
 ## Needs a decision
 
-### A. There is no user identity — this blocks everything below
+### A. The imported-library list is still browser-only
 
-Nothing distinguishes one caller from another. Adding per-user behaviour needs a
-principal first. The natural candidate is the SynBioHub session the user already
-has, resolved to a stable id (SynBioHub's `/profile` with `X-authorization`
-returns the username). Hashing the raw token is *not* equivalent: tokens rotate
-per login, so the same person would get a different cache partition each session
-— safe, but it discards all reuse.
+Identity itself is now implemented (fix 9). What is not: the frontend keeps
+`importedLibraries` in the zustand store, so a user switching browser or device
+loses their list even though the server could now reconstruct it per principal.
+Persisting it server-side is a small feature, but it is a feature, not a fix.
 
-Complication: a user can log into **different SynBioHub instances**
-(`synBioHubUrlPrefix` is stored per session), so the identity is really
-`(instance, username)`, not a bare username.
+Also unverified: `/profile`'s exact response shape. The resolver tries
+`username`, `user`, `name`, `email` in that order and falls back to a
+token-scoped key if none is present. It has not been run against a live
+authenticated session — worth a single manual check with a real token.
 
-Also note the frontend keeps the imported-library list only in the browser
-(`importedLibraries` in the zustand store). Even with server-side identity, a
-user switching browser or device loses their list unless it is persisted server
-side.
+### B. Should a private library ever be shareable?
 
-### B. Private library content is served to other users — the central hole
+The partition is implemented (fix 10): private content is now strictly per-owner.
+The remaining question is product, not code — **if A wants to share a private
+collection with B, should that be possible?** Today it is not, by construction.
+Supporting it turns a partition into an ACL, which needs a place to store grants
+and a UI to manage them. Worth deciding before anyone asks for it.
 
-Remote libraries are cached at `remote/<sha256(url)>.xml`, keyed by URL alone.
-User A imports a private collection with A's token; the content lands in that
-shared file. User B selects the same URL and `resolve_library_paths` hands them
-A's content **with no authorization check at all**. B never needed a token.
+Related: two users who both have legitimate access to the same private collection
+each get their own copy and their own alignment index. That is correct but
+wasteful. Deduplicating it safely would mean keying private content by
+`(content hash, set of principals who proved access)`, which is materially more
+complex — only worth it if that case turns out to be common.
 
-Fixing this means partitioning the remote cache by principal. But note the
-tension with efficiency, which is worth deciding deliberately:
+### C. `/api/cache/clear` is still global and unauthenticated
 
-- **Public libraries should stay shared.** Two users annotating against the same
-  public collection should reuse one cached file and, more importantly, one
-  alignment index. Partitioning everything by user multiplies index builds and
-  disk by the number of users.
-- **Private libraries must not be shared.**
+`deleteUserLibrary` and `checkLibraryCache` are scoped now (fix 11), but
+`/api/cache/clear` still wipes every cache for everyone, with no auth. It is
+presumably an operator tool; it should either require an admin credential or be
+removed from the public surface.
 
-So the cache key needs to depend on whether a collection is public. There is a
-cheap, reliable test for that: **fetch the URL anonymously — `200` means public,
-`401` means private.** I verified this behaves as expected against the real
-service (a private collection and its members all return `401` without a token).
-A public library can then keep the current shared, content-addressed path, and a
-private one goes to `remote/<principal>/<hash>.xml`.
+### D. Index capacity is 10, globally — now more pressing
 
-Open question for you: should a private library imported by A ever be visible to
-B if A wants to share it? If yes this becomes an ACL, not a partition.
-
-### C. Any user can delete any user's library
-
-`/api/deleteUserLibrary` takes a URL and deletes it from the global dict with no
-ownership check; `/api/cache/clear` wipes everything for everyone. With
-partitioning (B) these become per-principal operations; until then, deleting is
-a cross-tenant action. Consider whether `deleteUserLibrary` should even touch
-server state, or only the caller's own browser list.
-
-### D. `/api/checkLibraryCache` is an existence oracle
-
-It answers "is this URL cached?" for any URL, unauthenticated — letting anyone
-probe which private collections other users have imported. Should be scoped to
-the caller's own partition.
+`DEFAULT_MAX_INDEXES = 10`, shared by all users. Partitioning private libraries
+*increases* the number of distinct indexes (two users with the same private
+collection now have two), so the LRU will thrash sooner than before. Needs sizing
+against expected concurrency, or a per-principal quota. Same for
+`MAX_REMOTE_FEATURE_LIBRARIES = 32`, which I picked without data.
 
 ### E. Prokka is a global singleton
 
@@ -240,42 +310,19 @@ Prokka is the slowest thing in the pipeline. Fixing it properly means running
 each invocation in its own temp directory, which is a change to SYNBICT's
 `ProkkaAligner`, not to SeqImprove.
 
-### F. Index builds hold the global lock
-
-`create_index` holds `self._lock` across `extractor.build_index()`, which shells
-out to `makeblastdb`/`bwa index`. Since `IndexManager` now shares
-`LibraryCache`'s lock, **every cache operation server-wide blocks for the entire
-duration of an index build** — including other users' hash lookups and document
-reads. (This was true before my change too, just against a second lock that
-didn't protect anything.) The fix is a per-index-key build lock so unrelated work
-proceeds, but that needs care: it reintroduces the possibility of two threads
-building different indexes while a third evicts.
-
-### G. Index capacity is 10, globally
-
-`DEFAULT_MAX_INDEXES = 10`, shared by all users. With N users × M library
-combinations the LRU will thrash and indexes will be rebuilt constantly. Needs
-sizing against expected concurrency, or a per-principal quota.
-
-### H. The server runs 4 threads
+### F. The server runs 4 threads
 
 `serve(app, host="0.0.0.0", port=8080)` — waitress defaults to `threads=4`. That
 is the hard ceiling on concurrent annotations regardless of anything else, and
 long jobs (Prokka, index builds) occupy a thread for minutes.
 
-### I. All state is per-process, so this does not scale horizontally
+### G. All state is per-process, so this does not scale horizontally
 
 Every cache here is in-process memory plus a local disk directory. Run two
 replicas behind a load balancer and user A's library update on replica 1 is
 invisible to replica 2 — which breaks requirement 4 as soon as the service is
 scaled out. Shared state would have to move to something external (a shared
 volume plus a real cache-invalidation signal, or a database).
-
-### J. `FEATURE_LIBRARIES` grows without bound
-
-Nothing ever evicts it except an explicit delete. Every library every user has
-ever imported stays in memory for the life of the process. With many users this
-is a slow leak; the on-disk index cache has an LRU, this does not.
 
 ---
 
@@ -290,7 +337,13 @@ is a slow leak; the on-disk index cache has an LRU, this does not.
 | Locks/atomicity hold | 8 threads × 25 iterations of subset reads, hashing, pinning, eviction and metadata saves: no exceptions, metadata still parses, no temp files left, both classes share one lock |
 | Private collections 401 anonymously | live request to the real SynBioHub for a private collection and two of its members |
 | Prokka/threads/capacity | read from `app.py` and `library_cache.py` constants |
+| `/profile` is an auth endpoint | live: 401 anonymous, 401 with a bad token, 404 for a nonexistent path |
+| Private isolated, public shared | two principals against the same private and the same public URL — separate paths for private, one path for public |
+| Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
+| LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
 
 Not verified: none of this has been exercised against a running server with real
-concurrent users. The fixes are unit-level and reasoned; a load test with several
-simultaneous annotations is the obvious next step.
+concurrent users, and `/profile`'s response shape has not been confirmed with a
+live authenticated session (the resolver tries several field names and degrades
+to a token-scoped key). The fixes are unit-level and reasoned; a load test with
+several simultaneous annotations, by two real accounts, is the obvious next step.

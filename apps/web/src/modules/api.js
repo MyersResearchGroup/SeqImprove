@@ -72,6 +72,17 @@ export async function fetchSBOL(url) {
   }
 }
 
+// The server identifies a caller by (SynBioHub instance, username) resolved from
+// the session token, so every library call has to carry both. Without the
+// instance the same username on two different SynBioHub deployments would
+// collide into one cache partition.
+function synBioHubCredentials() {
+  return {
+    sessionToken: sessionStorage.getItem("SynBioHubSessionToken") || null,
+    synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix") || null,
+  };
+}
+
 export async function importLibrary(synBioHubSessionToken, requestURL) {
     try {
         var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
@@ -80,6 +91,7 @@ export async function importLibrary(synBioHubSessionToken, requestURL) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
+                ...synBioHubCredentials(),
                 sessionToken: synBioHubSessionToken,
                 url: requestURL
             }),
@@ -107,7 +119,7 @@ export async function checkLibraryCache(url) {
         const response = await fetch(`${import.meta.env.VITE_API_LOCATION}/api/checkLibraryCache`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url }),
+            body: JSON.stringify({ url, ...synBioHubCredentials() }),
         });
         const result = await response.json();
         return result.cached;
@@ -128,6 +140,7 @@ export async function deleteLibrary(libraryURL) {
         },
         body: JSON.stringify({
           url: libraryURL,
+          ...synBioHubCredentials(),
         }),
         timeout: 120000,
       }
@@ -222,6 +235,9 @@ export async function fetchAnnotateSequence({
           dnaIdentityThreshold: dnaIdentityThreshold,
           applyNms: applyNms,
           minFeatureLength: minFeatureLength,
+          // Lets the server resolve the caller and reach their private
+          // libraries; omitted for an anonymous user, who gets public only.
+          ...synBioHubCredentials(),
         }),
         timeout: 320000,
       }

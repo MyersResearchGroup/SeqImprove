@@ -10,6 +10,7 @@ import os
 import asyncio
 import shutil
 import threading
+from collections import OrderedDict
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -52,6 +53,7 @@ subprocess.run(["bash", "-lc", "perl -MBio::SearchIO::hmmer3 -e 'print \"OK\\n\"
 _prokka_lock = threading.Lock()
 
 # import caching system
+import identity
 from library_cache import (
     init_cache, get_library_cache, get_index_manager,
     LibraryCache, IndexManager
@@ -69,6 +71,51 @@ FEATURE_LIBRARIES = {}
 # this a check-then-read ("is it cached?" -> FEATURE_LIBRARIES[url]) can KeyError
 # when another request deletes the entry in between.
 _feature_libraries_lock = threading.RLock()
+
+
+# Remote libraries held in memory for the FlashText path. Local libraries are
+# preloaded at startup and are a fixed set, but imported SynBioHub collections
+# accumulate one entry per (user, collection) with nothing to evict them -- a
+# slow leak that grows with every user. Bound just the remote ones.
+MAX_REMOTE_FEATURE_LIBRARIES = 32
+_remote_library_order: "OrderedDict[str, None]" = OrderedDict()
+
+
+def _remember_remote_library(key: str) -> None:
+    """Record a remote library as most-recently-used, evicting past the cap.
+
+    Caller must hold _feature_libraries_lock.
+    """
+    _remote_library_order.pop(key, None)
+    _remote_library_order[key] = None
+    while len(_remote_library_order) > MAX_REMOTE_FEATURE_LIBRARIES:
+        oldest, _ = _remote_library_order.popitem(last=False)
+        FEATURE_LIBRARIES.pop(oldest, None)
+        logger.info("Evicted least-recently-used remote library from memory")
+
+
+def _library_key(url: str, principal: str = None) -> str:
+    """Cache key for a remote library, partitioned the same way as disk.
+
+    Public collections keep a bare-URL key so all users share one entry. A
+    private one is namespaced by its owner: keying it by URL alone meant the
+    parts one user fetched with their token were returned to anyone else who
+    named the same URL.
+    """
+    canonical = identity.canonical_url(url)
+    partition, shared = identity.partition_for(canonical, principal)
+    return canonical if shared else f"{partition}\x00{canonical}"
+
+
+def _principal_from_request(request_data: dict) -> str:
+    """Resolve the caller from the SynBioHub session they already hold.
+
+    Returns None for an anonymous caller, who may only touch public libraries.
+    """
+    return identity.resolve_principal(
+        request_data.get('sessionToken') or None,
+        request_data.get('synBioHubUrlPrefix') or None,
+    )
 
 # Homespace SeqImprove mints its URIs under. Single source of truth -- it is the
 # pySBOL2 homespace, the SynBio2Easy cleaning namespace, and the URI prefix given
@@ -146,15 +193,20 @@ def create_app():
 # ===========================================================================================================================
 # ===========================================================================================================================
 
-def create_feature_library(part_library_file_name):
+def create_feature_library(part_library_file_name, principal: str = None):
     if ('synbiohub.org' in part_library_file_name):
-        # Normalize to canonical URI as the consistent dictionary key (strip api. if present)
-        canonical = re.sub(r'^(https?://)api\.', r'\1', part_library_file_name)
+        # The URL identifies the collection; the key identifies the cache slot.
+        # They differ for a private library, whose slot is namespaced by owner --
+        # keep them apart or the partition prefix ends up in the fetch URL.
+        canonical = identity.canonical_url(part_library_file_name)
+        key = _library_key(canonical, principal)
         logger.info(f"Creating feature library for: {canonical}")
 
         # Check if already in cache (user-imported or previous on-demand fetch)
         with _feature_libraries_lock:
-            cached = FEATURE_LIBRARIES.get(canonical)
+            cached = FEATURE_LIBRARIES.get(key)
+            if cached is not None:
+                _remember_remote_library(key)   # refresh LRU position
         if cached is not None:
             logger.info(f"Library '{canonical}' found in cache.")
             return cached
@@ -171,9 +223,12 @@ def create_feature_library(part_library_file_name):
         try:
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
-            FEATURE_LIBRARIES[canonical] = FeatureLibrary([feature_doc])  # store under canonical key
+            library = FeatureLibrary([feature_doc])
+            with _feature_libraries_lock:
+                FEATURE_LIBRARIES[key] = library
+                _remember_remote_library(key)
             logger.info(f"On-demand cached library '{canonical}'")
-            return FEATURE_LIBRARIES[canonical]
+            return library
         except Exception as e:
             raise KeyError(f"Failed to parse on-demand library '{canonical}': {e}")
 
@@ -553,7 +608,8 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
         )
 
 def run_synbict(sbol_content: str, part_library_file_names: list[str],
-                min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH) -> tuple[Optional[int], Optional[str], Optional[str]]:
+                min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH,
+                principal: str = None) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
 
     for part_lib_f_name in part_library_file_names:            
@@ -576,7 +632,7 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str],
 
                 target_library = FeatureLibrary([target_doc])
                 # feature_library = FEATURE_LIBRARIES[0]
-                feature_library = create_feature_library(part_lib_f_name)
+                feature_library = create_feature_library(part_lib_f_name, principal=principal)
                 print(f"The key of feature library is {part_lib_f_name}")
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
                 annotated_identities = annotater.annotate(target_library, MIN_TARGET_LENGTH, in_place=True)
@@ -852,6 +908,9 @@ def annotate_sequence():
     # Optional: lets a private SynBioHub library be re-fetched when it isn't
     # already on disk. Never logged, never persisted.
     session_token = request_data.get('sessionToken') or None
+    # Who is asking. Anonymous callers get None and may only use public
+    # libraries; a private collection is filed under its owner's partition.
+    principal = _principal_from_request(request_data)
     try:
         min_feature_length = int(request_data.get('minFeatureLength', DEFAULT_MIN_FEATURE_LENGTH))
     except (TypeError, ValueError):
@@ -868,13 +927,14 @@ def annotate_sequence():
         if algorithm == 'FlashText':
             # use original flashtext-based method
             error_code, error_message, anno_lib_assoc = run_synbict(sbol_content, part_library_file_names,
-                                                                     min_feature_length=min_feature_length)
+                                                                     min_feature_length=min_feature_length,
+                                                                     principal=principal)
         else:
             # resolve library names to absolute paths via LibraryCache
             feature_libraries_dir = "./assets/synbict/feature-libraries"
             library_paths, skipped = library_cache.resolve_library_paths(
                 part_library_file_names, library_dir=feature_libraries_dir,
-                session_token=session_token
+                session_token=session_token, principal=principal
             )
 
             if not library_paths:
@@ -929,6 +989,7 @@ def import_library():
     request_data = request.get_json()
     SBHSessionToken = request_data['sessionToken']
     collectionURL = request_data['url']
+    principal = _principal_from_request(request_data)
     
     headers = {
         "Accept": "text/plain",
@@ -951,10 +1012,14 @@ def import_library():
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
             with _feature_libraries_lock:
-                FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
+                key = _library_key(collectionURL, principal)
+                FEATURE_LIBRARIES[key] = FeatureLibrary([feature_doc])
+                _remember_remote_library(key)
             # Stage the same SBOL on disk so BLASTN/BWA/Minimap2 can index it
-            # without a second (anonymous, possibly failing) fetch.
-            library_cache.cache_remote_library_content(collectionURL, response.text)
+            # without a second (anonymous, possibly failing) fetch. Filed under
+            # this caller's partition when the collection is private.
+            library_cache.cache_remote_library_content(collectionURL, response.text,
+                                                       principal=principal)
             logger.info(f"Imported library URI '{collectionURL}'")
             # Deliberately does NOT return the full cache listing. That
             # enumerated every library every user had imported, including the
@@ -972,19 +1037,29 @@ def import_library():
 def check_library_cache():
     request_data = request.get_json()
     url = request_data['url']
-    canonical = re.sub(r'^(https?://)api\.', r'\1', url)
-    cached = canonical in FEATURE_LIBRARIES
+    principal = _principal_from_request(request_data)
+    canonical = identity.canonical_url(url)
+    # Scoped to the caller's own partition. Answering for the global dict turned
+    # this into an existence oracle: anyone could probe any URL and learn which
+    # private collections other people had imported.
+    with _feature_libraries_lock:
+        cached = _library_key(canonical, principal) in FEATURE_LIBRARIES
     return {"cached": cached, "url": canonical}
 
 @app.post("/api/deleteUserLibrary")
 def remove_library():
     request_data = request.get_json()
     collectionURL = request_data['url']
+    principal = _principal_from_request(request_data)
 
+    # Only ever removes the caller's own entry. Previously any user could delete
+    # any library by naming its URL, evicting other people's imports.
+    key = _library_key(collectionURL, principal)
     with _feature_libraries_lock:
-        present = collectionURL in FEATURE_LIBRARIES
+        present = key in FEATURE_LIBRARIES
         if present:
-            del FEATURE_LIBRARIES[collectionURL]
+            del FEATURE_LIBRARIES[key]
+            _remote_library_order.pop(key, None)
     if present:
         logger.info(f"Deleted library '{collectionURL}'.")
     else:

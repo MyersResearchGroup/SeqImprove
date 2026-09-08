@@ -24,6 +24,7 @@ from typing import Dict, List, Optional, Tuple, Set
 import requests
 import sbol2
 
+import identity
 from sequences_to_features import FeatureLibrary
 from sequences_to_features.FeatureExtractor import FeatureExtractor
 
@@ -391,8 +392,24 @@ class LibraryCache:
             extractor.write_protein_fasta(str(protein_path))
             return str(protein_path.resolve())
 
+    def _remote_cache_path(self, url: str, principal: Optional[str] = None) -> Tuple[str, Path, bool]:
+        """Where a remote library's copy lives, and whether that spot is shared.
+
+        A public collection keeps the shared, content-addressed path so every
+        user reuses one file and one alignment index. A private one is filed
+        under its owner's partition, because the previous URL-only key meant the
+        content one user fetched with their token was handed to anyone else who
+        named the same URL, with no authorization check at all.
+        """
+        canonical = identity.canonical_url(url)
+        url_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:16]
+        partition, shared = identity.partition_for(canonical, principal)
+        remote_dir = self.cache_dir / "remote" if shared else self.cache_dir / "remote" / "u" / partition
+        return canonical, remote_dir / f"{url_hash}.xml", shared
+
     def materialize_remote_library(self, url: str, session_token: str = None,
-                                   force_refresh: bool = False) -> Optional[str]:
+                                   force_refresh: bool = False,
+                                   principal: Optional[str] = None) -> Optional[str]:
         """
         Ensure a SynBioHub library is available on disk so alignment algorithms
         (BWA / Minimap2 / BLASTN) can index it.
@@ -403,10 +420,8 @@ class LibraryCache:
 
         Returns the absolute path to the cached XML, or None on failure.
         """
-        canonical = re.sub(r'^(https?://)api\.', r'\1', url)
-        url_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:16]
-        remote_dir = self.cache_dir / "remote"
-        cached_path = remote_dir / f"{url_hash}.xml"
+        canonical, cached_path, _shared = self._remote_cache_path(url, principal)
+        remote_dir = cached_path.parent
         abs_path = str(cached_path.resolve()) if cached_path.exists() else os.path.abspath(str(cached_path))
 
         with self._lock:
@@ -460,7 +475,8 @@ class LibraryCache:
                     pass
                 return None
 
-    def cache_remote_library_content(self, url: str, sbol_text: str) -> Optional[str]:
+    def cache_remote_library_content(self, url: str, sbol_text: str,
+                                     principal: Optional[str] = None) -> Optional[str]:
         """
         Write already-fetched SBOL content to the disk cache so alignment
         algorithms (BWA / Minimap2 / BLASTN) can index it without a redundant
@@ -469,10 +485,8 @@ class LibraryCache:
 
         Returns the absolute path to the cached XML, or None on failure.
         """
-        canonical = re.sub(r'^(https?://)api\.', r'\1', url)
-        url_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:16]
-        remote_dir = self.cache_dir / "remote"
-        cached_path = remote_dir / f"{url_hash}.xml"
+        canonical, cached_path, _shared = self._remote_cache_path(url, principal)
+        remote_dir = cached_path.parent
         abs_path = str(cached_path.resolve()) if cached_path.exists() else os.path.abspath(str(cached_path))
 
         with self._lock:
@@ -496,7 +510,8 @@ class LibraryCache:
                 return None
 
     def resolve_library_paths(self, names: List[str], library_dir: str = None,
-                              session_token: str = None) -> Tuple[List[str], List[str]]:
+                              session_token: str = None,
+                              principal: Optional[str] = None) -> Tuple[List[str], List[str]]:
         """
         Resolve library display names to absolute file paths.
 
@@ -514,7 +529,8 @@ class LibraryCache:
         for name in names:
             # SynBioHub URL — fetch and cache to disk so alignment can index it
             if 'synbiohub.org' in name or name.startswith('http'):
-                materialized = self.materialize_remote_library(name, session_token=session_token)
+                materialized = self.materialize_remote_library(
+                    name, session_token=session_token, principal=principal)
                 if materialized:
                     resolved.append(materialized)
                 else:
@@ -616,6 +632,9 @@ class IndexManager:
         self._metadata = library_cache._metadata
         # Indexes currently being read by an aligner; never evict these.
         self._pinned: Dict[str, int] = {}
+        # One build lock per index key, so unrelated index builds run in parallel
+        # while duplicate requests for the same index still build it only once.
+        self._build_locks: Dict[str, threading.Lock] = {}
 
         # initialize access order from metadata
         self._init_access_order()
@@ -778,6 +797,15 @@ class IndexManager:
         If an index already exists and is valid, returns the existing paths.
         Otherwise, creates a new index (evicting oldest if at capacity).
 
+        The expensive part -- writing the FASTA and shelling out to
+        makeblastdb/bwa index -- runs OUTSIDE the cache lock, in a scratch
+        directory, and the finished index is moved into place under the lock.
+        Building under the lock meant one user's index build froze every cache
+        operation server-wide (other users' hash lookups, document reads, index
+        hits) for its whole duration, which on a 4-thread server is most of the
+        way to a stall. A per-key build lock still ensures two callers needing
+        the same index build it once.
+
         Returns:
             Tuple of (index_prefix, fasta_path)
         """
@@ -785,85 +813,94 @@ class IndexManager:
         if self.has_index(algorithm, library_paths):
             return self.get_index_paths(algorithm, library_paths)
 
-        with self._lock:
-            index_key = self._compute_index_key(algorithm, library_paths)
+        index_key = self._compute_index_key(algorithm, library_paths)
 
-            # Re-check under the lock. has_index() above runs unlocked, so two
-            # requests for the same uncached library set both see "missing", then
-            # queue on this lock and the second one rebuilds an index the first
-            # just finished -- wasted minutes of makeblastdb, plus a second
-            # eviction round that can discard a third user's index for nothing.
+        # One builder per index key. Callers wanting *different* indexes proceed
+        # in parallel; callers wanting the same one queue here, and the loser
+        # finds it already built by the re-check below.
+        with self._lock:
+            build_lock = self._build_locks.setdefault(index_key, threading.Lock())
+
+        with build_lock:
+            # Someone may have finished it while we waited for the build lock.
             if self.has_index(algorithm, library_paths):
                 return self.get_index_paths(algorithm, library_paths)
 
-            # evict oldest if at capacity
-            self._evict_oldest()
-
-            # create index directory
             index_dir = self._get_index_dir(index_key)
-            index_dir.mkdir(parents=True, exist_ok=True)
+            staging_dir = Path(tempfile.mkdtemp(prefix=f".build_{index_key}_",
+                                                dir=str(self.cache_dir)))
+            try:
+                staged_fasta = str(staging_dir / "library.fasta")
+                staged_prefix = str(staging_dir / "index")
 
-            fasta_path = str(index_dir / "library.fasta")
-            index_prefix = str(index_dir / "index")
+                # Reading the library documents needs the cache lock; building
+                # does not.
+                with self._lock:
+                    library_docs = self.library_cache.get_documents_for_libraries(library_paths)
+                    library_hashes = [
+                        self.library_cache.get_library_hash(p)
+                        for p in sorted(library_paths)
+                    ]
 
-            # load library documents
-            library_docs = self.library_cache.get_documents_for_libraries(library_paths)
+                extractor = FeatureExtractor(library_docs)
+                extractor.write_fasta(staged_fasta)
 
-            # extract features and write FASTA
-            extractor = FeatureExtractor(library_docs)
-            extractor.write_fasta(fasta_path)
+                # An empty FASTA makes makeblastdb (and bwa/minimap2) fail with a
+                # bare non-zero exit status, which surfaces to the user as an
+                # unreadable CalledProcessError. It means the selected libraries
+                # yielded no sequences at all -- typically a SynBioHub collection
+                # that came back as a bare Collection shell (members not
+                # resolvable), not real parts.
+                if os.path.getsize(staged_fasta) == 0:
+                    names = ', '.join(os.path.basename(p) for p in library_paths)
+                    raise ValueError(
+                        f"No DNA sequences could be extracted from the selected "
+                        f"librar{'y' if len(library_paths) == 1 else 'ies'} ({names}). "
+                        f"A SynBioHub collection whose members are not accessible "
+                        f"returns only the collection itself, with no parts in it. "
+                        f"Check that the collection contains parts you have access to."
+                    )
 
-            # An empty FASTA makes makeblastdb (and bwa/minimap2) fail with a bare
-            # non-zero exit status, which surfaces to the user as an unreadable
-            # CalledProcessError. It means the selected libraries yielded no
-            # sequences at all -- typically a SynBioHub collection that came back
-            # as a bare Collection shell (members not resolvable), not real parts.
-            if os.path.getsize(fasta_path) == 0:
-                shutil.rmtree(index_dir, ignore_errors=True)
-                names = ', '.join(os.path.basename(p) for p in library_paths)
-                raise ValueError(
-                    f"No DNA sequences could be extracted from the selected "
-                    f"librar{'y' if len(library_paths) == 1 else 'ies'} ({names}). "
-                    f"A SynBioHub collection whose members are not accessible "
-                    f"returns only the collection itself, with no parts in it. "
-                    f"Check that the collection contains parts you have access to."
-                )
+                algo_map = {
+                    'bwa': 'bwa',
+                    'minimap2': 'minimap2',
+                    'blastn': 'blast',
+                    'blast': 'blast'
+                }
+                tool_name = algo_map.get(algorithm.lower(), algorithm.lower())
+                # The slow part, deliberately outside self._lock.
+                extractor.build_index(staged_fasta, staged_prefix, tool_name)
 
-            # build index
-            algo_map = {
-                'bwa': 'bwa',
-                'minimap2': 'minimap2',
-                'blastn': 'blast',
-                'blast': 'blast'
-            }
-            tool_name = algo_map.get(algorithm.lower(), algorithm.lower())
-            extractor.build_index(fasta_path, index_prefix, tool_name)
+                # Publish: evict if needed, then move the finished index in.
+                with self._lock:
+                    self._evict_oldest()
+                    if index_dir.exists():
+                        shutil.rmtree(index_dir, ignore_errors=True)
+                    staging_dir.rename(index_dir)
+                    staging_dir = None  # ownership transferred
 
-            # get library hashes
-            library_hashes = [
-                self.library_cache.get_library_hash(p)
-                for p in sorted(library_paths)
-            ]
+                    fasta_path = str(index_dir / "library.fasta")
+                    index_prefix = str(index_dir / "index")
 
-            # update metadata
-            now = time.time()
-            self._metadata.indexes[index_key] = IndexInfo(
-                algorithm=algorithm,
-                library_hashes=library_hashes,
-                combined_hash=index_key,
-                index_path=index_prefix,
-                fasta_path=fasta_path,
-                created_at=now,
-                last_accessed=now,
-                library_files=list(library_paths)
-            )
+                    now = time.time()
+                    self._metadata.indexes[index_key] = IndexInfo(
+                        algorithm=algorithm,
+                        library_hashes=library_hashes,
+                        combined_hash=index_key,
+                        index_path=index_prefix,
+                        fasta_path=fasta_path,
+                        created_at=now,
+                        last_accessed=now,
+                        library_files=list(library_paths)
+                    )
+                    self._access_order[index_key] = now
+                    self.library_cache._save_metadata()
 
-            self._access_order[index_key] = now
-            self.library_cache._save_metadata()
-
-            print(f"Created index: {index_key} for {algorithm} with {len(library_paths)} libraries")
-
-            return index_prefix, fasta_path
+                print(f"Created index: {index_key} for {algorithm} with {len(library_paths)} libraries")
+                return index_prefix, fasta_path
+            finally:
+                if staging_dir is not None:
+                    shutil.rmtree(str(staging_dir), ignore_errors=True)
 
     def get_or_create_index(self, algorithm: str, library_paths: List[str]) -> Tuple[str, str]:
         """
