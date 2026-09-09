@@ -508,6 +508,51 @@ class LibraryCache:
             except OSError:
                 pass
 
+    def migrate_shared_private_downloads(self) -> int:
+        """Remove private collections left in the shared cache area.
+
+        Before downloads were partitioned by owner, every remote library landed
+        in <cache>/remote/<hash>.xml regardless of who fetched it. Those files
+        are now unreachable -- a /user/ URL resolves to remote/u/<principal>/ --
+        but they are private content sitting in the shared area, and the janitor
+        does not scan there, so they would stay forever.
+
+        They are deleted rather than moved: the file records no owner, so which
+        principal's partition it belongs in is unknowable. The next request for
+        that collection re-fetches it into the right place.
+        """
+        remote_root = self.cache_dir / "remote"
+        if not remote_root.exists():
+            return 0
+
+        removed = 0
+        with self._lock:
+            for path in sorted(remote_root.glob("*.xml")):
+                try:
+                    head = path.read_text(encoding="utf-8", errors="ignore")[:4000]
+                except OSError:
+                    continue
+                match = re.search(r'rdf:about="(https?://[^"]+)"', head)
+                if not match or identity.is_public(match.group(1)):
+                    continue
+                abs_path = os.path.abspath(str(path))
+                try:
+                    path.unlink()
+                except OSError:
+                    continue
+                for store in (self._documents, self._xml_strings, self._feature_libraries,
+                              self._document_hashes, self._feature_library_hashes,
+                              self._hashes, self._remote_checked):
+                    store.pop(abs_path, None)
+                self._library_lru.pop(abs_path, None)
+                self._metadata.libraries.pop(abs_path, None)
+                removed += 1
+                print(f"Migrated away a private library cached in the shared area: "
+                      f"{match.group(1)}")
+            if removed:
+                self._save_metadata()
+        return removed
+
     def prune_expired(self, index_manager=None, ttl_seconds: int = None) -> dict:
         """Age out cached downloads and indexes. Safe to call at any time.
 

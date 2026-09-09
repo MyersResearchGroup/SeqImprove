@@ -166,6 +166,11 @@ def setup():
     library_cache, index_manager = init_cache(
         cache_dir="./.cache/seqimprove",
     )
+    # One-time cleanup of caches written before downloads were partitioned by
+    # owner: private collections then landed in the shared area, where nothing
+    # reads them any more and the janitor does not look.
+    library_cache.migrate_shared_private_downloads()
+
     # Age out private downloads and indexes on a timer. The count caps only fire
     # when exceeded, so without this a quiet server keeps one user's private
     # library and its index forever.

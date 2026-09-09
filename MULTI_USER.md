@@ -410,6 +410,22 @@ Full set of dials, all environment variables:
 | `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM |
 | `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText library dict in RAM |
 
+### Migrating caches written before partitioning
+
+Before downloads were partitioned by owner, every remote library landed in
+`<cache>/remote/<hash>.xml` regardless of who fetched it. Those files are now
+unreachable — a `/user/` URL resolves to `remote/u/<principal>/` — but they are
+private content sitting in the shared area, and the janitor only scans the
+private subtree, so they would stay there indefinitely.
+
+`migrate_shared_private_downloads()` runs once at startup: it reads each file's
+own URI and deletes the ones that are private. Deleted rather than moved, because
+the file records no owner — which principal's partition it belongs in is
+unknowable — and the next request re-fetches it into the right place.
+
+On the current dev cache this identified two, both real private collections
+(`MD5_backbone`, `ChunxiaoLiao`) and left the two public ones alone.
+
 ### Scheduled cleanup
 
 Count caps only fire when a cap is exceeded, so a quiet server keeps one user's

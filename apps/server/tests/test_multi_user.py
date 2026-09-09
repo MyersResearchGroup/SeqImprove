@@ -621,6 +621,61 @@ def test_fetch_reports_a_shell_that_stays_empty():
         ws.close()
 
 
+# ------------------------------- 分区改造之前留下的共享缓存要迁移掉
+
+def test_migration_removes_private_files_from_shared_area():
+    """Private collections cached before partitioning must not linger.
+
+    They landed in <cache>/remote/<hash>.xml regardless of owner. Nothing reads
+    them there any more, and the janitor only scans remote/u/, so they would sit
+    in the shared area forever holding private content.
+    """
+    ws = Workspace()
+    stub_synbiohub({"body": "", "calls": 0})
+    try:
+        shared = ws.cache.cache_dir / "remote"
+        shared.mkdir(parents=True, exist_ok=True)
+
+        def legacy(name, uri, part):
+            path = shared / name
+            doc = sbol2.Document()
+            cd = doc.componentDefinitions.create(part)
+            cd.types = [sbol2.BIOPAX_DNA]
+            seq = doc.sequences.create(part + "_seq")
+            seq.elements = H.PARTS["promoter_region"]
+            cd.sequences = [seq.identity]
+            text = doc.writeString().replace(
+                "<rdf:RDF", f'<!-- {uri} --><rdf:RDF', 1)
+            # the URI the migration looks for is the first rdf:about
+            text = text.replace("<sbol:ComponentDefinition rdf:about=\"",
+                                f'<sbol:Collection rdf:about="{uri}"/>'
+                                '<sbol:ComponentDefinition rdf:about="', 1)
+            path.write_text(text)
+            return path
+
+        priv = legacy("aaaa.xml", ALICE_URL, "priv_part")
+        pub = legacy("bbbb.xml", PUBLIC_URL, "pub_part")
+
+        removed = ws.cache.migrate_shared_private_downloads()
+
+        assert not priv.exists(), "private library left in the shared area"
+        assert pub.exists(), "public library was removed"
+        assert removed == 1, removed
+    finally:
+        ws.close()
+
+
+def test_migration_is_idempotent():
+    """Running it again on a clean cache must do nothing."""
+    ws = Workspace()
+    stub_synbiohub({"body": "", "calls": 0})
+    try:
+        assert ws.cache.migrate_shared_private_downloads() == 0
+        assert ws.cache.migrate_shared_private_downloads() == 0
+    finally:
+        ws.close()
+
+
 # ------------------------------------------------------------------ runner
 
 def main():
