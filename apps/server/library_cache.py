@@ -164,6 +164,9 @@ class LibraryCache:
         self._subset_lru: OrderedDict = OrderedDict()    # subset key -> None
         # abs_path -> when we last asked SynBioHub whether this copy is current
         self._remote_checked: Dict[str, float] = {}
+        # Set by init_cache(); lets a detected content change retire the index
+        # built from the previous content.
+        self._index_manager = None
         self._hashes: Dict[str, str] = {}  # abs_path -> content_hash
         # Hash of the bytes actually parsed into _documents / _feature_libraries.
         # Kept separate from _metadata because get_library_hash() refreshes the
@@ -313,6 +316,12 @@ class LibraryCache:
                         cached_info.last_accessed = time.time()
                     return self._documents[abs_path]
                 print(f"Library changed on disk, reloading: {abs_path}")
+                # The index built from the old content is now unreachable -- its
+                # key is a hash of the old content and will never be computed
+                # again -- so it would sit on disk until the LRU or the TTL got
+                # to it. Drop it now that we know it is superseded.
+                if self._index_manager is not None:
+                    self._index_manager.remove_indexes_for_library(abs_path)
 
             # load from disk (one-time cost per library)
             doc = sbol2.Document()
@@ -1426,6 +1435,7 @@ def init_cache(cache_dir: str = DEFAULT_CACHE_DIR, max_indexes: int = DEFAULT_MA
     _library_cache = LibraryCache(cache_dir)
     _index_manager = IndexManager(_library_cache, cache_dir, max_indexes)
 
+    _library_cache._index_manager = _index_manager
     return _library_cache, _index_manager
 
 

@@ -410,6 +410,41 @@ Full set of dials, all environment variables:
 | `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM |
 | `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText library dict in RAM |
 
+### What happens to the old index when a library changes
+
+The index key is a hash of the algorithm plus the libraries' content, so updated
+content produces a different key and the new index is built fresh — the old one
+is never consulted again. It was not *removed*, though: with its key no longer
+computable it simply sat on disk until the LRU or the 72 h TTL reached it, so
+every update leaked one index for up to three days.
+
+Detecting a content change now retires the indexes built from the previous
+content in the same step. Pinned indexes are skipped, so an aligner mid-run is
+unaffected; it will be retired on the next pass.
+
+### Which caches the shipped libraries take part in
+
+They are exempt from all of it:
+
+| | shipped (`assets/`) | imported |
+|---|---|---|
+| `MAX_CACHED_LIBRARIES` LRU | never enters it | bounded |
+| `MAX_REMOTE_FEATURE_LIBRARIES` (FlashText dict) | not tracked | bounded |
+| janitor TTL | never scanned | private ones aged out |
+
+Verified by pushing 40 imports through a cap of 3: all ten shipped libraries
+stayed resident. They also no longer occupy a slot in the FlashText dict's LRU —
+they are a fixed set of about ten that `LibraryCache` holds permanently anyway,
+so letting them compete with imports would evict an import for no gain.
+
+### Public collections are re-checked too
+
+The freshness check is not private-only. `materialize_remote_library` runs it for
+every remote library, so a public collection updated on SynBioHub reaches users
+within the same window — and because the copy is shared, one user's request
+refreshes it for everyone. Only the *janitor* treats public and private
+differently, and that is about reclaiming disk, not about correctness.
+
 ### Migrating caches written before partitioning
 
 Before downloads were partitioned by owner, every remote library landed in

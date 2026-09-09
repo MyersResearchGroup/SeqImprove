@@ -267,8 +267,10 @@ def create_feature_library(part_library_file_name, principal: str = None,
     # its own bounded copy, so this is a dict lookup after the first time.
     library = library_cache.get_feature_library(feature_library_path)
     with _feature_libraries_lock:
+        # Not LRU-tracked: the shipped libraries are a fixed set of about ten,
+        # LibraryCache holds them permanently anyway, and letting them compete
+        # with imports for the same slots would evict an import for no gain.
         FEATURE_LIBRARIES[feature_library_path] = library
-        _remember_remote_library(feature_library_path)
     return library
 
 def sbh_pull_library(uri):

@@ -676,6 +676,75 @@ def test_migration_is_idempotent():
         ws.close()
 
 
+def test_update_retires_the_superseded_index():
+    """Changing a library must retire the index built from its old content.
+
+    The index key is a hash of the library content, so after an update the old
+    key is never computed again -- the index becomes unreachable and would sit on
+    disk until the LRU or the TTL got to it.
+    """
+    ws = Workspace(max_indexes=50)
+    try:
+        lib = ws.loose_library("lib", {"p1": H.PARTS["promoter_region"]})
+        ws.cache.get_document(lib)
+
+        key = ws.index._compute_index_key("blastn", [lib])
+        index_dir = ws.index._get_index_dir(key)
+        index_dir.mkdir(parents=True, exist_ok=True)
+        for ext in LC.IndexManager.INDEX_FILES["blast"]:
+            (index_dir / f"index{ext}").write_text("x")
+        now = time.time()
+        ws.index._metadata.indexes[key] = LC.IndexInfo(
+            "blastn", [ws.cache.get_library_hash(lib)], key,
+            str(index_dir / "index"), str(index_dir / "library.fasta"), now, now, [lib])
+        ws.index._access_order[key] = now
+
+        H.write_library(lib, {"p1": H.PARTS["promoter_region"],
+                              "p2": H.PARTS["terminator_region"]})
+        ws.cache.get_document(lib)          # detects the change
+
+        assert not index_dir.exists(), "index built from the old content survived"
+        assert key not in ws.index._metadata.indexes
+    finally:
+        ws.close()
+
+
+def test_update_is_checked_for_public_libraries_too():
+    """Public collections are re-checked upstream, not only private ones."""
+    ws = Workspace()
+    holder = stub_synbiohub({"body": H.library_text({"v1": H.PARTS["promoter_region"]}),
+                             "calls": 0})
+    try:
+        path = ws.cache.cache_remote_library_content(
+            PUBLIC_URL, holder["body"], principal="u_alice")
+        assert "remote/u/" not in path.replace(os.sep, "/"), "public went to a partition"
+
+        holder["body"] = H.library_text({"v1": H.PARTS["promoter_region"],
+                                         "v2_new": H.PARTS["terminator_region"]})
+        ws.cache._remote_checked[os.path.abspath(path)] = 0
+        # a different user triggers it; the shared copy must still refresh
+        ws.cache.materialize_remote_library(PUBLIC_URL, principal="u_bob")
+        assert "v2_new" in H.part_names(
+            ws.cache.get_feature_library_for_subset([path]))
+    finally:
+        ws.close()
+
+
+def test_capacity_shipped_libraries_do_not_use_import_slots():
+    """The shipped set must not compete with imports for the bounded slots."""
+    ws = Workspace()
+    try:
+        for i in range(3):
+            ws.local_library(f"L{i}", {f"L{i}": H.PARTS["promoter_region"]})
+        ws.cache.preload_libraries(ws.assets)
+        shipped = list(ws.cache._library_name_map.values())
+        assert all(p in ws.cache._protected for p in shipped)
+        assert not any(p in ws.cache._library_lru for p in shipped), \
+            "a shipped library is taking an LRU slot"
+    finally:
+        ws.close()
+
+
 # ------------------------------------------------------------------ runner
 
 def main():
