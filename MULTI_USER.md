@@ -307,7 +307,22 @@ Both caps were picked without data. Measured:
 | Cap | Consumes | Cost per entry | Notes |
 |---|---|---|---|
 | `DEFAULT_MAX_INDEXES` | disk | 0.6–1.2 MB | evicted indexes rebuild automatically |
-| `MAX_REMOTE_FEATURE_LIBRARIES` | **RAM** | **~20× the XML size** | a 1.4 MB library holds ~25 MB resident |
+| `MAX_CACHED_LIBRARIES` | **RAM** | **~15–20× the XML size** | this is the `sbol2.Document`, and it is the only real memory lever |
+
+**Where the memory actually is.** A `FeatureLibrary` is a thin index over
+Documents it does not own — measured at **+0.1 MB for four libraries**, and a
+merged 4-library subset added **+0.0 MB** on top of the Documents already cached,
+because they are the same objects. Nearly all of the cost is the parsed
+`sbol2.Document`. So `MAX_CACHED_SUBSETS` and `MAX_REMOTE_FEATURE_LIBRARIES`
+bound dictionaries, not RAM; `MAX_CACHED_LIBRARIES`, which bounds `_documents`,
+is the one that matters. (An earlier version of this document attributed the ~20×
+to FeatureLibrary — that was measuring Document parsing.)
+
+**A duplicate that is now gone.** `create_feature_library()` used to `readString`
+its own private copy for a remote library, so a collection used by both FlashText
+and an aligner was held twice — measured **+16.4 MB of duplicate for a 1.3 MB
+collection**. It now goes through `LibraryCache`, sharing the Document and
+inheriting the same LRU, TTL and update detection as everything else.
 
 Index cap raised **10 → 150** (~150 MB disk worst case). Indexes are cheap and
 rebuildable, and partitioning private libraries per user multiplies the number of
@@ -440,6 +455,8 @@ volume plus a real cache-invalidation signal, or a database).
 | Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
 | LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
 | Capacity costs | measured on the shipped libraries: index dirs 0.6–1.2 MB each; a parsed FeatureLibrary is ~20× its XML (228 K → 4.4 MB, 1.4 M → 25.1 MB) |
+| FeatureLibrary is nearly free | 4 Documents +17.0 MB, the 4 FeatureLibraries over them +0.1 MB, a merged 4-library subset +0.0 MB; `get_documents_for_libraries` returns the same objects |
+| Remote Document no longer duplicated | FlashText re-taking a library the aligner had loaded: +0.0 MB shared, against +16.4 MB for the old private `readString` |
 | Shipped libraries stay resident | cap forced to 3, ten imported libraries pushed through: all four shipped libraries still in `_documents` and `_feature_libraries`, imports held to the cap, janitor at TTL 0 left the shipped set untouched |
 | TTL cleanup | 5 downloads, 3 backdated past a 72 h TTL: exactly those 3 removed, the 2 fresh ones kept, and a backdated file still held in memory correctly skipped |
 | All five caps hold | 12 libraries against a cap of 5, 8 subset combinations against 3, 9 remote files against 4 — each held, in-use files skipped by the disk prune, and an evicted library re-loaded correctly from disk |

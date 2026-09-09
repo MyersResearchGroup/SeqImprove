@@ -40,15 +40,19 @@ DEFAULT_MAX_INDEXES = int(os.environ.get("SEQIMPROVE_MAX_INDEXES", "150"))
 # In-memory library caches. These were built as "permanent, never evicted", which
 # was fine when the only libraries were the handful preloaded from assets/. Once
 # private libraries are partitioned per user, every (user, library) pair
-# materializes to disk AND loads into these dicts forever -- a parsed library
-# costs ~20x its XML in RAM, so this grows without bound.
+# materializes to disk AND loads into these dicts forever. The cost is in the
+# sbol2.Document -- measured at ~15-20x the XML size -- so this grows without
+# bound.
 #
 # The cap applies ONLY to imported libraries. The ones shipped in assets/ are a
 # fixed set the server must always be able to offer, so they are preloaded and
 # exempt (see LibraryCache._protected). An evicted import is re-read from disk.
 DEFAULT_MAX_CACHED_LIBRARIES = int(os.environ.get("SEQIMPROVE_MAX_CACHED_LIBRARIES", "40"))
-# Merged libraries are the largest objects of all (one per distinct combination
-# of libraries, holding the union of their features), so keep fewer.
+# Merged libraries turn out to be nearly free: a FeatureLibrary is an index over
+# Documents it does not own, so a 4-library subset measured +0.0 MB on top of the
+# Documents already cached. This cap only stops the dict itself accumulating one
+# entry per distinct combination; it is not the memory lever -- that is
+# MAX_CACHED_LIBRARIES above, which bounds the Documents.
 DEFAULT_MAX_CACHED_SUBSETS = int(os.environ.get("SEQIMPROVE_MAX_CACHED_SUBSETS", "12"))
 # Downloaded SynBioHub XML under <cache>/remote. Unbounded before: one file per
 # (user, private library), kept forever.

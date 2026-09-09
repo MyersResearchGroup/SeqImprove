@@ -77,11 +77,12 @@ _feature_libraries_lock = threading.RLock()
 # preloaded at startup and are a fixed set, but imported SynBioHub collections
 # accumulate one entry per (user, collection) with nothing to evict them -- a
 # slow leak that grows with every user. Bound just the remote ones.
-# This one costs RAM, not disk: a parsed FeatureLibrary measured ~20x the size
-# of its XML (a 1.4 MB library holds ~25 MB resident), so 32 entries is a ~500 MB
-# worst case on top of the ~166 MB baseline. Evicting an entry loses nothing --
-# the file stays on disk and is re-parsed on next use -- so this trades a little
-# CPU for a lot of memory. Override with SEQIMPROVE_MAX_REMOTE_LIBRARIES.
+# Entries here are now references into LibraryCache, not private copies, and a
+# FeatureLibrary is a thin index over its Documents -- measured at +0.1 MB for
+# four libraries. The memory lives in the sbol2.Document (~15-20x the XML), which
+# LibraryCache owns and bounds via SEQIMPROVE_MAX_CACHED_LIBRARIES. So this cap
+# is really about keeping the dict itself tidy, not about RAM.
+# Override with SEQIMPROVE_MAX_REMOTE_LIBRARIES.
 MAX_REMOTE_FEATURE_LIBRARIES = int(os.environ.get("SEQIMPROVE_MAX_REMOTE_LIBRARIES", "32"))
 _remote_library_order: "OrderedDict[str, None]" = OrderedDict()
 
@@ -205,7 +206,8 @@ def create_app():
 # ===========================================================================================================================
 # ===========================================================================================================================
 
-def create_feature_library(part_library_file_name, principal: str = None):
+def create_feature_library(part_library_file_name, principal: str = None,
+                           session_token: str = None):
     if ('synbiohub.org' in part_library_file_name):
         # The URL identifies the collection; the key identifies the cache slot.
         # They differ for a private library, whose slot is namespaced by owner --
@@ -223,26 +225,28 @@ def create_feature_library(part_library_file_name, principal: str = None):
             logger.info(f"Library '{canonical}' found in cache.")
             return cached
 
-        # Library not in cache — fetch on demand using api.synbiohub.org to bypass Cloudflare
-        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
-        logger.info(f"Library '{canonical}' not in cache, fetching on-demand from {fetch_url}")
+        # Go through LibraryCache rather than parsing a second private copy.
+        # Measured: a FeatureLibrary is a thin index over its Documents and costs
+        # almost nothing (+0.1 MB for four libraries), while the Document itself
+        # is ~15-20x the XML. Parsing our own here meant the same remote library
+        # was held twice whenever both FlashText and an aligner used it -- ~20 MB
+        # of duplicate for a 1.3 MB collection. Sharing also brings remote
+        # libraries under the same LRU, TTL and update-detection as everything
+        # else, instead of pinning a private copy outside all of it.
+        path = library_cache.materialize_remote_library(
+            canonical, session_token=session_token, principal=principal)
+        if not path:
+            raise KeyError(f"Library '{canonical}' could not be fetched from SynBioHub "
+                           f"(it may be private, or you may not have access)")
         try:
-            response = requests.get(fetch_url, headers={"Accept": "text/plain"}, timeout=300)
-        except requests.exceptions.RequestException as e:
-            raise KeyError(f"Library '{canonical}' not in cache and on-demand fetch failed: {e}")
-        if response.status_code != 200:
-            raise KeyError(f"Library '{canonical}' not in cache and SynBioHub returned HTTP {response.status_code}")
-        try:
-            feature_doc = sbol2.Document()
-            feature_doc.readString(response.text)
-            library = FeatureLibrary([feature_doc])
-            with _feature_libraries_lock:
-                FEATURE_LIBRARIES[key] = library
-                _remember_remote_library(key)
-            logger.info(f"On-demand cached library '{canonical}'")
-            return library
+            library = library_cache.get_feature_library(path)
         except Exception as e:
-            raise KeyError(f"Failed to parse on-demand library '{canonical}': {e}")
+            raise KeyError(f"Failed to parse library '{canonical}': {e}")
+        with _feature_libraries_lock:
+            FEATURE_LIBRARIES[key] = library
+            _remember_remote_library(key)
+        logger.info(f"Loaded remote library '{canonical}' via shared cache")
+        return library
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
@@ -632,7 +636,7 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
 
 def run_synbict(sbol_content: str, part_library_file_names: list[str],
                 min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH,
-                principal: str = None) -> tuple[Optional[int], Optional[str], Optional[str]]:
+                principal: str = None, session_token: str = None) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
 
     for part_lib_f_name in part_library_file_names:            
@@ -655,7 +659,8 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str],
 
                 target_library = FeatureLibrary([target_doc])
                 # feature_library = FEATURE_LIBRARIES[0]
-                feature_library = create_feature_library(part_lib_f_name, principal=principal)
+                feature_library = create_feature_library(part_lib_f_name, principal=principal,
+                                                        session_token=session_token)
                 print(f"The key of feature library is {part_lib_f_name}")
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
                 annotated_identities = annotater.annotate(target_library, MIN_TARGET_LENGTH, in_place=True)
@@ -951,7 +956,8 @@ def annotate_sequence():
             # use original flashtext-based method
             error_code, error_message, anno_lib_assoc = run_synbict(sbol_content, part_library_file_names,
                                                                      min_feature_length=min_feature_length,
-                                                                     principal=principal)
+                                                                     principal=principal,
+                                                                     session_token=session_token)
         else:
             # resolve library names to absolute paths via LibraryCache
             feature_libraries_dir = "./assets/synbict/feature-libraries"
