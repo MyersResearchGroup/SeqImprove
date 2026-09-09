@@ -14,47 +14,23 @@ actually find them.
 Generated in `upload/`. On SynBioHub: **Submit → New Collection**, upload the
 file, and set visibility as shown.
 
-These are built to mirror a real SynBioHub export — the shape of
-`SYNBICT/example/jet_libs/*.xml`:
+Regenerate them with `python3 upload/build_fixtures.py`, which slices every part
+out of `test_part.fasta` so the coordinates cannot drift.
 
-- every object under **one namespace prefix**, `https://synbiohub.org/public/<Name>/`
-- a `Collection` at `<prefix>/<Name>_collection/1`
-- **members list every top-level object — the Sequences as well as the
-  ComponentDefinitions.** jet_libs has 40 members for 20 parts, and that pairing
-  is the part most easily got wrong.
-- Sequences named `<part>_sequence` (not `_seq`), with an explicit encoding
-- real SO roles per part (promoter, RBS, CDS, terminator, origin)
+Each file holds only ComponentDefinitions and their Sequences — SynBioHub builds
+the collection itself from the id you type in the form. Their URIs sit under
+`https://seqimprove.org/`, deliberately not under the target instance; the
+generator's docstring says why.
 
-All four validate as SBOL2 against `validator.sbolstandard.org` and all four
-produce a non-empty FASTA through SeqImprove's own `FeatureExtractor` — which is
-the exact step that fails with "No DNA sequences could be extracted".
+| File | Collection id to type in | Upload as | Owner | Parts |
+|---|---|---|---|---|
+| `A_public_v1.xml` | `SeqImprove_TestPublic` | **Public** | account 1 | TP_promoter, TP_rbs, TP_terminator |
+| `B_private_v1.xml` | `SeqImprove_TestPrivate` | **Private** | account 1 | TP_promoter, TP_cds |
+| `B_private_v2.xml` | `SeqImprove_TestPrivate` | *(later — same collection as B)* | account 1 | + **TP_origin** |
+| `C_private_other_v1.xml` | `SeqImprove_TestOther` | **Private** | **account 2** | TP_terminator, TP_origin |
 
-### If the collection is still empty on SynBioHub
-
-That is an upload problem, not a SeqImprove one, and the fastest way to tell them
-apart is to **submit a known-good file**:
-
-```
-SYNBICT/example/jet_libs/Anderson_Promoters_Anderson_Lab_collection.xml
-```
-
-That file came out of SynBioHub in the first place.
-
-- **It uploads with 20 parts** → the format was the problem; compare it with the
-  fixture and tell me what differs.
-- **It also uploads empty** → the submission procedure is the problem, not any
-  file. Check that the upload actually attached (some SynBioHub versions accept
-  the form and silently ignore the file when the collection id collides with an
-  existing one), and try a collection id you have never used before.
-
-Do not spend time re-generating fixtures until that bisect is done.
-
-| File | Upload as | Owner | Parts |
-|---|---|---|---|
-| `A_public_v1.xml` | **Public** | account 1 | TP_promoter, TP_rbs, TP_terminator |
-| `B_private_v1.xml` | **Private** | account 1 | TP_promoter, TP_cds |
-| `B_private_v2.xml` | *(later — same collection as B)* | account 1 | + **TP_origin** |
-| `C_private_other_v1.xml` | **Private** | **account 2** | TP_terminator, TP_origin |
+`upload/minimal_one_part.xml` is not part of the plan — one ComponentDefinition
+and its Sequence, useful as a smoke test before uploading the rest.
 
 `B_private_v2.xml` is deliberately `B_private_v1` **plus one part**. That extra
 part, `TP_origin`, is the signal the whole update test turns on: if it appears,
