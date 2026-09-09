@@ -1,1 +1,7 @@
 .env
+
+# Prokka writes these into the server's working directory on every annotation:
+# PROKKA_SYNBICT/ is its output directory, and database_protein.fasta is staged
+# there by shutil.copyfile before each run. Both are regenerated, never edited.
+/PROKKA_SYNBICT/
+/database_protein.fasta
