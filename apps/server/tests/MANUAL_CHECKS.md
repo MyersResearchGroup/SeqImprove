@@ -14,15 +14,40 @@ actually find them.
 Generated in `upload/`. On SynBioHub: **Submit → New Collection**, upload the
 file, and set visibility as shown.
 
-**These files contain only parts — no `<sbol:Collection>` object, deliberately.**
-SynBioHub builds the collection itself from the submission form and adds the
-file's top-level objects to it. A file that carries its own Collection makes the
-parts members of *that* one, and the collection SynBioHub creates comes back
-empty — which then fails annotation with "No DNA sequences could be extracted".
+These are built to mirror a real SynBioHub export — the shape of
+`SYNBICT/example/jet_libs/*.xml`:
 
-After uploading, confirm on SynBioHub that the collection actually lists its
-parts before moving on. An empty collection there means the upload went wrong,
-not SeqImprove.
+- every object under **one namespace prefix**, `https://synbiohub.org/public/<Name>/`
+- a `Collection` at `<prefix>/<Name>_collection/1`
+- **members list every top-level object — the Sequences as well as the
+  ComponentDefinitions.** jet_libs has 40 members for 20 parts, and that pairing
+  is the part most easily got wrong.
+- Sequences named `<part>_sequence` (not `_seq`), with an explicit encoding
+- real SO roles per part (promoter, RBS, CDS, terminator, origin)
+
+All four validate as SBOL2 against `validator.sbolstandard.org` and all four
+produce a non-empty FASTA through SeqImprove's own `FeatureExtractor` — which is
+the exact step that fails with "No DNA sequences could be extracted".
+
+### If the collection is still empty on SynBioHub
+
+That is an upload problem, not a SeqImprove one, and the fastest way to tell them
+apart is to **submit a known-good file**:
+
+```
+SYNBICT/example/jet_libs/Anderson_Promoters_Anderson_Lab_collection.xml
+```
+
+That file came out of SynBioHub in the first place.
+
+- **It uploads with 20 parts** → the format was the problem; compare it with the
+  fixture and tell me what differs.
+- **It also uploads empty** → the submission procedure is the problem, not any
+  file. Check that the upload actually attached (some SynBioHub versions accept
+  the form and silently ignore the file when the collection id collides with an
+  existing one), and try a collection id you have never used before.
+
+Do not spend time re-generating fixtures until that bisect is done.
 
 | File | Upload as | Owner | Parts |
 |---|---|---|---|
