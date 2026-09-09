@@ -529,15 +529,33 @@ class LibraryCache:
             in_use = set(self._documents) | self._protected
             if scan_root.exists():
                 for path in list(scan_root.rglob("*.xml")):
-                    if not path.is_file() or path.stat().st_mtime >= cutoff:
+                    if not path.is_file():
                         continue
-                    if str(path.resolve()) in in_use:
+                    abs_path = str(path.resolve())
+                    # Age by last USE, not by file mtime. mtime is set when the
+                    # library is downloaded and never touched again, so a library
+                    # someone uses daily would still have been pruned 72h after
+                    # its download. Fall back to mtime only when there is no
+                    # recorded access (e.g. a file left by an older version).
+                    info = self._metadata.libraries.get(abs_path)
+                    last_used = info.last_accessed if info else path.stat().st_mtime
+                    if last_used >= cutoff:
+                        continue
+                    if abs_path in in_use:
                         continue
                     try:
                         path.unlink()
                         removed["remote_files"] += 1
                     except OSError:
-                        pass
+                        continue
+                    # Take the derived index with it, on the same pass.
+                    self._metadata.libraries.pop(abs_path, None)
+                    for store in (self._hashes, self._document_hashes,
+                                  self._feature_library_hashes):
+                        store.pop(abs_path, None)
+                    self._library_lru.pop(abs_path, None)
+                    if index_manager is not None:
+                        removed["indexes"] += index_manager.remove_indexes_for_library(abs_path)
                 # tidy up any partition directories left empty
                 for d in sorted(scan_root.rglob("*"), reverse=True):
                     if d.is_dir() and not any(d.iterdir()):
@@ -547,7 +565,7 @@ class LibraryCache:
                             pass
 
         if index_manager is not None:
-            removed["indexes"] = index_manager.prune_expired(ttl_seconds=ttl)
+            removed["indexes"] += index_manager.prune_expired(ttl_seconds=ttl)
 
         if removed["remote_files"] or removed["indexes"]:
             scope = "downloaded" if PRUNE_PUBLIC_DOWNLOADS else "private"
@@ -675,7 +693,8 @@ class LibraryCache:
                     pass
                 return None
 
-    def forget_remote_library(self, url: str, principal: Optional[str] = None) -> bool:
+    def forget_remote_library(self, url: str, principal: Optional[str] = None,
+                              index_manager=None) -> bool:
         """Drop a remote library from disk and from every in-memory cache.
 
         Returns True if anything was actually removed.
@@ -694,6 +713,8 @@ class LibraryCache:
                 self._subset_lru.pop(key, None)
                 removed = True
             self._metadata.libraries.pop(abs_path, None)
+            if index_manager is not None and index_manager.remove_indexes_for_library(abs_path):
+                removed = True
             if cached_path.exists():
                 try:
                     cached_path.unlink()
@@ -861,7 +882,16 @@ class IndexManager:
         # get content hashes for all libraries
         library_hashes = []
         for path in sorted(library_paths):  # sort for consistency
-            lib_hash = self.library_cache.get_library_hash(path)
+            try:
+                lib_hash = self.library_cache.get_library_hash(path)
+            except OSError:
+                # A library that is no longer on disk still has to produce a
+                # deterministic key, or callers blow up with FileNotFoundError
+                # deep inside a request. Key it by its path instead; the result
+                # cannot match any real index, which is exactly right -- an index
+                # whose source is gone must not be treated as valid.
+                lib_hash = "missing:" + hashlib.sha256(
+                    os.path.abspath(path).encode()).hexdigest()[:16]
             library_hashes.append(lib_hash)
 
         # combine algorithm and hashes
@@ -937,7 +967,16 @@ class IndexManager:
             # verify library hashes haven't changed
             current_hashes = []
             for path in sorted(library_paths):
-                current_hashes.append(self.library_cache.get_library_hash(path))
+                try:
+                    current_hashes.append(self.library_cache.get_library_hash(path))
+                except OSError:
+                    # The library this index was built from is gone -- pruned, or
+                    # deleted by hand. Treat the index as invalid rather than
+                    # letting FileNotFoundError escape into the request, which is
+                    # what used to happen.
+                    print(f"Index {index_key}: source library missing ({path}); discarding")
+                    self._remove_index(index_key)
+                    return False
 
             if current_hashes != info.library_hashes:
                 # libraries have changed, invalidate cache
@@ -1111,6 +1150,24 @@ class IndexManager:
         if self.has_index(algorithm, library_paths):
             return self.get_index_paths(algorithm, library_paths)
         return self.create_index(algorithm, library_paths)
+
+    def remove_indexes_for_library(self, library_path: str) -> int:
+        """Drop every index built from this library.
+
+        An index outlives its source library otherwise: they were pruned on
+        independent clocks, and the leftover index then made has_index() raise
+        FileNotFoundError on the next request. An index is derived data, so
+        removing it alongside its input is always safe.
+        """
+        target = os.path.abspath(library_path)
+        with self._lock:
+            keys = [k for k, info in self._metadata.indexes.items()
+                    if any(os.path.abspath(p) == target for p in info.library_files)]
+            for key in keys:
+                if self._pinned.get(key):
+                    continue          # in use; the next sweep will get it
+                self._remove_index(key)
+            return len(keys)
 
     def prune_expired(self, ttl_seconds: int = None) -> int:
         """Remove indexes not accessed within the TTL. Pinned ones are skipped."""

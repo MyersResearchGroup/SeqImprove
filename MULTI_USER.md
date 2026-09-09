@@ -381,9 +381,23 @@ this cleanup exists for:
 | public | a small fixed set | shared, usually hot | **everyone** waits for a re-download *and* an index rebuild |
 
 Reclaiming public downloads punishes every user to free a bounded amount of disk,
-so it is off unless `SEQIMPROVE_PRUNE_PUBLIC=1`. Indexes are still TTL-pruned
-regardless of which libraries built them — they are derived data, capped, and
-rebuild automatically.
+so it is off unless `SEQIMPROVE_PRUNE_PUBLIC=1`.
+
+**An index is removed together with the library it was built from.** They used to
+age on independent clocks, and an index outliving its source was not merely
+untidy: `has_index()` re-hashes each source library to check validity, so the
+leftover metadata made it raise `FileNotFoundError` in the middle of an
+annotation request. Now pruning a library takes its indexes with it, deleting a
+library through `/api/deleteUserLibrary` does the same, and both `has_index()`
+and `_compute_index_key()` tolerate a missing source by treating the index as
+invalid instead of throwing. Indexes with a live source are still TTL-pruned on
+their own — they are derived data and rebuild on demand.
+
+**Age is measured from last use, not from download.** Pruning keyed off the
+file's mtime, which is set once when the library is fetched and never updated, so
+a private library someone used every day would still have been deleted 72 h after
+it was first downloaded. It now uses the recorded `last_accessed`, falling back to
+mtime only when there is no metadata entry.
 
 Otherwise conservative: libraries under `assets/` are never touched, a file still
 parsed into memory is skipped (deleting it would leave a live Document pointing at
@@ -472,6 +486,7 @@ volume plus a real cache-invalidation signal, or a database).
 | FeatureLibrary is nearly free | 4 Documents +17.0 MB, the 4 FeatureLibraries over them +0.1 MB, a merged 4-library subset +0.0 MB; `get_documents_for_libraries` returns the same objects |
 | Remote Document no longer duplicated | FlashText re-taking a library the aligner had loaded: +0.0 MB shared, against +16.4 MB for the old private `readString` |
 | Shipped libraries stay resident | cap forced to 3, ten imported libraries pushed through: all four shipped libraries still in `_documents` and `_feature_libraries`, imports held to the cap, janitor at TTL 0 left the shipped set untouched |
+| Library and index removed together | backdated library: sweep removed 1 library + 1 index; manual delete removed both; a missing source made `has_index` return False instead of raising; a library downloaded long ago but used just now was kept, index and all |
 | Janitor scope | public + private both backdated past the TTL: default run removed only the private one, `SEQIMPROVE_PRUNE_PUBLIC=1` removed both |
 | TTL cleanup | 5 downloads, 3 backdated past a 72 h TTL: exactly those 3 removed, the 2 fresh ones kept, and a backdated file still held in memory correctly skipped |
 | All five caps hold | 12 libraries against a cap of 5, 8 subset combinations against 3, 9 remote files against 4 — each held, in-use files skipped by the disk prune, and an evicted library re-loaded correctly from disk |

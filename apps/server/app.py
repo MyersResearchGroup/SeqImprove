@@ -1095,7 +1095,8 @@ def remove_library():
     # Drop the on-disk copy too. The FlashText dict is populated lazily now, so
     # it is often empty for a library that is very much still cached on disk --
     # deleting only the dict entry would leave the library usable.
-    if library_cache.forget_remote_library(collectionURL, principal=principal):
+    if library_cache.forget_remote_library(collectionURL, principal=principal,
+                                           index_manager=index_manager):
         present = True
     if present:
         logger.info(f"Deleted library '{collectionURL}'.")
