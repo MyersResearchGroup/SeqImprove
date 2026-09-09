@@ -44,10 +44,23 @@ DEFAULT_MAX_INDEXES = int(os.environ.get("SEQIMPROVE_MAX_INDEXES", "150"))
 # sbol2.Document -- measured at ~15-20x the XML size -- so this grows without
 # bound.
 #
-# The cap applies ONLY to imported libraries. The ones shipped in assets/ are a
+# The caps apply ONLY to imported libraries. The ones shipped in assets/ are a
 # fixed set the server must always be able to offer, so they are preloaded and
 # exempt (see LibraryCache._protected). An evicted import is re-read from disk.
-DEFAULT_MAX_CACHED_LIBRARIES = int(os.environ.get("SEQIMPROVE_MAX_CACHED_LIBRARIES", "40"))
+#
+# SEQIMPROVE_MAX_CACHED_LIBRARIES used to be a single ceiling over everything.
+# It was replaced by the public/private split below, because one queue let a few
+# users' private imports evict every shared public library.
+# Public and private libraries are cached in separate pools, because one shared
+# LRU let them compete on equal terms and a public collection always lost: a
+# handful of users importing private libraries evicted every public one, and each
+# eviction is paid back by *every* user who needs it, not just the importer.
+DEFAULT_MAX_CACHED_PUBLIC = int(os.environ.get("SEQIMPROVE_MAX_CACHED_PUBLIC", "16"))
+DEFAULT_MAX_CACHED_PRIVATE = int(os.environ.get("SEQIMPROVE_MAX_CACHED_PRIVATE", "32"))
+# ...and one user does not get the whole private pool. Splitting public from
+# private alone still let a single busy account flush everyone else's libraries,
+# which is the same unfairness one level down.
+DEFAULT_MAX_CACHED_PER_USER = int(os.environ.get("SEQIMPROVE_MAX_CACHED_PER_USER", "8"))
 # Merged libraries turn out to be nearly free: a FeatureLibrary is an index over
 # Documents it does not own, so a 4-library subset measured +0.0 MB on top of the
 # Documents already cached. This cap only stops the dict itself accumulating one
@@ -155,7 +168,11 @@ class LibraryCache:
         self._feature_libraries: Dict[str, FeatureLibrary] = {}  # abs_path -> single-library FeatureLibrary
         self._subset_feature_libraries: Dict[Tuple[frozenset, tuple], FeatureLibrary] = {}  # (frozenset(paths), content hashes) -> merged FeatureLibrary
         # Recency for the two bounded caches above. Caller must hold self._lock.
-        self._library_lru: OrderedDict = OrderedDict()   # abs_path -> None
+        # Two pools rather than one queue: public entries are shared by every
+        # user, private ones matter to exactly one, so they must not evict each
+        # other. Private additionally carries a per-principal quota.
+        self._public_lru: OrderedDict = OrderedDict()    # abs_path -> None
+        self._private_lru: OrderedDict = OrderedDict()   # abs_path -> None
         # Libraries that ship with the app (assets/). A fixed, known set that the
         # server is expected to be able to offer at any time, so they are loaded
         # once at startup and never evicted -- only per-user imported libraries,
@@ -231,24 +248,67 @@ class LibraryCache:
         """Compute SHA256 hash of string content."""
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
+    @staticmethod
+    def _principal_of_path(abs_path: str) -> Optional[str]:
+        """The owner of a cached private library, from its path.
+
+        Private downloads live under <cache>/remote/u/<principal>/; anything else
+        is shared. Reading it back off the path avoids threading the principal
+        through every cache call for a fact the layout already records.
+        """
+        parts = abs_path.replace(os.sep, "/").split("/")
+        try:
+            i = len(parts) - 1 - parts[::-1].index("u")
+        except ValueError:
+            return None
+        if i >= 1 and parts[i - 1] == "remote" and i + 1 < len(parts):
+            return parts[i + 1]
+        return None
+
+    def _drop_parsed(self, abs_path: str, reason: str) -> None:
+        """Forget the parsed forms of a library. The file on disk stays."""
+        self._documents.pop(abs_path, None)
+        self._xml_strings.pop(abs_path, None)
+        self._feature_libraries.pop(abs_path, None)
+        self._document_hashes.pop(abs_path, None)
+        self._feature_library_hashes.pop(abs_path, None)
+        print(f"Evicted parsed library from memory ({reason}): "
+              f"{os.path.basename(abs_path)}")
+
     def _touch_library(self, abs_path: str) -> None:
-        """Mark a library most-recently-used and evict past the cap.
+        """Mark a library most-recently-used and evict past its pool's cap.
 
         Evicting drops the parsed forms only; the file on disk is untouched, so
         the next use just re-reads it. Caller must hold self._lock.
         """
         if abs_path in self._protected:
             return
-        self._library_lru.pop(abs_path, None)
-        self._library_lru[abs_path] = None
-        while len(self._library_lru) > DEFAULT_MAX_CACHED_LIBRARIES:
-            oldest, _ = self._library_lru.popitem(last=False)
-            self._documents.pop(oldest, None)
-            self._xml_strings.pop(oldest, None)
-            self._feature_libraries.pop(oldest, None)
-            self._document_hashes.pop(oldest, None)
-            self._feature_library_hashes.pop(oldest, None)
-            print(f"Evicted parsed library from memory: {os.path.basename(oldest)}")
+
+        principal = self._principal_of_path(abs_path)
+        if principal is None:
+            self._public_lru.pop(abs_path, None)
+            self._public_lru[abs_path] = None
+            while len(self._public_lru) > DEFAULT_MAX_CACHED_PUBLIC:
+                oldest, _ = self._public_lru.popitem(last=False)
+                self._drop_parsed(oldest, "public pool full")
+            return
+
+        self._private_lru.pop(abs_path, None)
+        self._private_lru[abs_path] = None
+
+        # This user's own quota first, so a busy account trims itself rather than
+        # its neighbours.
+        mine = [p for p in self._private_lru
+                if self._principal_of_path(p) == principal]
+        while len(mine) > DEFAULT_MAX_CACHED_PER_USER:
+            oldest = mine.pop(0)
+            self._private_lru.pop(oldest, None)
+            self._drop_parsed(oldest, "per-user quota")
+
+        # Then the shared private ceiling, oldest across all users.
+        while len(self._private_lru) > DEFAULT_MAX_CACHED_PRIVATE:
+            oldest, _ = self._private_lru.popitem(last=False)
+            self._drop_parsed(oldest, "private pool full")
 
     def _touch_subset(self, key) -> None:
         """Same, for merged subset libraries. Caller must hold self._lock."""
@@ -553,7 +613,8 @@ class LibraryCache:
                               self._document_hashes, self._feature_library_hashes,
                               self._hashes, self._remote_checked):
                     store.pop(abs_path, None)
-                self._library_lru.pop(abs_path, None)
+                self._public_lru.pop(abs_path, None)
+                self._private_lru.pop(abs_path, None)
                 self._metadata.libraries.pop(abs_path, None)
                 removed += 1
                 print(f"Migrated away a private library cached in the shared area: "
@@ -615,7 +676,8 @@ class LibraryCache:
                     for store in (self._hashes, self._document_hashes,
                                   self._feature_library_hashes):
                         store.pop(abs_path, None)
-                    self._library_lru.pop(abs_path, None)
+                    self._public_lru.pop(abs_path, None)
+                    self._private_lru.pop(abs_path, None)
                     if index_manager is not None:
                         removed["indexes"] += index_manager.remove_indexes_for_library(abs_path)
                 # tidy up any partition directories left empty
@@ -866,7 +928,8 @@ class LibraryCache:
                           self._document_hashes, self._feature_library_hashes,
                           self._hashes):
                 removed = store.pop(abs_path, None) is not None or removed
-            self._library_lru.pop(abs_path, None)
+            self._public_lru.pop(abs_path, None)
+            self._private_lru.pop(abs_path, None)
             for key in [k for k in self._subset_feature_libraries if abs_path in k[0]]:
                 del self._subset_feature_libraries[key]
                 self._subset_lru.pop(key, None)

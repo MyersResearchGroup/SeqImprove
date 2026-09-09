@@ -66,7 +66,8 @@ class Workspace:
         for store in (self.cache._documents, self.cache._xml_strings,
                       self.cache._feature_libraries):
             store.pop(p, None)
-        self.cache._library_lru.pop(p, None)
+        self.cache._public_lru.pop(p, None)
+        self.cache._private_lru.pop(p, None)
 
     def close(self):
         shutil.rmtree(self.dir, ignore_errors=True)
@@ -424,8 +425,10 @@ def test_concurrency_single_lock():
 def test_capacity_shipped_libraries_are_never_evicted():
     """assets/ libraries stay resident however many imports arrive."""
     ws = Workspace()
-    original = LC.DEFAULT_MAX_CACHED_LIBRARIES
-    LC.DEFAULT_MAX_CACHED_LIBRARIES = 3
+    # These fixtures are loose files, not under remote/u/, so they land in the
+    # public pool -- that is the cap to squeeze for this test.
+    original = LC.DEFAULT_MAX_CACHED_PUBLIC
+    LC.DEFAULT_MAX_CACHED_PUBLIC = 3
     try:
         for i in range(3):
             ws.local_library(f"L{i}", {f"L{i}": H.PARTS["promoter_region"]})
@@ -439,9 +442,9 @@ def test_capacity_shipped_libraries_are_never_evicted():
         resident = [p for p in shipped
                     if p in ws.cache._documents and p in ws.cache._feature_libraries]
         assert len(resident) == len(shipped), f"{len(resident)}/{len(shipped)} survived"
-        assert len(ws.cache._library_lru) <= 3, len(ws.cache._library_lru)
+        assert len(ws.cache._public_lru) <= 3, len(ws.cache._public_lru)
     finally:
-        LC.DEFAULT_MAX_CACHED_LIBRARIES = original
+        LC.DEFAULT_MAX_CACHED_PUBLIC = original
         ws.close()
 
 
@@ -739,8 +742,88 @@ def test_capacity_shipped_libraries_do_not_use_import_slots():
         ws.cache.preload_libraries(ws.assets)
         shipped = list(ws.cache._library_name_map.values())
         assert all(p in ws.cache._protected for p in shipped)
-        assert not any(p in ws.cache._library_lru for p in shipped), \
+        assert not any(p in ws.cache._public_lru or p in ws.cache._private_lru
+                       for p in shipped), \
             "a shipped library is taking an LRU slot"
+    finally:
+        ws.close()
+
+
+def test_capacity_public_pool_is_not_evicted_by_private_imports():
+    """A shared public library must not lose its slot to one user's imports.
+
+    With a single LRU they competed on equal terms and public always lost: a few
+    users importing private libraries evicted every public one, and each eviction
+    is paid back by every user who needs it, not just the importer.
+    """
+    ws = Workspace()
+    stub_synbiohub({"body": "", "calls": 0})
+    saved = (LC.DEFAULT_MAX_CACHED_PUBLIC, LC.DEFAULT_MAX_CACHED_PRIVATE,
+             LC.DEFAULT_MAX_CACHED_PER_USER)
+    LC.DEFAULT_MAX_CACHED_PUBLIC = 4
+    LC.DEFAULT_MAX_CACHED_PRIVATE = 12
+    LC.DEFAULT_MAX_CACHED_PER_USER = 3
+    try:
+        public_paths = []
+        for i in range(3):
+            url = f"https://synbiohub.org/public/Pub{i}/Pub{i}_collection/1"
+            path = ws.cache.cache_remote_library_content(
+                url, H.library_text({f"P{i}": H.PARTS["promoter_region"]}),
+                principal="u_alice")
+            ws.cache.get_feature_library(path)
+            public_paths.append(path)
+
+        for user in range(4):
+            for j in range(5):
+                url = f"https://synbiohub.org/user/user{user}/P{j}/P{j}_collection/1"
+                path = ws.cache.cache_remote_library_content(
+                    url, H.library_text({f"X{user}_{j}": H.PARTS["terminator_region"]}),
+                    principal=f"u_user{user}")
+                ws.cache.get_feature_library(path)
+
+        still = [p for p in public_paths if os.path.abspath(p) in ws.cache._documents]
+        assert len(still) == 3, f"{len(still)}/3 public libraries survived"
+    finally:
+        (LC.DEFAULT_MAX_CACHED_PUBLIC, LC.DEFAULT_MAX_CACHED_PRIVATE,
+         LC.DEFAULT_MAX_CACHED_PER_USER) = saved
+        ws.close()
+
+
+def test_capacity_one_user_cannot_flush_another():
+    """A per-principal quota, so a busy account trims itself, not its neighbours."""
+    ws = Workspace()
+    stub_synbiohub({"body": "", "calls": 0})
+    saved = (LC.DEFAULT_MAX_CACHED_PRIVATE, LC.DEFAULT_MAX_CACHED_PER_USER)
+    LC.DEFAULT_MAX_CACHED_PRIVATE = 12
+    LC.DEFAULT_MAX_CACHED_PER_USER = 3
+    try:
+        for user in range(4):
+            for j in range(5):
+                url = f"https://synbiohub.org/user/user{user}/P{j}/P{j}_collection/1"
+                path = ws.cache.cache_remote_library_content(
+                    url, H.library_text({f"X{user}_{j}": H.PARTS["promoter_region"]}),
+                    principal=f"u_user{user}")
+                ws.cache.get_feature_library(path)
+
+        from collections import Counter
+        held = Counter(ws.cache._principal_of_path(p) for p in ws.cache._private_lru)
+        assert all(n <= 3 for n in held.values()), held
+        assert len(held) == 4, f"a user was flushed entirely: {held}"
+        assert len(ws.cache._private_lru) <= 12
+    finally:
+        (LC.DEFAULT_MAX_CACHED_PRIVATE, LC.DEFAULT_MAX_CACHED_PER_USER) = saved
+        ws.close()
+
+
+def test_capacity_principal_is_read_from_the_path():
+    """Pool membership comes from the cache layout, not a threaded-through arg."""
+    ws = Workspace()
+    try:
+        private = str(ws.cache._remote_cache_path(ALICE_URL, "u_alice")[1])
+        public = str(ws.cache._remote_cache_path(PUBLIC_URL, "u_alice")[1])
+        assert ws.cache._principal_of_path(os.path.abspath(private)) == "u_alice"
+        assert ws.cache._principal_of_path(os.path.abspath(public)) is None
+        assert ws.cache._principal_of_path("/some/assets/local.xml") is None
     finally:
         ws.close()
 

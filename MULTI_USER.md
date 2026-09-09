@@ -345,7 +345,9 @@ a server restart.
 |---|---|---|---|
 | `SEQIMPROVE_MAX_INDEXES` | 150 | alignment indexes on disk | 0.6–1.2 MB |
 | `SEQIMPROVE_MAX_REMOTE_FILES` | 200 | downloaded SynBioHub XML on disk | the file |
-| `SEQIMPROVE_MAX_CACHED_LIBRARIES` | 40 | parsed libraries in RAM | **~15–20× the XML** |
+| `SEQIMPROVE_MAX_CACHED_PUBLIC` | 16 | parsed **public** libraries in RAM | **~15–20× the XML** |
+| `SEQIMPROVE_MAX_CACHED_PRIVATE` | 32 | parsed **private** libraries in RAM | **~15–20× the XML** |
+| `SEQIMPROVE_MAX_CACHED_PER_USER` | 8 | one account's share of the private pool | — |
 | `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM | ~0 (see below) |
 | `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText dict entries | ~0 (references) |
 | `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long an unused download or index survives | — |
@@ -353,9 +355,47 @@ a server restart.
 | `SEQIMPROVE_REMOTE_FRESHNESS_MINUTES` | 5 | how long a cached copy is reused before re-checking SynBioHub | one request |
 | `SEQIMPROVE_PRUNE_PUBLIC` | 0 | set to 1 to age out public downloads too | — |
 
-Only `MAX_CACHED_LIBRARIES` is a real memory lever: a `FeatureLibrary` is a thin
-index over Documents it does not own, so the merged-subset and FlashText caps
-bound dictionaries rather than RAM.
+Only the two `MAX_CACHED_PUBLIC`/`MAX_CACHED_PRIVATE` pools are real memory
+levers: a `FeatureLibrary` is a thin index over Documents it does not own, so the
+merged-subset and FlashText caps bound dictionaries rather than RAM.
+
+### Two pools, not one queue
+
+A single LRU over every cached library let public and private compete on equal
+terms, and public always lost. Measured with three public libraries loaded and
+four users importing three private ones each:
+
+```
+public libraries still in memory: 0/3
+```
+
+That is the wrong trade twice over. A public library is shared, so evicting it is
+paid back by *every* user who needs it, not just whoever caused the eviction —
+while a private library matters to exactly one person. And nothing stopped a
+single busy account from filling the whole cache and flushing everyone else's.
+
+So there are now two pools, and the private one carries a per-account quota:
+
+| Pool | Bound | Protects against |
+|---|---|---|
+| public | `MAX_CACHED_PUBLIC` | private imports evicting shared libraries |
+| private | `MAX_CACHED_PRIVATE` | private libraries as a whole outgrowing RAM |
+| per account | `MAX_CACHED_PER_USER` | one account flushing another's |
+
+Pool membership is read back off the cache path — private downloads live under
+`remote/u/<principal>/` — rather than threaded through every call for a fact the
+layout already records. Shipped libraries are in neither pool.
+
+Same scenario after the split, with caps squeezed to 4/12/3:
+
+```
+public libraries still in memory: 3/3
+private slots held: {user0: 3, user1: 3, user2: 3, user3: 3}
+```
+
+Every account keeps its own share, and a busy one trims itself rather than its
+neighbours. `SEQIMPROVE_MAX_CACHED_LIBRARIES`, the single ceiling this replaced,
+is gone rather than left as a variable that silently does nothing.
 
 ### The eviction policy is LRU — recency, not frequency
 
