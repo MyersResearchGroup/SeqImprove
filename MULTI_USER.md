@@ -370,11 +370,25 @@ them out: everything is kept for the short term, then released.
 |---|---|---|
 | `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long a download or index survives unused |
 | `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs |
+| `SEQIMPROVE_PRUNE_PUBLIC` | 0 | also age out *public* downloads |
 
-Deliberately conservative: libraries under `assets/` are never touched, a file
-still parsed into memory is skipped (deleting it would leave a live Document
-pointing at a missing path), and a pinned index — one an aligner is reading right
-now — is left alone. Nothing removed is data: a pruned library is re-fetched from
+**Only private downloads are aged out by default**, because they are the growth
+this cleanup exists for:
+
+| | count | heat | cost of dropping one |
+|---|---|---|---|
+| private | users × collections — unbounded | one user, occasionally | that user re-downloads |
+| public | a small fixed set | shared, usually hot | **everyone** waits for a re-download *and* an index rebuild |
+
+Reclaiming public downloads punishes every user to free a bounded amount of disk,
+so it is off unless `SEQIMPROVE_PRUNE_PUBLIC=1`. Indexes are still TTL-pruned
+regardless of which libraries built them — they are derived data, capped, and
+rebuild automatically.
+
+Otherwise conservative: libraries under `assets/` are never touched, a file still
+parsed into memory is skipped (deleting it would leave a live Document pointing at
+a missing path), and a pinned index — one an aligner is reading right now — is
+left alone. Nothing removed is data: a pruned library is re-fetched from
 SynBioHub and a pruned index is rebuilt, both automatically on next use. The
 thread is a daemon and swallows exceptions, so a failed sweep retries next tick
 rather than taking the server down.
@@ -458,6 +472,7 @@ volume plus a real cache-invalidation signal, or a database).
 | FeatureLibrary is nearly free | 4 Documents +17.0 MB, the 4 FeatureLibraries over them +0.1 MB, a merged 4-library subset +0.0 MB; `get_documents_for_libraries` returns the same objects |
 | Remote Document no longer duplicated | FlashText re-taking a library the aligner had loaded: +0.0 MB shared, against +16.4 MB for the old private `readString` |
 | Shipped libraries stay resident | cap forced to 3, ten imported libraries pushed through: all four shipped libraries still in `_documents` and `_feature_libraries`, imports held to the cap, janitor at TTL 0 left the shipped set untouched |
+| Janitor scope | public + private both backdated past the TTL: default run removed only the private one, `SEQIMPROVE_PRUNE_PUBLIC=1` removed both |
 | TTL cleanup | 5 downloads, 3 backdated past a 72 h TTL: exactly those 3 removed, the 2 fresh ones kept, and a backdated file still held in memory correctly skipped |
 | All five caps hold | 12 libraries against a cap of 5, 8 subset combinations against 3, 9 remote files against 4 — each held, in-use files skipped by the disk prune, and an evicted library re-loaded correctly from disk |
 

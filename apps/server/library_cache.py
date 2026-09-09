@@ -64,6 +64,12 @@ DEFAULT_MAX_REMOTE_FILES = int(os.environ.get("SEQIMPROVE_MAX_REMOTE_FILES", "20
 # here is data -- a pruned library is re-fetched from SynBioHub and a pruned
 # index is rebuilt, both automatically on next use.
 CACHE_TTL_SECONDS = int(os.environ.get("SEQIMPROVE_CACHE_TTL_HOURS", "72")) * 3600
+# Whether the janitor also ages out PUBLIC downloads. Off by default: the growth
+# this cleanup exists for is private libraries, which are one per (user,
+# collection) and therefore unbounded. Public collections are a small fixed set,
+# shared by everyone and usually hot, and dropping one costs a re-download plus
+# an index rebuild that every user waits for. Set to 1 to reclaim them too.
+PRUNE_PUBLIC_DOWNLOADS = os.environ.get("SEQIMPROVE_PRUNE_PUBLIC", "0") == "1"
 JANITOR_INTERVAL_SECONDS = int(os.environ.get("SEQIMPROVE_JANITOR_INTERVAL_MINUTES", "60")) * 60
 METADATA_FILE = "cache_metadata.json"
 
@@ -497,7 +503,15 @@ class LibraryCache:
     def prune_expired(self, index_manager=None, ttl_seconds: int = None) -> dict:
         """Age out cached downloads and indexes. Safe to call at any time.
 
-        Returns a summary of what was removed. Deliberately conservative:
+        Returns a summary of what was removed.
+
+        By default only PRIVATE downloads are aged out. Those are one per (user,
+        collection) and are the unbounded growth this exists for; public
+        collections are few, shared and usually hot, and dropping one makes every
+        user pay for a re-download and an index rebuild.
+        SEQIMPROVE_PRUNE_PUBLIC=1 includes them.
+
+        Otherwise conservative:
           - libraries under assets/ are never touched (they ship with the app)
           - a file still parsed into memory is left alone, so no live Document
             ends up pointing at a path that no longer exists
@@ -508,10 +522,13 @@ class LibraryCache:
         removed = {"remote_files": 0, "indexes": 0}
 
         remote_root = self.cache_dir / "remote"
+        # Private downloads live under remote/u/<principal>/; public ones sit
+        # directly in remote/.
+        scan_root = remote_root if PRUNE_PUBLIC_DOWNLOADS else remote_root / "u"
         with self._lock:
             in_use = set(self._documents) | self._protected
-            if remote_root.exists():
-                for path in list(remote_root.rglob("*.xml")):
+            if scan_root.exists():
+                for path in list(scan_root.rglob("*.xml")):
                     if not path.is_file() or path.stat().st_mtime >= cutoff:
                         continue
                     if str(path.resolve()) in in_use:
@@ -522,7 +539,7 @@ class LibraryCache:
                     except OSError:
                         pass
                 # tidy up any partition directories left empty
-                for d in sorted(remote_root.rglob("*"), reverse=True):
+                for d in sorted(scan_root.rglob("*"), reverse=True):
                     if d.is_dir() and not any(d.iterdir()):
                         try:
                             d.rmdir()
@@ -533,7 +550,8 @@ class LibraryCache:
             removed["indexes"] = index_manager.prune_expired(ttl_seconds=ttl)
 
         if removed["remote_files"] or removed["indexes"]:
-            print(f"Cache janitor removed {removed['remote_files']} downloaded "
+            scope = "downloaded" if PRUNE_PUBLIC_DOWNLOADS else "private"
+            print(f"Cache janitor removed {removed['remote_files']} {scope} "
                   f"librar{'y' if removed['remote_files'] == 1 else 'ies'} and "
                   f"{removed['indexes']} index(es) older than {ttl // 3600}h")
         return removed
