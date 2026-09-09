@@ -1019,49 +1019,46 @@ def import_library():
     SBHSessionToken = request_data['sessionToken']
     collectionURL = request_data['url']
     principal = _principal_from_request(request_data)
-    
-    headers = {
-        "Accept": "text/plain",
-        "X-authorization": SBHSessionToken
-    }
 
-    # Use api.synbiohub.org for the HTTP fetch to bypass Cloudflare,
-    # which blocks server-to-server requests to synbiohub.org with 403.
-    fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', collectionURL)
-    logger.info(f"Importing library from: {fetch_url}")
+    # Shares the fetch path with the annotation side: routes via api.synbiohub.org
+    # (synbiohub.org blocks server-to-server requests with 403) and falls back to
+    # the recursive /sbol endpoint when the bare URI returns a collection with no
+    # parts in it, which is what SynBioHub does for a collection URI.
+    logger.info(f"Importing library from: {collectionURL}")
+    text, http_status = library_cache._fetch_library_sbol(collectionURL, SBHSessionToken)
+    if text is None:
+        logger.error(f"Failed to import '{collectionURL}': HTTP {http_status}")
+        if http_status is None:
+            return {"error": "Could not connect to SynBioHub"}, status.HTTP_502_BAD_GATEWAY
+        return {"error": f"SynBioHub returned HTTP {http_status}"}, http_status
+
+    if not library_cache._has_parts(text):
+        logger.error(f"Import of '{collectionURL}' contained no parts")
+        return {"error": "That collection came back with no parts in it. If it is "
+                         "a collection of other people's private objects, you may "
+                         "not have access to its members."}, status.HTTP_400_BAD_REQUEST
+
     try:
-        response = requests.get(fetch_url, headers=headers, timeout=300)
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Failed to connect to SynBioHub for '{fetch_url}': {e}")
-        return {"error": f"Could not connect to SynBioHub: {e}"}, status.HTTP_502_BAD_GATEWAY
-
-    # Check if the request was successful
-    if response.status_code == 200:
-        try:
-            # Parse once to confirm it is valid SBOL, then let it go. Building
-            # a FeatureLibrary here would hold ~20x the XML in RAM for a path
-            # only FlashText uses -- create_feature_library() builds it on the
-            # first FlashText run instead.
-            feature_doc = sbol2.Document()
-            feature_doc.readString(response.text)
-            del feature_doc
-            # Stage the same SBOL on disk so BLASTN/BWA/Minimap2 can index it
-            # without a second (anonymous, possibly failing) fetch. Filed under
-            # this caller's partition when the collection is private.
-            library_cache.cache_remote_library_content(collectionURL, response.text,
-                                                       principal=principal)
-            logger.info(f"Imported library URI '{collectionURL}'")
-            # Deliberately does NOT return the full cache listing. That
-            # enumerated every library every user had imported, including the
-            # URLs of other people's private SynBioHub collections, to whoever
-            # happened to import something. Nothing in the frontend used it.
-            return {"success": True, "cachedUrl": collectionURL}
-        except Exception as e:
-            logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
-            return {"error": f"Failed to parse library SBOL: {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR
-    else:
-        logger.error(f"Failed to import library '{collectionURL}': HTTP {response.status_code}")
-        return {"error": f"SynBioHub returned HTTP {response.status_code}"}, response.status_code
+        # Parse once to confirm it is valid SBOL, then let it go. Building a
+        # FeatureLibrary here would hold the whole Document in RAM for a path only
+        # FlashText uses -- create_feature_library() builds it on first use.
+        feature_doc = sbol2.Document()
+        feature_doc.readString(text)
+        del feature_doc
+        # Stage the SBOL on disk so BLASTN/BWA/Minimap2 can index it without a
+        # second (anonymous, possibly failing) fetch. Filed under this caller's
+        # partition when the collection is private.
+        library_cache.cache_remote_library_content(collectionURL, text,
+                                                   principal=principal)
+        logger.info(f"Imported library URI '{collectionURL}'")
+        # Deliberately does NOT return the full cache listing. That enumerated
+        # every library every user had imported, including the URLs of other
+        # people's private SynBioHub collections, to whoever happened to import
+        # something. Nothing in the frontend used it.
+        return {"success": True, "cachedUrl": collectionURL}
+    except Exception as e:
+        logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
+        return {"error": f"Failed to parse library SBOL: {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 @app.post("/api/checkLibraryCache")
 def check_library_cache():

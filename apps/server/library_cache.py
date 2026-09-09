@@ -639,26 +639,15 @@ class LibraryCache:
 
             # fetch from SynBioHub via api. subdomain (bypasses Cloudflare)
             remote_dir.mkdir(parents=True, exist_ok=True)
-            fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
-            # Forward the caller's SynBioHub session token when there is one.
-            # Without it this fetch is anonymous, so any private collection comes
-            # back 401 and the library is silently skipped -- it only ever worked
-            # when /api/importUserLibrary had already populated the disk cache.
-            headers = {"Accept": "text/plain"}
-            if session_token:
-                headers["X-authorization"] = session_token
-            try:
-                response = requests.get(fetch_url, headers=headers, timeout=300)
-            except requests.exceptions.RequestException as e:
-                print(f"Failed to fetch remote library '{canonical}': {e}")
-                return None
-
-            if response.status_code != 200:
-                print(f"SynBioHub returned HTTP {response.status_code} for '{fetch_url}'")
+            # Forwards the caller's token and falls back to /sbol when the bare
+            # URI yields a collection with no parts in it.
+            text, status = self._fetch_library_sbol(canonical, session_token)
+            if text is None:
+                print(f"Could not fetch remote library '{canonical}' (HTTP {status})")
                 return None
 
             try:
-                cached_path.write_text(response.text, encoding='utf-8')
+                cached_path.write_text(text, encoding='utf-8')
                 self._prune_remote_files()
             except OSError as e:
                 print(f"Failed to write remote library to {cached_path}: {e}")
@@ -675,6 +664,62 @@ class LibraryCache:
                 except OSError:
                     pass
                 return None
+
+    @staticmethod
+    def _has_parts(sbol_text: str) -> bool:
+        """Does this SBOL actually contain component definitions?
+
+        A collection fetched by its bare URI comes back as just the Collection
+        object -- no members, no parts -- which yields an empty FASTA and an
+        unreadable makeblastdb failure downstream.
+        """
+        return "<sbol:ComponentDefinition" in sbol_text
+
+    def _fetch_library_sbol(self, canonical: str, session_token: str = None,
+                            timeout: int = 300):
+        """Fetch a library's SBOL, falling back to the recursive /sbol endpoint.
+
+        SynBioHub serves two things at a collection's URI: the bare URI returns
+        only that object, while <uri>/sbol returns the complete document with its
+        members and their sequences. Asking for the bare URI therefore produced a
+        Collection with nothing in it -- which is what the frontend already
+        works around when loading a document by URL, appending /sbol there.
+
+        Try as given first (some URIs already point at a part, or already end in
+        /sbol), and retry recursively only when the response has no parts, so a
+        URL that already worked keeps working.
+
+        Returns (text, status_code); text is None if nothing usable came back.
+        """
+        headers = {"Accept": "text/plain"}
+        if session_token:
+            headers["X-authorization"] = session_token
+
+        attempts = [canonical]
+        if not canonical.rstrip("/").endswith("/sbol"):
+            attempts.append(canonical.rstrip("/") + "/sbol")
+
+        last_status = None
+        for attempt, url in enumerate(attempts):
+            fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', url)
+            try:
+                response = requests.get(fetch_url, headers=headers, timeout=timeout)
+            except requests.exceptions.RequestException as e:
+                print(f"Fetch failed for '{fetch_url}': {e}")
+                return None, last_status
+            last_status = response.status_code
+            if response.status_code != 200:
+                continue
+            if self._has_parts(response.text):
+                return response.text, 200
+            if attempt + 1 < len(attempts):
+                print(f"'{url}' returned a collection with no parts; "
+                      f"retrying the recursive /sbol endpoint")
+            else:
+                # Nothing better available -- hand back what we got so the
+                # caller's own emptiness check can produce a useful message.
+                return response.text, 200
+        return None, last_status
 
     def _refresh_if_stale(self, canonical: str, cached_path: Path,
                           session_token: str = None) -> bool:
@@ -695,21 +740,11 @@ class LibraryCache:
             # their own fetch for the same library.
             self._remote_checked[abs_path] = now
 
-        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
-        headers = {"Accept": "text/plain"}
-        if session_token:
-            headers["X-authorization"] = session_token
-        try:
-            response = requests.get(fetch_url, headers=headers, timeout=120)
-        except requests.exceptions.RequestException as e:
-            print(f"Freshness check for '{canonical}' failed ({e}); keeping cached copy")
+        new_text, status = self._fetch_library_sbol(canonical, session_token, timeout=120)
+        if new_text is None:
+            print(f"Freshness check for '{canonical}' failed (HTTP {status}); "
+                  f"keeping cached copy")
             return False
-        if response.status_code != 200:
-            print(f"Freshness check for '{canonical}' returned HTTP "
-                  f"{response.status_code}; keeping cached copy")
-            return False
-
-        new_text = response.text
         try:
             if cached_path.read_text(encoding='utf-8') == new_text:
                 return False        # unchanged upstream; nothing to do

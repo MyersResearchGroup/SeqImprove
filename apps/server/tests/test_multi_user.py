@@ -535,6 +535,92 @@ def test_cleanup_ages_by_use_not_by_download():
         ws.close()
 
 
+
+
+# ------------------------------- collection URI 只返回外壳时要退回 /sbol
+
+COLLECTION_SHELL = """<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sbol="http://sbols.org/v2#">
+  <sbol:Collection rdf:about="%s"><sbol:displayId>c</sbol:displayId></sbol:Collection>
+</rdf:RDF>""" % ALICE_URL
+
+
+def test_fetch_falls_back_to_sbol_endpoint():
+    """A collection URI returning only the Collection must trigger the /sbol retry.
+
+    SynBioHub serves the bare URI as just that object -- no members, no parts --
+    which produced an empty FASTA and an unreadable makeblastdb failure.
+    """
+    ws = Workspace()
+    seen = []
+    full = H.library_text({"TP_promoter": H.PARTS["promoter_region"]})
+
+    import requests as real_requests
+
+    class Response:
+        def __init__(self, text):
+            self.text, self.status_code = text, 200
+
+    def get(url, headers=None, timeout=None, **kw):
+        seen.append(url)
+        return Response(full if url.rstrip("/").endswith("/sbol") else COLLECTION_SHELL)
+
+    LC.requests = types.SimpleNamespace(get=get, exceptions=real_requests.exceptions)
+    try:
+        text, status = ws.cache._fetch_library_sbol(ALICE_URL, "tok")
+        assert status == 200
+        assert ws.cache._has_parts(text), "fell back but still got no parts"
+        assert len(seen) == 2, seen
+        assert seen[1].endswith("/sbol"), seen
+    finally:
+        ws.close()
+
+
+def test_fetch_does_not_retry_when_parts_are_present():
+    """A URL that already returns parts must not cost a second request."""
+    ws = Workspace()
+    seen = []
+    full = H.library_text({"TP_promoter": H.PARTS["promoter_region"]})
+
+    import requests as real_requests
+
+    class Response:
+        def __init__(self, text):
+            self.text, self.status_code = text, 200
+
+    def get(url, headers=None, timeout=None, **kw):
+        seen.append(url)
+        return Response(full)
+
+    LC.requests = types.SimpleNamespace(get=get, exceptions=real_requests.exceptions)
+    try:
+        text, status = ws.cache._fetch_library_sbol(ALICE_URL, "tok")
+        assert ws.cache._has_parts(text)
+        assert len(seen) == 1, seen
+    finally:
+        ws.close()
+
+
+def test_fetch_reports_a_shell_that_stays_empty():
+    """If even /sbol has no parts, hand it back so the caller can say why."""
+    ws = Workspace()
+    import requests as real_requests
+
+    class Response:
+        def __init__(self, text):
+            self.text, self.status_code = text, 200
+
+    LC.requests = types.SimpleNamespace(
+        get=lambda url, **kw: Response(COLLECTION_SHELL),
+        exceptions=real_requests.exceptions)
+    try:
+        text, status = ws.cache._fetch_library_sbol(ALICE_URL, "tok")
+        assert status == 200
+        assert not ws.cache._has_parts(text)
+    finally:
+        ws.close()
+
+
 # ------------------------------------------------------------------ runner
 
 def main():

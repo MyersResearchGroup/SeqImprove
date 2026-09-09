@@ -50,6 +50,12 @@ Library changed on disk, reloading: .../remote/u/u_xxxx/....xml
 HTTP 401` — that means the token is not reaching the server, not that caching is
 broken.
 
+**If the import fails with "came back with no parts in it"**: SynBioHub serves a
+collection's bare URI as just the Collection object — no members, no parts. The
+server retries the recursive `<uri>/sbol` endpoint automatically and logs
+`returned a collection with no parts; retrying the recursive /sbol endpoint`. If
+even that has no parts, the collection genuinely holds nothing you can read.
+
 Also worth doing: annotate again **immediately** after step 2, inside the window.
 The old result is the correct answer there; that is the staleness bound, not a bug.
 
