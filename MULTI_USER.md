@@ -369,20 +369,31 @@ form via `forget_remote_library()`. It previously deleted only the FlashText dic
 entry, which — now that the dict is lazy — is often empty for a library that is
 very much still cached.
 
-### The FlashText dict is now lazy
+### Shipped libraries resident; imported ones lazy
 
-`FEATURE_LIBRARIES` is consulted **only** by the FlashText path; BWA, Minimap2
-and BLASTN all go through `library_cache.get_feature_library_for_subset()`.
-`setup()` nevertheless parsed every local library into it at startup, at ~20×
-their XML size — that was most of the ~166 MB resident baseline, paid on every
-boot for something most requests never touch. Importing a library did the same
-eagerly.
+Two different sets, treated differently on purpose.
 
-Both are lazy now: `create_feature_library()` parses on first FlashText use, and
-`/api/importUserLibrary` validates the SBOL then releases it, keeping only the
-disk copy. `/api/checkLibraryCache` was changed to ask the disk cache rather than
-the dict, since an imported library is legitimately absent from the dict until
-FlashText needs it.
+**Shipped libraries** (`assets/synbict/feature-libraries/`, ten files) are a
+fixed set the server must be able to offer at any moment. They are preloaded at
+startup — Documents *and* FeatureLibraries — and marked protected, so the LRU and
+the janitor never touch them. Verified: with the cap forced to 3 and ten imported
+libraries pushed through, all four shipped libraries stayed resident and the
+janitor at TTL 0 left them alone.
+
+**Imported libraries** are per-user and unbounded in number, so those are the
+ones that are lazy and evictable. `/api/importUserLibrary` validates the SBOL and
+then releases it, keeping only the disk copy; `create_feature_library()` parses
+on first FlashText use.
+
+The distinction matters because `FEATURE_LIBRARIES` is consulted **only** by the
+FlashText path — BWA, Minimap2 and BLASTN all go through
+`library_cache.get_feature_library_for_subset()`. Holding every user's imported
+library there permanently paid ~20× its XML in RAM for a path most requests never
+take.
+
+`/api/checkLibraryCache` was changed to ask the disk cache rather than the dict,
+since an imported library is legitimately absent from the dict until FlashText
+needs it.
 
 Real sizing still wants load data.
 
@@ -429,6 +440,7 @@ volume plus a real cache-invalidation signal, or a database).
 | Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
 | LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
 | Capacity costs | measured on the shipped libraries: index dirs 0.6–1.2 MB each; a parsed FeatureLibrary is ~20× its XML (228 K → 4.4 MB, 1.4 M → 25.1 MB) |
+| Shipped libraries stay resident | cap forced to 3, ten imported libraries pushed through: all four shipped libraries still in `_documents` and `_feature_libraries`, imports held to the cap, janitor at TTL 0 left the shipped set untouched |
 | TTL cleanup | 5 downloads, 3 backdated past a 72 h TTL: exactly those 3 removed, the 2 fresh ones kept, and a backdated file still held in memory correctly skipped |
 | All five caps hold | 12 libraries against a cap of 5, 8 subset combinations against 3, 9 remote files against 4 — each held, in-use files skipped by the disk prune, and an evicted library re-loaded correctly from disk |
 

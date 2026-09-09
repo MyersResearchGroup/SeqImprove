@@ -41,8 +41,11 @@ DEFAULT_MAX_INDEXES = int(os.environ.get("SEQIMPROVE_MAX_INDEXES", "150"))
 # was fine when the only libraries were the handful preloaded from assets/. Once
 # private libraries are partitioned per user, every (user, library) pair
 # materializes to disk AND loads into these dicts forever -- a parsed library
-# costs ~20x its XML in RAM, so this grows without bound. LRU-bounded now; an
-# evicted entry is simply re-read from disk on next use.
+# costs ~20x its XML in RAM, so this grows without bound.
+#
+# The cap applies ONLY to imported libraries. The ones shipped in assets/ are a
+# fixed set the server must always be able to offer, so they are preloaded and
+# exempt (see LibraryCache._protected). An evicted import is re-read from disk.
 DEFAULT_MAX_CACHED_LIBRARIES = int(os.environ.get("SEQIMPROVE_MAX_CACHED_LIBRARIES", "40"))
 # Merged libraries are the largest objects of all (one per distinct combination
 # of libraries, holding the union of their features), so keep fewer.
@@ -137,6 +140,11 @@ class LibraryCache:
         self._subset_feature_libraries: Dict[Tuple[frozenset, tuple], FeatureLibrary] = {}  # (frozenset(paths), content hashes) -> merged FeatureLibrary
         # Recency for the two bounded caches above. Caller must hold self._lock.
         self._library_lru: OrderedDict = OrderedDict()   # abs_path -> None
+        # Libraries that ship with the app (assets/). A fixed, known set that the
+        # server is expected to be able to offer at any time, so they are loaded
+        # once at startup and never evicted -- only per-user imported libraries,
+        # which are unbounded in number, take part in the LRU.
+        self._protected: set = set()
         self._subset_lru: OrderedDict = OrderedDict()    # subset key -> None
         self._hashes: Dict[str, str] = {}  # abs_path -> content_hash
         # Hash of the bytes actually parsed into _documents / _feature_libraries.
@@ -208,6 +216,8 @@ class LibraryCache:
         Evicting drops the parsed forms only; the file on disk is untouched, so
         the next use just re-reads it. Caller must hold self._lock.
         """
+        if abs_path in self._protected:
+            return
         self._library_lru.pop(abs_path, None)
         self._library_lru[abs_path] = None
         while len(self._library_lru) > DEFAULT_MAX_CACHED_LIBRARIES:
@@ -495,7 +505,7 @@ class LibraryCache:
 
         remote_root = self.cache_dir / "remote"
         with self._lock:
-            in_use = set(self._documents)
+            in_use = set(self._documents) | self._protected
             if remote_root.exists():
                 for path in list(remote_root.rglob("*.xml")):
                     if not path.is_file() or path.stat().st_mtime >= cutoff:
@@ -739,7 +749,13 @@ class LibraryCache:
         for xml_file in sorted(lib_path.glob("*.xml")):
             try:
                 abs_path = str(xml_file.resolve())
+                # Mark protected BEFORE loading so the LRU never counts these.
+                with self._lock:
+                    self._protected.add(abs_path)
                 self.get_document(abs_path)
+                # Build the FeatureLibrary too, not just the Document: this is
+                # the shipped set, expected to be ready to serve immediately.
+                self.get_feature_library(abs_path)
                 # build name -> path map for selection by name
                 self._library_name_map[xml_file.name] = abs_path
                 print(f"Preloaded library: {xml_file.name}")

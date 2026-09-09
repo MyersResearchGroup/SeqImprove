@@ -175,11 +175,15 @@ def setup():
     print(f"Preloading libraries from {feature_libraries_dir}...")
     library_cache.preload_libraries(feature_libraries_dir)
 
-    # FEATURE_LIBRARIES is consulted only by the FlashText path; the aligner
-    # paths go through library_cache.get_feature_library_for_subset(). Eagerly
-    # parsing every local library at startup therefore paid ~20x their XML size
-    # in RAM -- most of the resident baseline -- for something most requests
-    # never touch. Populated lazily by create_feature_library() instead.
+    # The shipped libraries above are now fully parsed and marked protected in
+    # LibraryCache, so they are resident and exempt from the LRU -- that set has
+    # to be servable at any moment.
+    #
+    # FEATURE_LIBRARIES is a separate dict consulted ONLY by the FlashText path;
+    # the aligner paths go through library_cache.get_feature_library_for_subset().
+    # It is filled lazily by create_feature_library(), which for a local library
+    # is just a handoff of the already-parsed object. What stays lazy is the
+    # per-user imported libraries, which are unbounded in number.
     print(f"Available libraries: {library_cache.get_available_library_names()}")
 
 app = Flask(__name__) # app = Quart(__name__)
