@@ -268,6 +268,43 @@ Locally preloaded libraries are a fixed set and are not subject to it.
 
 ---
 
+### Keeping up with SynBioHub
+
+A cached remote library used to be trusted until something pruned it, so a user
+who updated a collection on SynBioHub kept getting the old parts — for up to the
+full 72 h TTL — unless they re-imported by hand. `force_refresh` existed as a
+parameter but no caller ever set it.
+
+Cached copies are now re-checked against SynBioHub at most once per
+`SEQIMPROVE_REMOTE_FRESHNESS_MINUTES` (5). The file is rewritten only when the
+bytes actually differ, at which point the content-hash machinery refreshes
+everything downstream — Document, FeatureLibrary, merged subsets, and the index —
+by itself. The check runs *outside* the cache lock, since it is a network call.
+
+Failure is not an error: if SynBioHub is unreachable or refuses the request, the
+cached copy is kept and the check retried next window. A stale library beats a
+failed annotation.
+
+| Path to an update | Latency |
+|---|---|
+| user re-imports by hand | immediate |
+| user just runs annotation again | ≤ 5 min |
+| nobody touches it | pruned at the TTL, re-fetched on next use |
+
+**Caveat found while testing this:** every anonymous request to SynBioHub in this
+environment returns 401 — including `/public/...` paths, on both `synbiohub.org`
+and `api.synbiohub.org`. `identity.is_public()` decides visibility by exactly
+that test, so in practice it currently classifies **everything** as private. That
+is safe (nothing leaks) but it means the public-libraries-stay-shared
+optimisation never fires: each user gets their own copy and their own index of a
+public collection. Worth confirming against the deployment SeqImprove actually
+talks to; if public collections are readable anonymously there, sharing resumes
+with no code change. If they are not, `is_public()` needs a different signal —
+the URL path (`/public/` vs `/user/`) is the obvious candidate, though it trusts
+a convention rather than a check.
+
+---
+
 ## Needs a decision
 
 ### A. The imported-library list is still browser-only
@@ -486,6 +523,7 @@ volume plus a real cache-invalidation signal, or a database).
 | FeatureLibrary is nearly free | 4 Documents +17.0 MB, the 4 FeatureLibraries over them +0.1 MB, a merged 4-library subset +0.0 MB; `get_documents_for_libraries` returns the same objects |
 | Remote Document no longer duplicated | FlashText re-taking a library the aligner had loaded: +0.0 MB shared, against +16.4 MB for the old private `readString` |
 | Shipped libraries stay resident | cap forced to 3, ten imported libraries pushed through: all four shipped libraries still in `_documents` and `_feature_libraries`, imports held to the cap, janitor at TTL 0 left the shipped set untouched |
+| Upstream sync | stubbed SynBioHub: 5 uses inside the window cost 1 request; an upstream change was invisible inside the window and picked up automatically once it expired, with no re-import; an unreachable SynBioHub left the cached copy usable |
 | Library and index removed together | backdated library: sweep removed 1 library + 1 index; manual delete removed both; a missing source made `has_index` return False instead of raising; a library downloaded long ago but used just now was kept, index and all |
 | Janitor scope | public + private both backdated past the TTL: default run removed only the private one, `SEQIMPROVE_PRUNE_PUBLIC=1` removed both |
 | TTL cleanup | 5 downloads, 3 backdated past a 72 h TTL: exactly those 3 removed, the 2 fresh ones kept, and a backdated file still held in memory correctly skipped |

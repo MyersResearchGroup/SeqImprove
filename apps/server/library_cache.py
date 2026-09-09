@@ -71,6 +71,12 @@ CACHE_TTL_SECONDS = int(os.environ.get("SEQIMPROVE_CACHE_TTL_HOURS", "72")) * 36
 # an index rebuild that every user waits for. Set to 1 to reclaim them too.
 PRUNE_PUBLIC_DOWNLOADS = os.environ.get("SEQIMPROVE_PRUNE_PUBLIC", "0") == "1"
 JANITOR_INTERVAL_SECONDS = int(os.environ.get("SEQIMPROVE_JANITOR_INTERVAL_MINUTES", "60")) * 60
+# How long a cached remote library may be reused without asking SynBioHub whether
+# it changed. A cached copy used to be trusted until it was pruned, so a user who
+# updated a collection on SynBioHub kept getting the old parts for up to the full
+# cache TTL unless they re-imported by hand. This bounds that staleness: one
+# lightweight request per library per window, not one per annotation.
+REMOTE_FRESHNESS_SECONDS = int(os.environ.get("SEQIMPROVE_REMOTE_FRESHNESS_MINUTES", "5")) * 60
 METADATA_FILE = "cache_metadata.json"
 
 
@@ -156,6 +162,8 @@ class LibraryCache:
         # which are unbounded in number, take part in the LRU.
         self._protected: set = set()
         self._subset_lru: OrderedDict = OrderedDict()    # subset key -> None
+        # abs_path -> when we last asked SynBioHub whether this copy is current
+        self._remote_checked: Dict[str, float] = {}
         self._hashes: Dict[str, str] = {}  # abs_path -> content_hash
         # Hash of the bytes actually parsed into _documents / _feature_libraries.
         # Kept separate from _metadata because get_library_hash() refreshes the
@@ -606,6 +614,16 @@ class LibraryCache:
         remote_dir = cached_path.parent
         abs_path = str(cached_path.resolve()) if cached_path.exists() else os.path.abspath(str(cached_path))
 
+        # Ask SynBioHub whether the cached copy is still current, at most once per
+        # REMOTE_FRESHNESS_SECONDS. Done before taking the lock: it is a network
+        # call, and holding the cache lock across it would stall every other
+        # request. _refresh_if_stale rewrites the file only when the bytes differ,
+        # so the content-hash machinery downstream refreshes everything -- the
+        # Document, the FeatureLibrary, the merged subsets and the index -- on its
+        # own from there.
+        if cached_path.exists() and not force_refresh:
+            self._refresh_if_stale(canonical, cached_path, session_token)
+
         with self._lock:
             # already loaded into permanent cache
             if abs_path in self._documents and not force_refresh:
@@ -658,6 +676,54 @@ class LibraryCache:
                     pass
                 return None
 
+    def _refresh_if_stale(self, canonical: str, cached_path: Path,
+                          session_token: str = None) -> bool:
+        """Re-download a cached remote library if it may have changed upstream.
+
+        Returns True if the file on disk was replaced. Failure is not an error:
+        if SynBioHub is unreachable or refuses the request, the cached copy is
+        kept and the check is retried next window -- a stale library is far
+        better than a failed annotation.
+        """
+        abs_path = str(cached_path.resolve())
+        now = time.time()
+        with self._lock:
+            last = self._remote_checked.get(abs_path, 0.0)
+            if now - last < REMOTE_FRESHNESS_SECONDS:
+                return False
+            # Record the attempt up front so concurrent requests don't all fire
+            # their own fetch for the same library.
+            self._remote_checked[abs_path] = now
+
+        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
+        headers = {"Accept": "text/plain"}
+        if session_token:
+            headers["X-authorization"] = session_token
+        try:
+            response = requests.get(fetch_url, headers=headers, timeout=120)
+        except requests.exceptions.RequestException as e:
+            print(f"Freshness check for '{canonical}' failed ({e}); keeping cached copy")
+            return False
+        if response.status_code != 200:
+            print(f"Freshness check for '{canonical}' returned HTTP "
+                  f"{response.status_code}; keeping cached copy")
+            return False
+
+        new_text = response.text
+        try:
+            if cached_path.read_text(encoding='utf-8') == new_text:
+                return False        # unchanged upstream; nothing to do
+        except OSError:
+            pass
+
+        try:
+            cached_path.write_text(new_text, encoding='utf-8')
+        except OSError as e:
+            print(f"Could not refresh '{canonical}': {e}")
+            return False
+        print(f"Remote library changed upstream, refreshed: {canonical}")
+        return True
+
     def cache_remote_library_content(self, url: str, sbol_text: str,
                                      principal: Optional[str] = None) -> Optional[str]:
         """
@@ -676,6 +742,10 @@ class LibraryCache:
             remote_dir.mkdir(parents=True, exist_ok=True)
             try:
                 cached_path.write_text(sbol_text, encoding='utf-8')
+                # This content just came from SynBioHub, so it is current by
+                # definition -- start the freshness window now instead of letting
+                # the next request immediately re-check it.
+                self._remote_checked[abs_path] = time.time()
                 self._prune_remote_files()
             except OSError as e:
                 print(f"Failed to write imported library to {cached_path}: {e}")
