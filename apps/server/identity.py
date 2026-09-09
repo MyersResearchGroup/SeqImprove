@@ -34,8 +34,17 @@ _lock = threading.RLock()
 _principal_cache: dict = {}   # (instance, token) -> (principal, expires_at)
 _visibility_cache: dict = {}  # canonical url -> (is_public, expires_at)
 
-# Fields SynBioHub may use for the account name, most specific first.
-_USERNAME_FIELDS = ("username", "user", "name", "email")
+# Fields that identify the account, most stable first. Verified against a live
+# /profile response, which returns:
+#   {"id":1188,"name":"Chunxiao Liao","username":"sophia2014cs",
+#    "email":"...","graphUri":"https://synbiohub.org/user/sophia2014cs",...}
+#
+# `id` is SynBioHub's immutable primary key, so it survives a username change.
+# `name` is deliberately NOT in this list: it is a display name ("Chunxiao Liao")
+# and is not unique, so two different accounts sharing one could collide into the
+# same cache partition -- exactly the cross-tenant leak this partitioning exists
+# to prevent.
+_IDENTITY_FIELDS = ("id", "username", "graphUri", "email")
 
 DEFAULT_INSTANCE = "https://synbiohub.org"
 
@@ -100,10 +109,14 @@ def resolve_principal(session_token: Optional[str],
             except ValueError:
                 payload = None
             if isinstance(payload, dict):
-                for field in _USERNAME_FIELDS:
+                for field in _IDENTITY_FIELDS:
                     value = payload.get(field)
+                    # `id` arrives as a number; everything else as a string.
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        username = f"{field}:{value}"
+                        break
                     if isinstance(value, str) and value.strip():
-                        username = value.strip()
+                        username = f"{field}:{value.strip()}"
                         break
     except requests.exceptions.RequestException:
         username = None

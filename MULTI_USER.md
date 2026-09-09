@@ -176,8 +176,19 @@ the frontend read the field. Removed, along with the same listing in the log lin
 
 New `apps/server/identity.py`. `resolve_principal(session_token, instance)` maps
 the SynBioHub session the user already holds to a stable key by calling
-`/profile` with `X-authorization` (verified: that path is an auth endpoint — 401
-anonymously and with a bad token, versus 404 for a path that doesn't exist).
+`/profile` with `X-authorization`. Confirmed against a live authenticated
+session, which returns:
+
+```json
+{"id":1188,"name":"Chunxiao Liao","username":"sophia2014cs",
+ "email":"...","graphUri":"https://synbiohub.org/user/sophia2014cs","isAdmin":true}
+```
+
+The identity is taken from `id` first — SynBioHub's immutable primary key, so it
+survives a username change — then `username`, `graphUri`, `email`. **`name` is
+deliberately excluded**: it is a display name and is not unique, so two accounts
+sharing one would collide into a single cache partition, which is precisely the
+cross-tenant leak this partitioning exists to prevent.
 
 Three deliberate choices:
 
@@ -266,10 +277,8 @@ Identity itself is now implemented (fix 9). What is not: the frontend keeps
 loses their list even though the server could now reconstruct it per principal.
 Persisting it server-side is a small feature, but it is a feature, not a fix.
 
-Also unverified: `/profile`'s exact response shape. The resolver tries
-`username`, `user`, `name`, `email` in that order and falls back to a
-token-scoped key if none is present. It has not been run against a live
-authenticated session — worth a single manual check with a real token.
+`/profile`'s response shape is now confirmed against a live session (see fix 9),
+so this is no longer an unknown.
 
 ### B. Should a private library ever be shareable?
 
@@ -338,12 +347,11 @@ volume plus a real cache-invalidation signal, or a database).
 | Private collections 401 anonymously | live request to the real SynBioHub for a private collection and two of its members |
 | Prokka/threads/capacity | read from `app.py` and `library_cache.py` constants |
 | `/profile` is an auth endpoint | live: 401 anonymous, 401 with a bad token, 404 for a nonexistent path |
+| `/profile` response shape | live authenticated call: `id`, `username`, `graphUri`, `email` all present; `name` is a non-unique display name and is excluded from the identity chain |
 | Private isolated, public shared | two principals against the same private and the same public URL — separate paths for private, one path for public |
 | Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
 | LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
 
 Not verified: none of this has been exercised against a running server with real
-concurrent users, and `/profile`'s response shape has not been confirmed with a
-live authenticated session (the resolver tries several field names and degrades
-to a token-scoped key). The fixes are unit-level and reasoned; a load test with
-several simultaneous annotations, by two real accounts, is the obvious next step.
+concurrent users. The fixes are unit-level and reasoned; a load test with several
+simultaneous annotations, by two real accounts, is the obvious next step.
