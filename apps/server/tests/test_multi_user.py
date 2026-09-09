@@ -828,6 +828,49 @@ def test_capacity_principal_is_read_from_the_path():
         ws.close()
 
 
+def test_tenancy_subset_cache_cannot_cross_users():
+    """The merged-library cache must not let one user reach another's parts.
+
+    Its isolation is *derived*, not enforced separately: the key is the set of
+    library paths, and those are already partitioned by principal, so two users
+    naming the same private URL get different paths and therefore different
+    entries. That makes this a regression test for the partitioning as much as
+    for the cache -- if _remote_cache_path ever stopped partitioning, this cache
+    would silently start sharing private parts.
+    """
+    ws = Workspace()
+    stub_synbiohub({"body": "", "calls": 0})
+    try:
+        same_url = "https://synbiohub.org/user/shared_name/Lib/Lib_collection/1"
+        alice = ws.cache.cache_remote_library_content(
+            same_url, H.library_text({"ALICE_SECRET": H.PARTS["promoter_region"]}),
+            principal="u_alice")
+        bob = ws.cache.cache_remote_library_content(
+            same_url, H.library_text({"BOB_SECRET": H.PARTS["terminator_region"]}),
+            principal="u_bob")
+        public = ws.cache.cache_remote_library_content(
+            PUBLIC_URL, H.library_text({"SHARED": H.PARTS["cds_region"]}),
+            principal="u_alice")
+
+        alice_only = ws.cache.get_feature_library_for_subset([alice])
+        bob_only = ws.cache.get_feature_library_for_subset([bob])
+        assert H.part_names(alice_only) == ["ALICE_SECRET"]
+        assert H.part_names(bob_only) == ["BOB_SECRET"]
+        assert alice_only is not bob_only
+
+        # the realistic shape: each user's own private library plus a shared one
+        alice_mix = H.part_names(ws.cache.get_feature_library_for_subset([public, alice]))
+        bob_mix = H.part_names(ws.cache.get_feature_library_for_subset([public, bob]))
+        assert alice_mix == ["ALICE_SECRET", "SHARED"], alice_mix
+        assert bob_mix == ["BOB_SECRET", "SHARED"], bob_mix
+
+        # and a purely public request is still shared, not duplicated per user
+        assert (ws.cache.get_feature_library_for_subset([public])
+                is ws.cache.get_feature_library_for_subset([public]))
+    finally:
+        ws.close()
+
+
 # ------------------------------------------------------------------ runner
 
 def main():

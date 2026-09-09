@@ -359,6 +359,28 @@ Only the two `MAX_CACHED_PUBLIC`/`MAX_CACHED_PRIVATE` pools are real memory
 levers: a `FeatureLibrary` is a thin index over Documents it does not own, so the
 merged-subset and FlashText caps bound dictionaries rather than RAM.
 
+### The merged-library cache needs no pool of its own
+
+`_subset_feature_libraries` is keyed by the *set of library paths*, and those
+paths are already partitioned, so two users naming the same private collection
+get different paths and therefore different entries. Isolation falls out of the
+layout rather than being enforced again:
+
+```
+['remote/u/u_alice/bbd960d3.xml']                      Alice, private
+['remote/u/u_bob/bbd960d3.xml']                        Bob, same URL, separate
+['remote/1cb29c22.xml']                                public, one entry for everyone
+['remote/1cb29c22.xml', 'u_alice/bbd960d3.xml']        Alice: public + her own
+['remote/1cb29c22.xml', 'u_bob/bbd960d3.xml']          Bob:   public + his own
+```
+
+It also costs essentially nothing (a merged 4-library subset measured +0.0 MB),
+so it is left as a single LRU.
+
+Worth knowing that this isolation is *derived*: if `_remote_cache_path` ever
+stopped partitioning, this cache would silently start serving one user's private
+parts to another. There is a regression test pinning it for that reason.
+
 ### Two pools, not one queue
 
 A single LRU over every cached library let public and private compete on equal
