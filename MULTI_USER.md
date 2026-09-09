@@ -30,6 +30,8 @@ product or architecture call.
   - [11. Ownership checks on the library endpoints](#11-ownership-checks-on-the-library-endpoints---req-5)
   - [12. Index builds no longer hold the global lock](#12-index-builds-no-longer-hold-the-global-lock---req-2-3)
   - [13. FEATURE_LIBRARIES is bounded](#13-feature_libraries-is-bounded---was-gap-j)
+  - [14. A cached library could be read while it was being rewritten](#14-a-cached-library-could-be-read-while-it-was-being-rewritten---req-1-4)
+  - [15. The index was pinned only after it was handed out](#15-the-index-was-pinned-only-after-it-was-handed-out---req-2)
   - [Fetching a collection's members](#fetching-a-collections-members)
   - [Keeping up with SynBioHub](#keeping-up-with-synbiohub)
   - [What happens to the old index when a library changes](#what-happens-to-the-old-index-when-a-library-changes)
@@ -265,6 +267,29 @@ Imported collections accumulated one entry per (user, collection) with nothing t
 evict them — a leak that grows with every user, made worse by partitioning. Now
 an LRU capped at `MAX_REMOTE_FEATURE_LIBRARIES = 32`, touched on every cache hit.
 Locally preloaded libraries are a fixed set and are not subject to it.
+
+### 14. A cached library could be read while it was being rewritten  — *req 1, 4*
+
+The freshness check deliberately runs *outside* the cache lock, because it makes
+a network call and holding the lock across that would stall every other request.
+But it also wrote the file there, with `Path.write_text` — which truncates first.
+A thread parsing the same path under the lock could therefore read a truncated
+document, or hash one.
+
+All three writes of a cached library now go through `_atomic_write_text`: temp
+file, `fsync`, `os.replace`. A reader sees the old bytes or the new ones, never a
+mix. This is the same treatment `_save_metadata` already had; these writes had
+been missed.
+
+### 15. The index was pinned only after it was handed out  — *req 2*
+
+`pin_index` exists so a concurrent build cannot `rmtree` the directory an aligner
+is reading. `app.py` took the paths first and pinned afterwards, leaving a window
+between the two in which exactly that could happen.
+
+The pin is now taken first and the build happens inside it. `pin_index` needs
+only the index *key*, which is derived from the algorithm and the library
+content, so it can name an index that does not exist yet.
 
 ---
 

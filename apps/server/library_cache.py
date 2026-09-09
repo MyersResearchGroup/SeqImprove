@@ -235,6 +235,34 @@ class LibraryCache:
                 except OSError:
                     pass
 
+    @staticmethod
+    def _atomic_write_text(path: Path, text: str) -> None:
+        """Write a cached library file so no reader can ever see it half-written.
+
+        Path.write_text truncates first, and the refresh path deliberately runs
+        outside the cache lock (it makes a network call), so a thread parsing the
+        same file under the lock could read a partial document. Write a sibling
+        temp file and rename: os.replace is atomic on POSIX, so a reader gets
+        either the old bytes or the new ones.
+        """
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile('w', dir=str(path.parent),
+                                             prefix='.' + path.name + '.', suffix='.tmp',
+                                             delete=False, encoding='utf-8') as f:
+                tmp_path = f.name
+                f.write(text)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_path, str(path))
+        except BaseException:
+            if tmp_path:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+            raise
+
     def compute_file_hash(self, file_path: str) -> str:
         """Compute SHA256 hash of file contents."""
         hasher = hashlib.sha256()
@@ -763,7 +791,7 @@ class LibraryCache:
                 return None
 
             try:
-                cached_path.write_text(text, encoding='utf-8')
+                self._atomic_write_text(cached_path, text)
                 self._prune_remote_files()
             except OSError as e:
                 print(f"Failed to write remote library to {cached_path}: {e}")
@@ -868,7 +896,7 @@ class LibraryCache:
             pass
 
         try:
-            cached_path.write_text(new_text, encoding='utf-8')
+            self._atomic_write_text(cached_path, new_text)
         except OSError as e:
             print(f"Could not refresh '{canonical}': {e}")
             return False
@@ -892,7 +920,7 @@ class LibraryCache:
         with self._lock:
             remote_dir.mkdir(parents=True, exist_ok=True)
             try:
-                cached_path.write_text(sbol_text, encoding='utf-8')
+                self._atomic_write_text(cached_path, sbol_text)
                 # This content just came from SynBioHub, so it is current by
                 # definition -- start the freshness window now instead of letting
                 # the next request immediately re-check it.

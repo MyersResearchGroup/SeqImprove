@@ -979,17 +979,17 @@ def annotate_sequence():
             if skipped:
                 logger.warning(f"Could not resolve libraries (skipping): {skipped}")
 
-            # step 3 — get or create cached index (keyed by algorithm + library subset hash)
-            index_prefix, fasta_path = index_manager.get_or_create_index(algorithm, library_paths)
-
-            # steps 4-5 — align + annotate (with optional Prokka augmentation)
+            # steps 3-5 — build the index, then align + annotate against it.
             # DNA aligner uses similar-DNA flag; Prokka uses similar-protein flag.
             dna_exact_match = not allow_similar_dna_matches
             protein_exact_match = not allow_similar_matches
-            # Hold the index for the whole alignment. Without this, another
-            # request creating a different index can evict (rmtree) the directory
-            # this aligner is still reading from.
+            # Pin first, then build. pin_index only needs the index *key*, which
+            # is derived from the algorithm and the library paths, so it can be
+            # taken before the index exists -- and taking it first leaves no
+            # window in which another request's create_index could rmtree this
+            # directory between us obtaining the paths and starting to read them.
             with index_manager.pin_index(algorithm, library_paths):
+                index_prefix, fasta_path = index_manager.get_or_create_index(algorithm, library_paths)
                 error_code, error_message, anno_lib_assoc = run_synbict_all(
                     sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
                     codon_matches=codon_matches, include_hypothetical=include_hypothetical,

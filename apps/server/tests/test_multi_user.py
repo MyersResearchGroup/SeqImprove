@@ -15,6 +15,7 @@ Run:  python test_multi_user.py            (all)
 
 import json
 import os
+import pathlib
 import shutil
 import sys
 import tempfile
@@ -872,6 +873,103 @@ def test_tenancy_subset_cache_cannot_cross_users():
 
 
 # ------------------------------------------------------------------ runner
+
+def test_concurrency_refresh_write_is_atomic():
+    """A reader must never catch a cached library half-written.
+
+    The freshness check deliberately runs outside the cache lock -- it makes a
+    network call -- so its write races with any thread parsing the same path.
+    Path.write_text truncates first, which is exactly the window that hands a
+    reader a truncated document.
+    """
+    ws = Workspace()
+    try:
+        target = pathlib.Path(ws.dir) / "racy.xml"
+        old = "<a>" + "0" * 400000 + "</a>"
+        new = "<b>" + "1" * 400000 + "</b>"
+        target.write_text(old, encoding="utf-8")
+
+        stop = threading.Event()
+        bad = []
+
+        def writer():
+            payloads = (old, new)
+            i = 0
+            while not stop.is_set():
+                ws.cache._atomic_write_text(target, payloads[i % 2])
+                i += 1
+
+        def reader():
+            while not stop.is_set():
+                try:
+                    seen = target.read_text(encoding="utf-8")
+                except OSError as e:
+                    bad.append(f"read failed: {e}")
+                    return
+                if seen not in (old, new):
+                    bad.append(f"partial read: {len(seen)} chars, "
+                               f"starts {seen[:3]!r} ends {seen[-3:]!r}")
+                    return
+
+        threads = [threading.Thread(target=writer)]
+        threads += [threading.Thread(target=reader) for _ in range(4)]
+        [t.start() for t in threads]
+        time.sleep(1.0)
+        stop.set()
+        [t.join(5) for t in threads]
+
+        assert not bad, bad[0]
+        leftovers = [f for f in os.listdir(ws.dir) if f.endswith(".tmp")]
+        assert not leftovers, f"temp files left behind: {leftovers}"
+    finally:
+        ws.close()
+
+
+def test_concurrency_index_is_pinned_before_it_is_built():
+    """The pin has to be takeable before the index exists.
+
+    app.py enters pin_index and only then calls get_or_create_index. Taking the
+    paths first and pinning afterwards leaves a window in which another
+    request's build can rmtree the directory this one is about to read. That
+    ordering only works if pin_index can name an index that is not on disk yet
+    and lands on the same key the build will use.
+    """
+    ws = Workspace(max_indexes=1)
+    original = LC.FeatureExtractor
+
+    class StubExtractor:
+        def __init__(self, docs):
+            pass
+
+        def write_fasta(self, path):
+            open(path, "w").write(">x\nACGT\n")
+
+        def build_index(self, fasta, prefix, tool):
+            for ext in LC.IndexManager.INDEX_FILES.get("blast", [".nhr"]):
+                open(prefix + ext, "w").write("idx")
+
+    LC.FeatureExtractor = StubExtractor
+    ws.cache.get_documents_for_libraries = lambda paths: [None]
+    try:
+        lib = ws.loose_library("lib", {"p": H.PARTS["promoter_region"]})
+        other = ws.loose_library("other", {"q": H.PARTS["cds_region"]})
+        key = ws.index._compute_index_key("blastn", [lib])
+
+        with ws.index.pin_index("blastn", [lib]):
+            assert ws.index._pinned.get(key), "pin did not register before the build"
+            ws.index.get_or_create_index("blastn", [lib])
+            assert key in ws.index._access_order, "build used a different key"
+            # max_indexes=1, so this second build forces an eviction round
+            ws.index.get_or_create_index("blastn", [other])
+            assert key in ws.index._access_order, "pinned index evicted mid-alignment"
+            assert os.path.isdir(str(ws.index._get_index_dir(key))), \
+                "pinned index directory was removed"
+
+        assert not ws.index._pinned.get(key), "pin outlived the block"
+    finally:
+        LC.FeatureExtractor = original
+        ws.close()
+
 
 def main():
     pattern = sys.argv[1] if len(sys.argv) > 1 else ""
