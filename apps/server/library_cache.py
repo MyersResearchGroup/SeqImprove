@@ -37,6 +37,19 @@ DEFAULT_CACHE_DIR = "./.cache/seqimprove"
 # libraries per user multiplies the number of distinct index keys, so this needs
 # to be generous. Override with SEQIMPROVE_MAX_INDEXES.
 DEFAULT_MAX_INDEXES = int(os.environ.get("SEQIMPROVE_MAX_INDEXES", "150"))
+# In-memory library caches. These were built as "permanent, never evicted", which
+# was fine when the only libraries were the handful preloaded from assets/. Once
+# private libraries are partitioned per user, every (user, library) pair
+# materializes to disk AND loads into these dicts forever -- a parsed library
+# costs ~20x its XML in RAM, so this grows without bound. LRU-bounded now; an
+# evicted entry is simply re-read from disk on next use.
+DEFAULT_MAX_CACHED_LIBRARIES = int(os.environ.get("SEQIMPROVE_MAX_CACHED_LIBRARIES", "40"))
+# Merged libraries are the largest objects of all (one per distinct combination
+# of libraries, holding the union of their features), so keep fewer.
+DEFAULT_MAX_CACHED_SUBSETS = int(os.environ.get("SEQIMPROVE_MAX_CACHED_SUBSETS", "12"))
+# Downloaded SynBioHub XML under <cache>/remote. Unbounded before: one file per
+# (user, private library), kept forever.
+DEFAULT_MAX_REMOTE_FILES = int(os.environ.get("SEQIMPROVE_MAX_REMOTE_FILES", "200"))
 METADATA_FILE = "cache_metadata.json"
 
 
@@ -114,6 +127,9 @@ class LibraryCache:
         self._xml_strings: Dict[str, str] = {}  # abs_path -> serialized XML (for fast fresh copies)
         self._feature_libraries: Dict[str, FeatureLibrary] = {}  # abs_path -> single-library FeatureLibrary
         self._subset_feature_libraries: Dict[Tuple[frozenset, tuple], FeatureLibrary] = {}  # (frozenset(paths), content hashes) -> merged FeatureLibrary
+        # Recency for the two bounded caches above. Caller must hold self._lock.
+        self._library_lru: OrderedDict = OrderedDict()   # abs_path -> None
+        self._subset_lru: OrderedDict = OrderedDict()    # subset key -> None
         self._hashes: Dict[str, str] = {}  # abs_path -> content_hash
         # Hash of the bytes actually parsed into _documents / _feature_libraries.
         # Kept separate from _metadata because get_library_hash() refreshes the
@@ -178,6 +194,31 @@ class LibraryCache:
         """Compute SHA256 hash of string content."""
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
+    def _touch_library(self, abs_path: str) -> None:
+        """Mark a library most-recently-used and evict past the cap.
+
+        Evicting drops the parsed forms only; the file on disk is untouched, so
+        the next use just re-reads it. Caller must hold self._lock.
+        """
+        self._library_lru.pop(abs_path, None)
+        self._library_lru[abs_path] = None
+        while len(self._library_lru) > DEFAULT_MAX_CACHED_LIBRARIES:
+            oldest, _ = self._library_lru.popitem(last=False)
+            self._documents.pop(oldest, None)
+            self._xml_strings.pop(oldest, None)
+            self._feature_libraries.pop(oldest, None)
+            self._document_hashes.pop(oldest, None)
+            self._feature_library_hashes.pop(oldest, None)
+            print(f"Evicted parsed library from memory: {os.path.basename(oldest)}")
+
+    def _touch_subset(self, key) -> None:
+        """Same, for merged subset libraries. Caller must hold self._lock."""
+        self._subset_lru.pop(key, None)
+        self._subset_lru[key] = None
+        while len(self._subset_lru) > DEFAULT_MAX_CACHED_SUBSETS:
+            oldest, _ = self._subset_lru.popitem(last=False)
+            self._subset_feature_libraries.pop(oldest, None)
+
     def get_library_hash(self, file_path: str) -> str:
         """Get content hash for a library file, computing if needed."""
         with self._lock:
@@ -230,6 +271,7 @@ class LibraryCache:
             # check if we need to reload
             if not force_reload and abs_path in self._documents:
                 if self._document_hashes.get(abs_path) == current_hash:
+                    self._touch_library(abs_path)
                     cached_info = self._metadata.libraries.get(abs_path)
                     if cached_info:
                         cached_info.last_accessed = time.time()
@@ -241,6 +283,7 @@ class LibraryCache:
             doc.read(abs_path)
             self._documents[abs_path] = doc
             self._document_hashes[abs_path] = current_hash
+            self._touch_library(abs_path)
 
             # cache the XML string for fast fresh copies later
             self._xml_strings[abs_path] = doc.writeString()
@@ -290,6 +333,7 @@ class LibraryCache:
             # check if we need to reload
             if not force_reload and abs_path in self._feature_libraries:
                 if self._feature_library_hashes.get(abs_path) == current_hash:
+                    self._touch_library(abs_path)
                     cached_info = self._metadata.libraries.get(abs_path)
                     if cached_info:
                         cached_info.last_accessed = time.time()
@@ -300,6 +344,7 @@ class LibraryCache:
             feature_lib = FeatureLibrary([doc])
             self._feature_libraries[abs_path] = feature_lib
             self._feature_library_hashes[abs_path] = current_hash
+            self._touch_library(abs_path)
 
             return feature_lib
 
@@ -329,6 +374,7 @@ class LibraryCache:
             key = (paths, hashes)
 
             if key in self._subset_feature_libraries:
+                self._touch_subset(key)
                 return self._subset_feature_libraries[key]
 
             docs = self.get_documents_for_libraries(list(paths))
@@ -339,8 +385,10 @@ class LibraryCache:
             for stale in [k for k in self._subset_feature_libraries
                           if k[0] == paths and k != key]:
                 del self._subset_feature_libraries[stale]
+                self._subset_lru.pop(stale, None)
 
             self._subset_feature_libraries[key] = feature_lib
+            self._touch_subset(key)
             return feature_lib
 
     def get_fresh_feature_library_for_subset(self, file_paths: List[str]) -> FeatureLibrary:
@@ -396,6 +444,33 @@ class LibraryCache:
             extractor = self.get_feature_extractor_for_subset(sorted_paths)
             extractor.write_protein_fasta(str(protein_path))
             return str(protein_path.resolve())
+
+    def _prune_remote_files(self) -> None:
+        """Keep <cache>/remote from growing forever.
+
+        One XML lands here per (user, private library) and nothing ever removed
+        them. Drop the least-recently-used files past the cap; a pruned file is
+        re-fetched from SynBioHub on next use, so this costs a download, not
+        data. Anything still loaded in memory is kept regardless -- evicting a
+        file out from under a live Document would leave the cache referring to a
+        path that no longer exists.
+        """
+        remote_root = self.cache_dir / "remote"
+        if not remote_root.exists():
+            return
+        files = [p for p in remote_root.rglob("*.xml") if p.is_file()]
+        if len(files) <= DEFAULT_MAX_REMOTE_FILES:
+            return
+        in_use = set(self._documents)
+        files.sort(key=lambda p: p.stat().st_mtime)
+        for path in files[:len(files) - DEFAULT_MAX_REMOTE_FILES]:
+            if str(path.resolve()) in in_use:
+                continue
+            try:
+                path.unlink()
+                print(f"Pruned cached remote library: {path.name}")
+            except OSError:
+                pass
 
     def _remote_cache_path(self, url: str, principal: Optional[str] = None) -> Tuple[str, Path, bool]:
         """Where a remote library's copy lives, and whether that spot is shared.
@@ -464,6 +539,7 @@ class LibraryCache:
 
             try:
                 cached_path.write_text(response.text, encoding='utf-8')
+                self._prune_remote_files()
             except OSError as e:
                 print(f"Failed to write remote library to {cached_path}: {e}")
                 return None
@@ -498,6 +574,7 @@ class LibraryCache:
             remote_dir.mkdir(parents=True, exist_ok=True)
             try:
                 cached_path.write_text(sbol_text, encoding='utf-8')
+                self._prune_remote_files()
             except OSError as e:
                 print(f"Failed to write imported library to {cached_path}: {e}")
                 return None

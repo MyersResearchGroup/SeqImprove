@@ -313,14 +313,39 @@ Index cap raised **10 → 150** (~150 MB disk worst case). Indexes are cheap and
 rebuildable, and partitioning private libraries per user multiplies the number of
 distinct index keys, so the cap has to be generous or the LRU thrashes.
 
-The memory cap stays at 32, but note what it means: 32 × ~15 MB ≈ **500 MB**
-resident on top of a ~166 MB baseline. Evicting an entry loses nothing — the file
-stays on disk and is re-parsed on next use — so this is a cheap dial to turn down
-if the container is memory-constrained.
+**Two further unbounded caches turned up while accounting for this**, both of
+which partitioning makes worse:
 
-Both are now environment variables: `SEQIMPROVE_MAX_INDEXES` and
-`SEQIMPROVE_MAX_REMOTE_LIBRARIES`, so they can be tuned per deployment without a
-code change. Real sizing still wants load data.
+*Disk.* `<cache>/remote/` had no cap at all — one XML per (user, private library),
+kept forever. Now pruned to `SEQIMPROVE_MAX_REMOTE_FILES` (200) least-recently-
+modified first. Files still loaded in memory are skipped: deleting one out from
+under a live Document would leave the cache pointing at a path that no longer
+exists. A pruned file is re-fetched on next use, so this costs a download, not
+data.
+
+*Memory.* `LibraryCache` documents its four in-memory dicts as *"permanent,
+in-memory … loaded once at startup, never evicted"*. That was true when the only
+libraries were the ten preloaded from `assets/`. With per-user partitioning every
+(user, library) pair now loads into them permanently, at ~20× its XML size —
+and `_subset_feature_libraries` holds the largest objects of all, one merged
+library per distinct combination. All are now LRU-bounded:
+`SEQIMPROVE_MAX_CACHED_LIBRARIES` (40) and `SEQIMPROVE_MAX_CACHED_SUBSETS` (12).
+Eviction drops only the parsed forms; the file on disk is untouched.
+
+Note `MAX_REMOTE_FEATURE_LIBRARIES = 32` only ever bounded `app.py`'s FlashText
+dict — it did not touch these, which is why the leak survived the first pass.
+
+Full set of dials, all environment variables:
+
+| Variable | Default | Bounds |
+|---|---|---|
+| `SEQIMPROVE_MAX_INDEXES` | 150 | alignment indexes on disk |
+| `SEQIMPROVE_MAX_REMOTE_FILES` | 200 | downloaded SynBioHub XML on disk |
+| `SEQIMPROVE_MAX_CACHED_LIBRARIES` | 40 | parsed libraries in RAM |
+| `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM |
+| `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText library dict in RAM |
+
+Real sizing still wants load data.
 
 ### E. Prokka is a global singleton
 
@@ -365,6 +390,7 @@ volume plus a real cache-invalidation signal, or a database).
 | Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
 | LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
 | Capacity costs | measured on the shipped libraries: index dirs 0.6–1.2 MB each; a parsed FeatureLibrary is ~20× its XML (228 K → 4.4 MB, 1.4 M → 25.1 MB) |
+| All five caps hold | 12 libraries against a cap of 5, 8 subset combinations against 3, 9 remote files against 4 — each held, in-use files skipped by the disk prune, and an evicted library re-loaded correctly from disk |
 
 Not verified: none of this has been exercised against a running server with real
 concurrent users. The fixes are unit-level and reasoned; a load test with several
