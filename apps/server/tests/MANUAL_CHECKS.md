@@ -14,6 +14,16 @@ actually find them.
 Generated in `upload/`. On SynBioHub: **Submit → New Collection**, upload the
 file, and set visibility as shown.
 
+**These files contain only parts — no `<sbol:Collection>` object, deliberately.**
+SynBioHub builds the collection itself from the submission form and adds the
+file's top-level objects to it. A file that carries its own Collection makes the
+parts members of *that* one, and the collection SynBioHub creates comes back
+empty — which then fails annotation with "No DNA sequences could be extracted".
+
+After uploading, confirm on SynBioHub that the collection actually lists its
+parts before moving on. An empty collection there means the upload went wrong,
+not SeqImprove.
+
 | File | Upload as | Owner | Parts |
 |---|---|---|---|
 | `A_public_v1.xml` | **Public** | account 1 | TP_promoter, TP_rbs, TP_terminator |

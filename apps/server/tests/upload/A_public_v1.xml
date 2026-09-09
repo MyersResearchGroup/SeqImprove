@@ -1,57 +1,51 @@
 <rdf:RDF xmlns:brick="https://brickschema.org/schema/Brick#" xmlns:csvw="http://www.w3.org/ns/csvw#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcam="http://purl.org/dc/dcam/" xmlns:doap="http://usefulinc.com/ns/doap#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:geo="http://www.opengis.net/ont/geosparql#" xmlns:odrl="http://www.w3.org/ns/odrl/2/" xmlns:org="http://www.w3.org/ns/org#" xmlns:prof="http://www.w3.org/ns/dx/prof/" xmlns:prov="http://www.w3.org/ns/prov#" xmlns:qb="http://purl.org/linked-data/cube#" xmlns:schema="https://schema.org/" xmlns:sh="http://www.w3.org/ns/shacl#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:sosa="http://www.w3.org/ns/sosa/" xmlns:ssn="http://www.w3.org/ns/ssn/" xmlns:time="http://www.w3.org/2006/time#" xmlns:vann="http://purl.org/vocab/vann/" xmlns:void="http://rdfs.org/ns/void#" xmlns:wgs="https://www.w3.org/2003/01/geo/wgs84_pos#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:sbol="http://sbols.org/v2#">
-  <sbol:Collection rdf:about="https://seqimprove.org/SeqImprove_TestPublic/1">
-    <sbol:displayId>SeqImprove_TestPublic</sbol:displayId>
-    <dcterms:description>Public test collection for SeqImprove multi-user tests</dcterms:description>
-    <sbol:member rdf:resource="https://seqimprove.org/TP_terminator/1"/>
-    <sbol:version>1</sbol:version>
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/SeqImprove_TestPublic"/>
-    <sbol:member rdf:resource="https://seqimprove.org/TP_promoter/1"/>
-    <sbol:member rdf:resource="https://seqimprove.org/TP_rbs/1"/>
-  </sbol:Collection>
   <sbol:ComponentDefinition rdf:about="https://seqimprove.org/TP_promoter/1">
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_promoter"/>
-    <sbol:displayId>TP_promoter</sbol:displayId>
-    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000110"/>
-    <sbol:sequence rdf:resource="https://seqimprove.org/TP_promoter_seq/1"/>
-    <dcterms:description>TP_promoter (60 bp) from Test_Part</dcterms:description>
-    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
     <sbol:version>1</sbol:version>
+    <dcterms:description>TP_promoter, 60 bp from Test_Part -- public test collection</dcterms:description>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000110"/>
+    <sbol:displayId>TP_promoter</sbol:displayId>
+    <sbol:sequence rdf:resource="https://seqimprove.org/TP_promoter_seq/1"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_promoter"/>
+    <dcterms:title>TP_promoter</dcterms:title>
   </sbol:ComponentDefinition>
   <sbol:ComponentDefinition rdf:about="https://seqimprove.org/TP_rbs/1">
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <dcterms:title>TP_rbs</dcterms:title>
+    <dcterms:description>TP_rbs, 30 bp from Test_Part -- public test collection</dcterms:description>
+    <sbol:version>1</sbol:version>
     <sbol:displayId>TP_rbs</sbol:displayId>
     <sbol:role rdf:resource="http://identifiers.org/so/SO:0000110"/>
-    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
-    <sbol:sequence rdf:resource="https://seqimprove.org/TP_rbs_seq/1"/>
-    <dcterms:description>TP_rbs (30 bp) from Test_Part</dcterms:description>
     <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_rbs"/>
-    <sbol:version>1</sbol:version>
+    <sbol:sequence rdf:resource="https://seqimprove.org/TP_rbs_seq/1"/>
   </sbol:ComponentDefinition>
   <sbol:ComponentDefinition rdf:about="https://seqimprove.org/TP_terminator/1">
-    <sbol:sequence rdf:resource="https://seqimprove.org/TP_terminator_seq/1"/>
+    <dcterms:description>TP_terminator, 60 bp from Test_Part -- public test collection</dcterms:description>
     <sbol:version>1</sbol:version>
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_terminator"/>
+    <dcterms:title>TP_terminator</dcterms:title>
     <sbol:role rdf:resource="http://identifiers.org/so/SO:0000110"/>
     <sbol:displayId>TP_terminator</sbol:displayId>
-    <dcterms:description>TP_terminator (60 bp) from Test_Part</dcterms:description>
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_terminator"/>
+    <sbol:sequence rdf:resource="https://seqimprove.org/TP_terminator_seq/1"/>
     <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
   </sbol:ComponentDefinition>
   <sbol:Sequence rdf:about="https://seqimprove.org/TP_promoter_seq/1">
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_promoter_seq"/>
     <sbol:version>1</sbol:version>
     <sbol:elements>acttttcatactcccgccacaggtggcacttttcggggaaatgtgcgcggaacccctatt</sbol:elements>
-    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
-    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_promoter_seq"/>
     <sbol:displayId>TP_promoter_seq</sbol:displayId>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
   </sbol:Sequence>
   <sbol:Sequence rdf:about="https://seqimprove.org/TP_rbs_seq/1">
-    <sbol:version>1</sbol:version>
-    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
-    <sbol:displayId>TP_rbs_seq</sbol:displayId>
     <sbol:elements>tgtttatttttctaaatacattcaaatatg</sbol:elements>
+    <sbol:version>1</sbol:version>
     <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_rbs_seq"/>
+    <sbol:displayId>TP_rbs_seq</sbol:displayId>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
   </sbol:Sequence>
   <sbol:Sequence rdf:about="https://seqimprove.org/TP_terminator_seq/1">
-    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
     <sbol:elements>taaggaataaggatacttcaagactagattcccccctgcattcccatcagaaccgtaaac</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
     <sbol:persistentIdentity rdf:resource="https://seqimprove.org/TP_terminator_seq"/>
     <sbol:displayId>TP_terminator_seq</sbol:displayId>
     <sbol:version>1</sbol:version>
