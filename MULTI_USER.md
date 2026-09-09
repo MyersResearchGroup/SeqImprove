@@ -12,6 +12,48 @@ product or architecture call.
 
 ---
 
+## Contents
+
+- [The one-sentence summary](#the-one-sentence-summary)
+- [Fixed](#fixed)
+  - [1. An updated library was never picked up](#1-an-updated-library-was-never-picked-up---req-4)
+  - [2. Two locks guarding one object](#2-two-locks-guarding-one-object---req-1-2)
+  - [3. Metadata written non-atomically](#3-metadata-written-non-atomically---req-1-2)
+  - [4. Indexes could be deleted while in use](#4-indexes-could-be-deleted-while-in-use---req-2)
+  - [5. Two users needing the same new index both built it](#5-two-users-needing-the-same-new-index-both-built-it---req-2)
+  - [6. FEATURE_LIBRARIES mutated without synchronisation](#6-feature_libraries-mutated-without-synchronisation---req-1)
+  - [7. Private libraries could not be re-fetched](#7-private-libraries-could-not-be-re-fetched---req-5)
+  - [8. The import response enumerated everyone's libraries](#8-the-import-response-enumerated-everyones-libraries---req-5-privacy)
+- [Fixed — round two (tenancy)](#fixed--round-two-tenancy)
+  - [9. There is now a principal](#9-there-is-now-a-principal---req-5)
+  - [10. Private libraries are partitioned; public ones stay shared](#10-private-libraries-are-partitioned-public-ones-stay-shared---req-5)
+  - [11. Ownership checks on the library endpoints](#11-ownership-checks-on-the-library-endpoints---req-5)
+  - [12. Index builds no longer hold the global lock](#12-index-builds-no-longer-hold-the-global-lock---req-2-3)
+  - [13. FEATURE_LIBRARIES is bounded](#13-feature_libraries-is-bounded---was-gap-j)
+  - [Fetching a collection's members](#fetching-a-collections-members)
+  - [Keeping up with SynBioHub](#keeping-up-with-synbiohub)
+  - [What happens to the old index when a library changes](#what-happens-to-the-old-index-when-a-library-changes)
+  - [Which caches the shipped libraries take part in](#which-caches-the-shipped-libraries-take-part-in)
+  - [Public collections are re-checked too](#public-collections-are-re-checked-too)
+  - [Migrating caches written before partitioning](#migrating-caches-written-before-partitioning)
+  - [Scheduled cleanup](#scheduled-cleanup)
+  - [Shipped libraries resident; imported ones lazy](#shipped-libraries-resident-imported-ones-lazy)
+- [Configuration reference](#configuration-reference)
+  - [The merged-library cache needs no pool of its own](#the-merged-library-cache-needs-no-pool-of-its-own)
+  - [Two pools, not one queue](#two-pools-not-one-queue)
+  - [The eviction policy is LRU — recency, not frequency](#the-eviction-policy-is-lru--recency-not-frequency)
+- [Needs a decision](#needs-a-decision)
+  - [A. The imported-library list is still browser-only](#a-the-imported-library-list-is-still-browser-only)
+  - [B. Should a private library ever be shareable? — decided: no](#b-should-a-private-library-ever-be-shareable--decided-no)
+  - [C. /api/cache/clear is still global and unauthenticated](#c-apicacheclear-is-still-global-and-unauthenticated)
+  - [D. Capacity limits — sized, and now configurable](#d-capacity-limits--sized-and-now-configurable)
+  - [E. Prokka is a global singleton](#e-prokka-is-a-global-singleton)
+  - [F. The server runs 4 threads](#f-the-server-runs-4-threads)
+  - [G. All state is per-process, so this does not scale horizontally](#g-all-state-is-per-process-so-this-does-not-scale-horizontally)
+- [Log of what was verified, and how](#log-of-what-was-verified-and-how)
+
+---
+
 ## The one-sentence summary
 
 **The server had no concept of a user.** Every cache, every index and every
@@ -336,6 +378,137 @@ shared partition.
 
 ---
 
+### What happens to the old index when a library changes
+
+The index key is a hash of the algorithm plus the libraries' content, so updated
+content produces a different key and the new index is built fresh — the old one
+is never consulted again. It was not *removed*, though: with its key no longer
+computable it simply sat on disk until the LRU or the 72 h TTL reached it, so
+every update leaked one index for up to three days.
+
+Detecting a content change now retires the indexes built from the previous
+content in the same step. Pinned indexes are skipped, so an aligner mid-run is
+unaffected; it will be retired on the next pass.
+
+### Which caches the shipped libraries take part in
+
+They are exempt from all of it:
+
+| | shipped (`assets/`) | imported |
+|---|---|---|
+| `MAX_CACHED_LIBRARIES` LRU | never enters it | bounded |
+| `MAX_REMOTE_FEATURE_LIBRARIES` (FlashText dict) | not tracked | bounded |
+| janitor TTL | never scanned | private ones aged out |
+
+Verified by pushing 40 imports through a cap of 3: all ten shipped libraries
+stayed resident. They also no longer occupy a slot in the FlashText dict's LRU —
+they are a fixed set of about ten that `LibraryCache` holds permanently anyway,
+so letting them compete with imports would evict an import for no gain.
+
+### Public collections are re-checked too
+
+The freshness check is not private-only. `materialize_remote_library` runs it for
+every remote library, so a public collection updated on SynBioHub reaches users
+within the same window — and because the copy is shared, one user's request
+refreshes it for everyone. Only the *janitor* treats public and private
+differently, and that is about reclaiming disk, not about correctness.
+
+### Migrating caches written before partitioning
+
+Before downloads were partitioned by owner, every remote library landed in
+`<cache>/remote/<hash>.xml` regardless of who fetched it. Those files are now
+unreachable — a `/user/` URL resolves to `remote/u/<principal>/` — but they are
+private content sitting in the shared area, and the janitor only scans the
+private subtree, so they would stay there indefinitely.
+
+`migrate_shared_private_downloads()` runs once at startup: it reads each file's
+own URI and deletes the ones that are private. Deleted rather than moved, because
+the file records no owner — which principal's partition it belongs in is
+unknowable — and the next request re-fetches it into the right place.
+
+On the current dev cache this identified two, both real private collections
+(`MD5_backbone`, `ChunxiaoLiao`) and left the two public ones alone.
+
+### Scheduled cleanup
+
+Count caps only fire when a cap is exceeded, so a quiet server keeps one user's
+private library and its index indefinitely. A daemon janitor thread now ages
+them out: everything is kept for the short term, then released.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long a download or index survives unused |
+| `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs |
+| `SEQIMPROVE_PRUNE_PUBLIC` | 0 | also age out *public* downloads |
+
+**Only private downloads are aged out by default**, because they are the growth
+this cleanup exists for:
+
+| | count | heat | cost of dropping one |
+|---|---|---|---|
+| private | users × collections — unbounded | one user, occasionally | that user re-downloads |
+| public | a small fixed set | shared, usually hot | **everyone** waits for a re-download *and* an index rebuild |
+
+Reclaiming public downloads punishes every user to free a bounded amount of disk,
+so it is off unless `SEQIMPROVE_PRUNE_PUBLIC=1`.
+
+**An index is removed together with the library it was built from.** They used to
+age on independent clocks, and an index outliving its source was not merely
+untidy: `has_index()` re-hashes each source library to check validity, so the
+leftover metadata made it raise `FileNotFoundError` in the middle of an
+annotation request. Now pruning a library takes its indexes with it, deleting a
+library through `/api/deleteUserLibrary` does the same, and both `has_index()`
+and `_compute_index_key()` tolerate a missing source by treating the index as
+invalid instead of throwing. Indexes with a live source are still TTL-pruned on
+their own — they are derived data and rebuild on demand.
+
+**Age is measured from last use, not from download.** Pruning keyed off the
+file's mtime, which is set once when the library is fetched and never updated, so
+a private library someone used every day would still have been deleted 72 h after
+it was first downloaded. It now uses the recorded `last_accessed`, falling back to
+mtime only when there is no metadata entry.
+
+Otherwise conservative: libraries under `assets/` are never touched, a file still
+parsed into memory is skipped (deleting it would leave a live Document pointing at
+a missing path), and a pinned index — one an aligner is reading right now — is
+left alone. Nothing removed is data: a pruned library is re-fetched from
+SynBioHub and a pruned index is rebuilt, both automatically on next use. The
+thread is a daemon and swallows exceptions, so a failed sweep retries next tick
+rather than taking the server down.
+
+`/api/deleteUserLibrary` now also removes the on-disk copy and every in-memory
+form via `forget_remote_library()`. It previously deleted only the FlashText dict
+entry, which — now that the dict is lazy — is often empty for a library that is
+very much still cached.
+
+### Shipped libraries resident; imported ones lazy
+
+Two different sets, treated differently on purpose.
+
+**Shipped libraries** (`assets/synbict/feature-libraries/`, ten files) are a
+fixed set the server must be able to offer at any moment. They are preloaded at
+startup — Documents *and* FeatureLibraries — and marked protected, so the LRU and
+the janitor never touch them. Verified: with the cap forced to 3 and ten imported
+libraries pushed through, all four shipped libraries stayed resident and the
+janitor at TTL 0 left them alone.
+
+**Imported libraries** are per-user and unbounded in number, so those are the
+ones that are lazy and evictable. `/api/importUserLibrary` validates the SBOL and
+then releases it, keeping only the disk copy; `create_feature_library()` parses
+on first FlashText use.
+
+The distinction matters because `FEATURE_LIBRARIES` is consulted **only** by the
+FlashText path — BWA, Minimap2 and BLASTN all go through
+`library_cache.get_feature_library_for_subset()`. Holding every user's imported
+library there permanently paid ~20× its XML in RAM for a path most requests never
+take.
+
+`/api/checkLibraryCache` was changed to ask the disk cache rather than the dict,
+since an imported library is legitimately absent from the dict until FlashText
+needs it.
+
+Real sizing still wants load data.
+
 ## Configuration reference
 
 Everything tunable, in one place. All are read at import time, so a change needs
@@ -526,137 +699,6 @@ Full set of dials, all environment variables:
 | `SEQIMPROVE_MAX_CACHED_LIBRARIES` | 40 | parsed libraries in RAM |
 | `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM |
 | `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText library dict in RAM |
-
-### What happens to the old index when a library changes
-
-The index key is a hash of the algorithm plus the libraries' content, so updated
-content produces a different key and the new index is built fresh — the old one
-is never consulted again. It was not *removed*, though: with its key no longer
-computable it simply sat on disk until the LRU or the 72 h TTL reached it, so
-every update leaked one index for up to three days.
-
-Detecting a content change now retires the indexes built from the previous
-content in the same step. Pinned indexes are skipped, so an aligner mid-run is
-unaffected; it will be retired on the next pass.
-
-### Which caches the shipped libraries take part in
-
-They are exempt from all of it:
-
-| | shipped (`assets/`) | imported |
-|---|---|---|
-| `MAX_CACHED_LIBRARIES` LRU | never enters it | bounded |
-| `MAX_REMOTE_FEATURE_LIBRARIES` (FlashText dict) | not tracked | bounded |
-| janitor TTL | never scanned | private ones aged out |
-
-Verified by pushing 40 imports through a cap of 3: all ten shipped libraries
-stayed resident. They also no longer occupy a slot in the FlashText dict's LRU —
-they are a fixed set of about ten that `LibraryCache` holds permanently anyway,
-so letting them compete with imports would evict an import for no gain.
-
-### Public collections are re-checked too
-
-The freshness check is not private-only. `materialize_remote_library` runs it for
-every remote library, so a public collection updated on SynBioHub reaches users
-within the same window — and because the copy is shared, one user's request
-refreshes it for everyone. Only the *janitor* treats public and private
-differently, and that is about reclaiming disk, not about correctness.
-
-### Migrating caches written before partitioning
-
-Before downloads were partitioned by owner, every remote library landed in
-`<cache>/remote/<hash>.xml` regardless of who fetched it. Those files are now
-unreachable — a `/user/` URL resolves to `remote/u/<principal>/` — but they are
-private content sitting in the shared area, and the janitor only scans the
-private subtree, so they would stay there indefinitely.
-
-`migrate_shared_private_downloads()` runs once at startup: it reads each file's
-own URI and deletes the ones that are private. Deleted rather than moved, because
-the file records no owner — which principal's partition it belongs in is
-unknowable — and the next request re-fetches it into the right place.
-
-On the current dev cache this identified two, both real private collections
-(`MD5_backbone`, `ChunxiaoLiao`) and left the two public ones alone.
-
-### Scheduled cleanup
-
-Count caps only fire when a cap is exceeded, so a quiet server keeps one user's
-private library and its index indefinitely. A daemon janitor thread now ages
-them out: everything is kept for the short term, then released.
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long a download or index survives unused |
-| `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs |
-| `SEQIMPROVE_PRUNE_PUBLIC` | 0 | also age out *public* downloads |
-
-**Only private downloads are aged out by default**, because they are the growth
-this cleanup exists for:
-
-| | count | heat | cost of dropping one |
-|---|---|---|---|
-| private | users × collections — unbounded | one user, occasionally | that user re-downloads |
-| public | a small fixed set | shared, usually hot | **everyone** waits for a re-download *and* an index rebuild |
-
-Reclaiming public downloads punishes every user to free a bounded amount of disk,
-so it is off unless `SEQIMPROVE_PRUNE_PUBLIC=1`.
-
-**An index is removed together with the library it was built from.** They used to
-age on independent clocks, and an index outliving its source was not merely
-untidy: `has_index()` re-hashes each source library to check validity, so the
-leftover metadata made it raise `FileNotFoundError` in the middle of an
-annotation request. Now pruning a library takes its indexes with it, deleting a
-library through `/api/deleteUserLibrary` does the same, and both `has_index()`
-and `_compute_index_key()` tolerate a missing source by treating the index as
-invalid instead of throwing. Indexes with a live source are still TTL-pruned on
-their own — they are derived data and rebuild on demand.
-
-**Age is measured from last use, not from download.** Pruning keyed off the
-file's mtime, which is set once when the library is fetched and never updated, so
-a private library someone used every day would still have been deleted 72 h after
-it was first downloaded. It now uses the recorded `last_accessed`, falling back to
-mtime only when there is no metadata entry.
-
-Otherwise conservative: libraries under `assets/` are never touched, a file still
-parsed into memory is skipped (deleting it would leave a live Document pointing at
-a missing path), and a pinned index — one an aligner is reading right now — is
-left alone. Nothing removed is data: a pruned library is re-fetched from
-SynBioHub and a pruned index is rebuilt, both automatically on next use. The
-thread is a daemon and swallows exceptions, so a failed sweep retries next tick
-rather than taking the server down.
-
-`/api/deleteUserLibrary` now also removes the on-disk copy and every in-memory
-form via `forget_remote_library()`. It previously deleted only the FlashText dict
-entry, which — now that the dict is lazy — is often empty for a library that is
-very much still cached.
-
-### Shipped libraries resident; imported ones lazy
-
-Two different sets, treated differently on purpose.
-
-**Shipped libraries** (`assets/synbict/feature-libraries/`, ten files) are a
-fixed set the server must be able to offer at any moment. They are preloaded at
-startup — Documents *and* FeatureLibraries — and marked protected, so the LRU and
-the janitor never touch them. Verified: with the cap forced to 3 and ten imported
-libraries pushed through, all four shipped libraries stayed resident and the
-janitor at TTL 0 left them alone.
-
-**Imported libraries** are per-user and unbounded in number, so those are the
-ones that are lazy and evictable. `/api/importUserLibrary` validates the SBOL and
-then releases it, keeping only the disk copy; `create_feature_library()` parses
-on first FlashText use.
-
-The distinction matters because `FEATURE_LIBRARIES` is consulted **only** by the
-FlashText path — BWA, Minimap2 and BLASTN all go through
-`library_cache.get_feature_library_for_subset()`. Holding every user's imported
-library there permanently paid ~20× its XML in RAM for a path most requests never
-take.
-
-`/api/checkLibraryCache` was changed to ask the disk cache rather than the dict,
-since an imported library is legitimately absent from the dict until FlashText
-needs it.
-
-Real sizing still wants load data.
 
 ### E. Prokka is a global singleton
 
