@@ -268,6 +268,24 @@ Locally preloaded libraries are a fixed set and are not subject to it.
 
 ---
 
+### Fetching a collection's members
+
+SynBioHub serves two different things at a collection's URI: the bare URI returns
+only that object, while `<uri>/sbol` returns the complete document with its
+members and their sequences. Both the import path and the annotation path asked
+for the bare URI, so a collection always arrived with no parts in it, produced an
+empty FASTA, and surfaced as an opaque `makeblastdb` failure. The frontend
+already knew this convention — it appends `/sbol` when loading a document by URL.
+
+`_fetch_library_sbol()` tries the URL as given and retries with `/sbol` only when
+the response contains no `ComponentDefinition`, so a URL that already points at a
+part, or already ends in `/sbol`, still costs one request. Import, on-demand
+materialization and the freshness check all share it, which puts the token
+handling and the `api.synbiohub.org` routing in one place instead of three.
+
+If even the retry has no parts, the import is rejected with an explanation rather
+than caching an empty shell for the annotator to trip over later.
+
 ### Keeping up with SynBioHub
 
 A cached remote library used to be trusted until something pruned it, so a user
@@ -317,6 +335,43 @@ The trade being made: this trusts a convention instead of verifying access. If a
 shared partition.
 
 ---
+
+## Configuration reference
+
+Everything tunable, in one place. All are read at import time, so a change needs
+a server restart.
+
+| Variable | Default | Bounds | Cost per entry |
+|---|---|---|---|
+| `SEQIMPROVE_MAX_INDEXES` | 150 | alignment indexes on disk | 0.6–1.2 MB |
+| `SEQIMPROVE_MAX_REMOTE_FILES` | 200 | downloaded SynBioHub XML on disk | the file |
+| `SEQIMPROVE_MAX_CACHED_LIBRARIES` | 40 | parsed libraries in RAM | **~15–20× the XML** |
+| `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM | ~0 (see below) |
+| `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText dict entries | ~0 (references) |
+| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long an unused download or index survives | — |
+| `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs | — |
+| `SEQIMPROVE_REMOTE_FRESHNESS_MINUTES` | 5 | how long a cached copy is reused before re-checking SynBioHub | one request |
+| `SEQIMPROVE_PRUNE_PUBLIC` | 0 | set to 1 to age out public downloads too | — |
+
+Only `MAX_CACHED_LIBRARIES` is a real memory lever: a `FeatureLibrary` is a thin
+index over Documents it does not own, so the merged-subset and FlashText caps
+bound dictionaries rather than RAM.
+
+### The eviction policy is LRU — recency, not frequency
+
+Least **Recently** Used, not least *frequently* used (that would be LFU). Only
+"how long since this was last touched" matters; a use count is never kept. A
+library used a hundred times yesterday is evicted before one used once an hour
+ago:
+
+```
+A touched 100×, long ago;  B, C, D touched once each, just now;  cap 3
+kept: ['B', 'C', 'D']      A evicted
+```
+
+That is the right shape here — what matters is whose session is active now, not
+who was busy last week — but it does mean a popular library goes cold like any
+other once nobody is using it. Re-reading it from disk is the only cost.
 
 ## Needs a decision
 
