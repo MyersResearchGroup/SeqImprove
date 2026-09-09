@@ -6,7 +6,7 @@ person can also update their own private SynBioHub libraries and must be
 guaranteed to see their update on the next run.
 
 Branch: `multi_users`. Everything under "Fixed" is committed on this branch and
-has a reproduction test in the log below. "Needs a decision" is what is left —
+has a regression test in `apps/server/tests/`. "Needs a decision" is what is left —
 it has shrunk as the tenancy work landed; what remains there genuinely needs a
 product or architecture call.
 
@@ -50,7 +50,7 @@ product or architecture call.
   - [E. Prokka is a global singleton](#e-prokka-is-a-global-singleton)
   - [F. The server runs 4 threads](#f-the-server-runs-4-threads)
   - [G. All state is per-process, so this does not scale horizontally](#g-all-state-is-per-process-so-this-does-not-scale-horizontally)
-- [Log of what was verified, and how](#log-of-what-was-verified-and-how)
+- [What has not been verified](#what-has-not-been-verified)
 
 ---
 
@@ -69,74 +69,32 @@ product question about sharing.
 
 ### 1. An updated library was never picked up  — *req 4*
 
-Three independent bugs stacked on top of each other, all in `library_cache.py`.
-Any one of them alone was enough to serve stale parts forever.
+Three independent bugs in `library_cache.py`, stacked. Any one alone was enough
+to serve stale parts forever.
 
-**1a. The merged (subset) FeatureLibrary was keyed by path only.**
+**1a. The merged (subset) FeatureLibrary was keyed by path only.** This is the
+object annotation actually runs against, and once built for a given set of
+libraries it was returned forever, whatever happened to the files. Now keyed by
+`(paths, content-hashes)`, so new content produces a new key. Superseded entries
+for the same path set are dropped so the dict does not grow.
 
-```python
-key = frozenset(os.path.abspath(p) for p in file_paths)
-if key in self._subset_feature_libraries:
-    return self._subset_feature_libraries[key]     # never invalidated
-```
-
-This is the object annotation actually runs against. Once built for a given set
-of libraries it was returned forever, whatever happened to the files. Proven
-before the fix:
-
-```
-initial:  subset library contains ['partA']
-after update: subset library contains ['partA']      <- partB_NEW missing
-same object returned: True
-```
-
-Now keyed by `(paths, content-hashes)`, so updated content produces a different
-key and the merged library is rebuilt. Superseded entries for the same path set
-are dropped so the dict does not grow.
-
-**1b. `get_library_hash` skipped hashing when the file size was unchanged.**
-
-```python
-if current_size == cached_info.file_size:
-    return self._hashes[abs_path]      # stale hash
-```
-
-A same-length edit — a description tweak, any equal-size rewrite — kept the old
-hash, and with it the old Document, FeatureLibrary *and* alignment index (index
-validity is checked against this hash). Proven: writing 1000 `A`s then 1000 `B`s
-produced an identical hash.
-
-The largest library in the repo is 1.4 MB and hashes in **14 ms**, so the
-shortcut saved nothing. Removed; the bytes are always hashed.
+**1b. `get_library_hash` skipped hashing when the file size was unchanged.** A
+same-length edit kept the old hash, and with it the old Document, FeatureLibrary
+*and* alignment index — index validity is checked against this hash. The largest
+library in the repo is 1.4 MB and hashes in 14 ms, so the shortcut saved nothing.
+Removed; the bytes are always hashed.
 
 **1c. The invalidation check compared the new hash against itself.**
 
-`get_document` and `get_feature_library` did:
-
 ```python
-current_hash = self.get_library_hash(abs_path)          # ← refreshes metadata
+current_hash = self.get_library_hash(abs_path)   # writes the new hash into _metadata
 cached_info  = self._metadata.libraries.get(abs_path)
-if cached_info.content_hash == current_hash:            # ← always True
+if cached_info.content_hash == current_hash:     # ...so this is always True
     return self._documents[abs_path]
 ```
 
-`get_library_hash` writes the freshly computed hash into
-`_metadata.libraries[path]` as a side effect, so by the time the comparison ran
-both sides were the new value. The check could never fail. Even with 1a and 1b
-fixed, updates still did not propagate.
-
-Now the hash of the bytes *actually parsed into the cache* is tracked separately
+The hash of the bytes *actually parsed into the cache* is now tracked separately
 (`_document_hashes`, `_feature_library_hashes`) and compared against that.
-
-**End-to-end result**, simulating import → update on SynBioHub → re-import:
-
-```
-import #1  subset: ['partA']
-import #2  subset: ['partA', 'partB_NEW']
-  same disk path:                True
-  annotation sees the new part:  True
-  index key changed:             True    (old index auto-invalidated)
-```
 
 ### 2. Two locks guarding one object  — *req 1, 2*
 
@@ -222,8 +180,8 @@ the SynBioHub session the user already holds to a stable key by calling
 session, which returns:
 
 ```json
-{"id":1188,"name":"Chunxiao Liao","username":"sophia2014cs",
- "email":"...","graphUri":"https://synbiohub.org/user/sophia2014cs","isAdmin":true}
+{"id":1188,"name":"...","username":"<username>","email":"...",
+ "graphUri":"https://synbiohub.org/user/<username>","isAdmin":true}
 ```
 
 The identity is taken from `id` first — SynBioHub's immutable primary key, so it
@@ -426,8 +384,8 @@ own URI and deletes the ones that are private. Deleted rather than moved, becaus
 the file records no owner — which principal's partition it belongs in is
 unknowable — and the next request re-fetches it into the right place.
 
-On the current dev cache this identified two, both real private collections
-(`MD5_backbone`, `ChunxiaoLiao`) and left the two public ones alone.
+On the current dev cache this identified two, both real private collections,
+and left the two public ones alone.
 
 ### Scheduled cleanup
 
@@ -642,63 +600,37 @@ removed from the public surface.
 
 ### ~~D. Capacity limits~~ — sized, and now configurable
 
-Both caps were picked without data. Measured:
+Both caps were originally picked without data. Current values are in the
+[configuration reference](#configuration-reference); what informed them:
 
-| Cap | Consumes | Cost per entry | Notes |
-|---|---|---|---|
-| `DEFAULT_MAX_INDEXES` | disk | 0.6–1.2 MB | evicted indexes rebuild automatically |
-| `MAX_CACHED_LIBRARIES` | **RAM** | **~15–20× the XML size** | this is the `sbol2.Document`, and it is the only real memory lever |
+- **Nearly all the memory is the parsed `sbol2.Document`**, at ~15–20× the XML
+  size. A `FeatureLibrary` is a thin index over Documents it does not own
+  (+0.1 MB for four), so the subset and FlashText caps bound dictionaries, not
+  RAM. The two `MAX_CACHED_PUBLIC`/`MAX_CACHED_PRIVATE` pools are the real lever.
+- **Index cap raised 10 → 150** (~150 MB disk worst case). Indexes are cheap and
+  rebuildable, and partitioning private libraries per user multiplies the number
+  of distinct index keys, so the cap has to be generous or the LRU thrashes.
 
-**Where the memory actually is.** A `FeatureLibrary` is a thin index over
-Documents it does not own — measured at **+0.1 MB for four libraries**, and a
-merged 4-library subset added **+0.0 MB** on top of the Documents already cached,
-because they are the same objects. Nearly all of the cost is the parsed
-`sbol2.Document`. So `MAX_CACHED_SUBSETS` and `MAX_REMOTE_FEATURE_LIBRARIES`
-bound dictionaries, not RAM; `MAX_CACHED_LIBRARIES`, which bounds `_documents`,
-is the one that matters. (An earlier version of this document attributed the ~20×
-to FeatureLibrary — that was measuring Document parsing.)
+Accounting for this turned up two further unbounded caches, both made worse by
+partitioning:
 
-**A duplicate that is now gone.** `create_feature_library()` used to `readString`
-its own private copy for a remote library, so a collection used by both FlashText
-and an aligner was held twice — measured **+16.4 MB of duplicate for a 1.3 MB
-collection**. It now goes through `LibraryCache`, sharing the Document and
-inheriting the same LRU, TTL and update detection as everything else.
+*Disk.* `<cache>/remote/` had no cap at all — one XML per (user, private
+library), kept forever. Now bounded by `SEQIMPROVE_MAX_REMOTE_FILES`. Files still
+loaded in memory are skipped: deleting one out from under a live Document would
+leave the cache pointing at a missing path. A pruned file is re-fetched on next
+use, so this costs a download, not data.
 
-Index cap raised **10 → 150** (~150 MB disk worst case). Indexes are cheap and
-rebuildable, and partitioning private libraries per user multiplies the number of
-distinct index keys, so the cap has to be generous or the LRU thrashes.
+*Memory.* The four in-memory dicts were documented as *"loaded once at startup,
+never evicted"* — true when the only libraries were the ten shipped in `assets/`,
+but with per-user partitioning every (user, library) pair joined them
+permanently. All are now LRU-bounded; eviction drops only the parsed forms, never
+the file on disk.
 
-**Two further unbounded caches turned up while accounting for this**, both of
-which partitioning makes worse:
-
-*Disk.* `<cache>/remote/` had no cap at all — one XML per (user, private library),
-kept forever. Now pruned to `SEQIMPROVE_MAX_REMOTE_FILES` (200) least-recently-
-modified first. Files still loaded in memory are skipped: deleting one out from
-under a live Document would leave the cache pointing at a path that no longer
-exists. A pruned file is re-fetched on next use, so this costs a download, not
-data.
-
-*Memory.* `LibraryCache` documents its four in-memory dicts as *"permanent,
-in-memory … loaded once at startup, never evicted"*. That was true when the only
-libraries were the ten preloaded from `assets/`. With per-user partitioning every
-(user, library) pair now loads into them permanently, at ~20× its XML size —
-and `_subset_feature_libraries` holds the largest objects of all, one merged
-library per distinct combination. All are now LRU-bounded:
-`SEQIMPROVE_MAX_CACHED_LIBRARIES` (40) and `SEQIMPROVE_MAX_CACHED_SUBSETS` (12).
-Eviction drops only the parsed forms; the file on disk is untouched.
-
-Note `MAX_REMOTE_FEATURE_LIBRARIES = 32` only ever bounded `app.py`'s FlashText
-dict — it did not touch these, which is why the leak survived the first pass.
-
-Full set of dials, all environment variables:
-
-| Variable | Default | Bounds |
-|---|---|---|
-| `SEQIMPROVE_MAX_INDEXES` | 150 | alignment indexes on disk |
-| `SEQIMPROVE_MAX_REMOTE_FILES` | 200 | downloaded SynBioHub XML on disk |
-| `SEQIMPROVE_MAX_CACHED_LIBRARIES` | 40 | parsed libraries in RAM |
-| `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM |
-| `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText library dict in RAM |
+There was also a duplicate: `create_feature_library()` used to `readString` its
+own private copy of a remote library, so a collection used by both FlashText and
+an aligner was held twice (+16.4 MB for a 1.3 MB collection). It now goes through
+`LibraryCache`, sharing the Document and inheriting the same LRU, TTL and update
+detection as everything else.
 
 ### E. Prokka is a global singleton
 
@@ -726,33 +658,9 @@ volume plus a real cache-invalidation signal, or a database).
 
 ---
 
-## Log of what was verified, and how
+## What has not been verified
 
-| Claim | How it was checked |
-|---|---|
-| Subset library never invalidated | built a library, updated it, re-read — `partB_NEW` missing, same object returned |
-| Size shortcut hides changes | 1000×`A` vs 1000×`B` → identical hash |
-| Invalidation compared new hash to itself | traced `get_library_hash`'s write into `_metadata` before the comparison |
-| Update now propagates | import → update → re-import; new part visible, index key changed |
-| Locks/atomicity hold | 8 threads × 25 iterations of subset reads, hashing, pinning, eviction and metadata saves: no exceptions, metadata still parses, no temp files left, both classes share one lock |
-| Private collections 401 anonymously | live request to the real SynBioHub for a private collection and two of its members |
-| Prokka/threads/capacity | read from `app.py` and `library_cache.py` constants |
-| `/profile` is an auth endpoint | live: 401 anonymous, 401 with a bad token, 404 for a nonexistent path |
-| `/profile` response shape | live authenticated call: `id`, `username`, `graphUri`, `email` all present; `name` is a non-unique display name and is excluded from the identity chain |
-| Private isolated, public shared | two principals against the same private and the same public URL — separate paths for private, one path for public |
-| Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
-| LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
-| Capacity costs | measured on the shipped libraries: index dirs 0.6–1.2 MB each; a parsed FeatureLibrary is ~20× its XML (228 K → 4.4 MB, 1.4 M → 25.1 MB) |
-| FeatureLibrary is nearly free | 4 Documents +17.0 MB, the 4 FeatureLibraries over them +0.1 MB, a merged 4-library subset +0.0 MB; `get_documents_for_libraries` returns the same objects |
-| Remote Document no longer duplicated | FlashText re-taking a library the aligner had loaded: +0.0 MB shared, against +16.4 MB for the old private `readString` |
-| Shipped libraries stay resident | cap forced to 3, ten imported libraries pushed through: all four shipped libraries still in `_documents` and `_feature_libraries`, imports held to the cap, janitor at TTL 0 left the shipped set untouched |
-| Visibility by namespace | 7 real URLs across synbiohub.org, programmingbiology.org and synbioks.org classified correctly; with real identity logic two principals got one shared path and one index key for a `/public/` collection and separate paths for a `/user/` one, and a janitor pass kept the public copy while removing the private one |
-| Upstream sync | stubbed SynBioHub: 5 uses inside the window cost 1 request; an upstream change was invisible inside the window and picked up automatically once it expired, with no re-import; an unreachable SynBioHub left the cached copy usable |
-| Library and index removed together | backdated library: sweep removed 1 library + 1 index; manual delete removed both; a missing source made `has_index` return False instead of raising; a library downloaded long ago but used just now was kept, index and all |
-| Janitor scope | public + private both backdated past the TTL: default run removed only the private one, `SEQIMPROVE_PRUNE_PUBLIC=1` removed both |
-| TTL cleanup | 5 downloads, 3 backdated past a 72 h TTL: exactly those 3 removed, the 2 fresh ones kept, and a backdated file still held in memory correctly skipped |
-| All five caps hold | 12 libraries against a cap of 5, 8 subset combinations against 3, 9 remote files against 4 — each held, in-use files skipped by the disk prune, and an evicted library re-loaded correctly from disk |
-
-Not verified: none of this has been exercised against a running server with real
-concurrent users. The fixes are unit-level and reasoned; a load test with several
-simultaneous annotations, by two real accounts, is the obvious next step.
+None of this has been exercised against a running server with real concurrent
+users. Every fix has a regression test in `apps/server/tests/`, but those are
+unit-level; `apps/server/tests/MANUAL_CHECKS.md` lists the live checks that need
+a running server and two real SynBioHub accounts.
