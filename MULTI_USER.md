@@ -291,17 +291,30 @@ failed annotation.
 | user just runs annotation again | ≤ 5 min |
 | nobody touches it | pruned at the TTL, re-fetched on next use |
 
-**Caveat found while testing this:** every anonymous request to SynBioHub in this
-environment returns 401 — including `/public/...` paths, on both `synbiohub.org`
-and `api.synbiohub.org`. `identity.is_public()` decides visibility by exactly
-that test, so in practice it currently classifies **everything** as private. That
-is safe (nothing leaks) but it means the public-libraries-stay-shared
-optimisation never fires: each user gets their own copy and their own index of a
-public collection. Worth confirming against the deployment SeqImprove actually
-talks to; if public collections are readable anonymously there, sharing resumes
-with no code change. If they are not, `is_public()` needs a different signal —
-the URL path (`/public/` vs `/user/`) is the obvious candidate, though it trusts
-a convention rather than a check.
+**Visibility is decided by URL namespace, not by an anonymous probe.** The
+obvious test — fetch with no credentials and see whether it returns 200 — does
+not work here: this SynBioHub requires a login for everything, so every anonymous
+request returns 401 including `/public/...` paths, on both `synbiohub.org` and
+`api.synbiohub.org` (confirmed). That test classified *everything* as private, so
+the shared cache never engaged and each user got their own copy and index of a
+public collection.
+
+SynBioHub namespaces objects by owner in the URL itself, and that is
+authoritative in its own model:
+
+```
+https://<host>/public/<collection>/...   published — shared partition
+https://<host>/user/<username>/...       that account's space — per-user partition
+```
+
+On an instance where everything needs a login, "public" means "readable by any
+account on this instance", which is exactly the right boundary for sharing one
+cached copy and one index between our users. A URL of neither shape still falls
+back to the anonymous probe, and to private if that fails.
+
+The trade being made: this trusts a convention instead of verifying access. If a
+`/public/` collection were ever access-restricted, it would be cached in the
+shared partition.
 
 ---
 
@@ -523,6 +536,7 @@ volume plus a real cache-invalidation signal, or a database).
 | FeatureLibrary is nearly free | 4 Documents +17.0 MB, the 4 FeatureLibraries over them +0.1 MB, a merged 4-library subset +0.0 MB; `get_documents_for_libraries` returns the same objects |
 | Remote Document no longer duplicated | FlashText re-taking a library the aligner had loaded: +0.0 MB shared, against +16.4 MB for the old private `readString` |
 | Shipped libraries stay resident | cap forced to 3, ten imported libraries pushed through: all four shipped libraries still in `_documents` and `_feature_libraries`, imports held to the cap, janitor at TTL 0 left the shipped set untouched |
+| Visibility by namespace | 7 real URLs across synbiohub.org, programmingbiology.org and synbioks.org classified correctly; with real identity logic two principals got one shared path and one index key for a `/public/` collection and separate paths for a `/user/` one, and a janitor pass kept the public copy while removing the private one |
 | Upstream sync | stubbed SynBioHub: 5 uses inside the window cost 1 request; an upstream change was invisible inside the window and picked up automatically once it expired, with no re-import; an unreachable SynBioHub left the cached copy usable |
 | Library and index removed together | backdated library: sweep removed 1 library + 1 index; manual delete removed both; a missing source made `has_index` return False instead of raising; a library downloaded long ago but used just now was kept, index and all |
 | Janitor scope | public + private both backdated past the TTL: default run removed only the private one, `SEQIMPROVE_PRUNE_PUBLIC=1` removed both |

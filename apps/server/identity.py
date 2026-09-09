@@ -133,19 +133,41 @@ def resolve_principal(session_token: Optional[str],
     return principal
 
 
+# SynBioHub namespaces every object by owner in the URL itself:
+#   https://<host>/public/<collection>/...      published, readable by all users
+#   https://<host>/user/<username>/<...>        that user's own space
+_PUBLIC_PATH = re.compile(r'^https?://[^/]+/public/', re.I)
+_PRIVATE_PATH = re.compile(r'^https?://[^/]+/user/', re.I)
+
+
 def is_public(url: str) -> bool:
-    """Is this SynBioHub collection readable without credentials?
+    """Is this collection shareable between users of this SeqImprove instance?
 
-    Determined the only way that is actually authoritative: ask for it with no
-    token. 200 means anyone can read it, so it is safe to cache in the shared
-    partition. 401/403 means it is private and must be partitioned per user.
+    Decided from the URL namespace, because the obvious test -- fetch it with no
+    credentials and see whether it returns 200 -- does not work against a
+    SynBioHub that requires a login for everything, which is the deployment this
+    talks to. There, every anonymous request returns 401 including /public/
+    paths, so that test classified *everything* as private and the shared cache
+    for public collections never engaged.
 
-    Anything else (network error, 5xx) is treated as private -- the safe answer
-    when we cannot tell.
+    The namespace is authoritative in SynBioHub's own model: /public/ means
+    published, /user/<name>/ is that account's space. On an instance where
+    everything needs a login, "public" therefore means "readable by any account
+    on this instance", which is exactly the right boundary for sharing one cached
+    copy and one alignment index between our users.
+
+    This trusts a convention rather than verifying access, which is the trade
+    being made. For a URL of neither shape we fall back to the anonymous probe,
+    and to "private" if that fails -- the safe answer when we cannot tell.
     """
     canonical = canonical_url(url)
-    now = time.time()
 
+    if _PUBLIC_PATH.match(canonical):
+        return True
+    if _PRIVATE_PATH.match(canonical):
+        return False
+
+    now = time.time()
     with _lock:
         hit = _visibility_cache.get(canonical)
         if hit and hit[1] > now:
