@@ -345,6 +345,45 @@ Full set of dials, all environment variables:
 | `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM |
 | `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText library dict in RAM |
 
+### Scheduled cleanup
+
+Count caps only fire when a cap is exceeded, so a quiet server keeps one user's
+private library and its index indefinitely. A daemon janitor thread now ages
+them out: everything is kept for the short term, then released.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long a download or index survives unused |
+| `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs |
+
+Deliberately conservative: libraries under `assets/` are never touched, a file
+still parsed into memory is skipped (deleting it would leave a live Document
+pointing at a missing path), and a pinned index — one an aligner is reading right
+now — is left alone. Nothing removed is data: a pruned library is re-fetched from
+SynBioHub and a pruned index is rebuilt, both automatically on next use. The
+thread is a daemon and swallows exceptions, so a failed sweep retries next tick
+rather than taking the server down.
+
+`/api/deleteUserLibrary` now also removes the on-disk copy and every in-memory
+form via `forget_remote_library()`. It previously deleted only the FlashText dict
+entry, which — now that the dict is lazy — is often empty for a library that is
+very much still cached.
+
+### The FlashText dict is now lazy
+
+`FEATURE_LIBRARIES` is consulted **only** by the FlashText path; BWA, Minimap2
+and BLASTN all go through `library_cache.get_feature_library_for_subset()`.
+`setup()` nevertheless parsed every local library into it at startup, at ~20×
+their XML size — that was most of the ~166 MB resident baseline, paid on every
+boot for something most requests never touch. Importing a library did the same
+eagerly.
+
+Both are lazy now: `create_feature_library()` parses on first FlashText use, and
+`/api/importUserLibrary` validates the SBOL then releases it, keeping only the
+disk copy. `/api/checkLibraryCache` was changed to ask the disk cache rather than
+the dict, since an imported library is legitimately absent from the dict until
+FlashText needs it.
+
 Real sizing still wants load data.
 
 ### E. Prokka is a global singleton
@@ -390,6 +429,7 @@ volume plus a real cache-invalidation signal, or a database).
 | Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
 | LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
 | Capacity costs | measured on the shipped libraries: index dirs 0.6–1.2 MB each; a parsed FeatureLibrary is ~20× its XML (228 K → 4.4 MB, 1.4 M → 25.1 MB) |
+| TTL cleanup | 5 downloads, 3 backdated past a 72 h TTL: exactly those 3 removed, the 2 fresh ones kept, and a backdated file still held in memory correctly skipped |
 | All five caps hold | 12 libraries against a cap of 5, 8 subset combinations against 3, 9 remote files against 4 — each held, in-use files skipped by the disk prune, and an evicted library re-loaded correctly from disk |
 
 Not verified: none of this has been exercised against a running server with real

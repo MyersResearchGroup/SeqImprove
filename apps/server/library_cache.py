@@ -50,6 +50,14 @@ DEFAULT_MAX_CACHED_SUBSETS = int(os.environ.get("SEQIMPROVE_MAX_CACHED_SUBSETS",
 # Downloaded SynBioHub XML under <cache>/remote. Unbounded before: one file per
 # (user, private library), kept forever.
 DEFAULT_MAX_REMOTE_FILES = int(os.environ.get("SEQIMPROVE_MAX_REMOTE_FILES", "200"))
+
+# Scheduled cleanup. The count caps above only fire when a cap is exceeded, so a
+# quiet server keeps one user's private library and its index indefinitely. These
+# add an age bound: keep everything for the short term, then let it go. Nothing
+# here is data -- a pruned library is re-fetched from SynBioHub and a pruned
+# index is rebuilt, both automatically on next use.
+CACHE_TTL_SECONDS = int(os.environ.get("SEQIMPROVE_CACHE_TTL_HOURS", "72")) * 3600
+JANITOR_INTERVAL_SECONDS = int(os.environ.get("SEQIMPROVE_JANITOR_INTERVAL_MINUTES", "60")) * 60
 METADATA_FILE = "cache_metadata.json"
 
 
@@ -472,6 +480,50 @@ class LibraryCache:
             except OSError:
                 pass
 
+    def prune_expired(self, index_manager=None, ttl_seconds: int = None) -> dict:
+        """Age out cached downloads and indexes. Safe to call at any time.
+
+        Returns a summary of what was removed. Deliberately conservative:
+          - libraries under assets/ are never touched (they ship with the app)
+          - a file still parsed into memory is left alone, so no live Document
+            ends up pointing at a path that no longer exists
+          - a pinned index -- one an aligner is reading right now -- is skipped
+        """
+        ttl = CACHE_TTL_SECONDS if ttl_seconds is None else ttl_seconds
+        cutoff = time.time() - ttl
+        removed = {"remote_files": 0, "indexes": 0}
+
+        remote_root = self.cache_dir / "remote"
+        with self._lock:
+            in_use = set(self._documents)
+            if remote_root.exists():
+                for path in list(remote_root.rglob("*.xml")):
+                    if not path.is_file() or path.stat().st_mtime >= cutoff:
+                        continue
+                    if str(path.resolve()) in in_use:
+                        continue
+                    try:
+                        path.unlink()
+                        removed["remote_files"] += 1
+                    except OSError:
+                        pass
+                # tidy up any partition directories left empty
+                for d in sorted(remote_root.rglob("*"), reverse=True):
+                    if d.is_dir() and not any(d.iterdir()):
+                        try:
+                            d.rmdir()
+                        except OSError:
+                            pass
+
+        if index_manager is not None:
+            removed["indexes"] = index_manager.prune_expired(ttl_seconds=ttl)
+
+        if removed["remote_files"] or removed["indexes"]:
+            print(f"Cache janitor removed {removed['remote_files']} downloaded "
+                  f"librar{'y' if removed['remote_files'] == 1 else 'ies'} and "
+                  f"{removed['indexes']} index(es) older than {ttl // 3600}h")
+        return removed
+
     def _remote_cache_path(self, url: str, principal: Optional[str] = None) -> Tuple[str, Path, bool]:
         """Where a remote library's copy lives, and whether that spot is shared.
 
@@ -590,6 +642,34 @@ class LibraryCache:
                 except OSError:
                     pass
                 return None
+
+    def forget_remote_library(self, url: str, principal: Optional[str] = None) -> bool:
+        """Drop a remote library from disk and from every in-memory cache.
+
+        Returns True if anything was actually removed.
+        """
+        _canonical, cached_path, _shared = self._remote_cache_path(url, principal)
+        abs_path = os.path.abspath(str(cached_path))
+        removed = False
+        with self._lock:
+            for store in (self._documents, self._xml_strings, self._feature_libraries,
+                          self._document_hashes, self._feature_library_hashes,
+                          self._hashes):
+                removed = store.pop(abs_path, None) is not None or removed
+            self._library_lru.pop(abs_path, None)
+            for key in [k for k in self._subset_feature_libraries if abs_path in k[0]]:
+                del self._subset_feature_libraries[key]
+                self._subset_lru.pop(key, None)
+                removed = True
+            self._metadata.libraries.pop(abs_path, None)
+            if cached_path.exists():
+                try:
+                    cached_path.unlink()
+                    removed = True
+                except OSError:
+                    pass
+            self._save_metadata()
+        return removed
 
     def resolve_library_paths(self, names: List[str], library_dir: str = None,
                               session_token: str = None,
@@ -994,6 +1074,18 @@ class IndexManager:
             return self.get_index_paths(algorithm, library_paths)
         return self.create_index(algorithm, library_paths)
 
+    def prune_expired(self, ttl_seconds: int = None) -> int:
+        """Remove indexes not accessed within the TTL. Pinned ones are skipped."""
+        ttl = CACHE_TTL_SECONDS if ttl_seconds is None else ttl_seconds
+        cutoff = time.time() - ttl
+        count = 0
+        with self._lock:
+            for key in [k for k, info in list(self._metadata.indexes.items())
+                        if info.last_accessed < cutoff and not self._pinned.get(k)]:
+                self._remove_index(key)
+                count += 1
+        return count
+
     @contextmanager
     def pin_index(self, algorithm: str, library_paths: List[str]):
         """Hold an index against eviction for the duration of a block.
@@ -1056,6 +1148,30 @@ class IndexManager:
 # global instances (initialized in app.py)
 _library_cache: Optional[LibraryCache] = None
 _index_manager: Optional[IndexManager] = None
+
+
+def start_cache_janitor(library_cache: "LibraryCache", index_manager: "IndexManager",
+                        interval_seconds: int = None) -> threading.Thread:
+    """Run prune_expired on a timer, in a daemon thread.
+
+    Daemon so it never holds up shutdown; exceptions are swallowed and retried
+    next tick, because a failed cleanup must not take the server down with it.
+    """
+    interval = JANITOR_INTERVAL_SECONDS if interval_seconds is None else interval_seconds
+
+    def loop():
+        while True:
+            time.sleep(interval)
+            try:
+                library_cache.prune_expired(index_manager)
+            except Exception as e:
+                print(f"Cache janitor pass failed (will retry): {e}")
+
+    thread = threading.Thread(target=loop, name="cache-janitor", daemon=True)
+    thread.start()
+    print(f"Cache janitor started: every {interval // 60} min, "
+          f"TTL {CACHE_TTL_SECONDS // 3600}h")
+    return thread
 
 
 def init_cache(cache_dir: str = DEFAULT_CACHE_DIR, max_indexes: int = DEFAULT_MAX_INDEXES):

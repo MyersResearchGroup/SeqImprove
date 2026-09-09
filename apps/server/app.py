@@ -56,7 +56,7 @@ _prokka_lock = threading.Lock()
 import identity
 from library_cache import (
     init_cache, get_library_cache, get_index_manager,
-    LibraryCache, IndexManager
+    start_cache_janitor, LibraryCache, IndexManager
 )
 
 # cache instances — initialized in setup(), used throughout the app
@@ -164,19 +164,22 @@ def setup():
     global library_cache, index_manager
     library_cache, index_manager = init_cache(
         cache_dir="./.cache/seqimprove",
-        max_indexes=10
     )
+    # Age out private downloads and indexes on a timer. The count caps only fire
+    # when exceeded, so without this a quiet server keeps one user's private
+    # library and its index forever.
+    start_cache_janitor(library_cache, index_manager)
 
     # preload all feature libraries: XML → SBOL Documents → FeatureLibraries (permanent)
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     print(f"Preloading libraries from {feature_libraries_dir}...")
     library_cache.preload_libraries(feature_libraries_dir)
 
-    # populate FlashText FEATURE_LIBRARIES dict from the permanent cache
-    for name, abs_path in library_cache._library_name_map.items():
-        FEATURE_LIBRARIES[abs_path] = library_cache.get_feature_library(abs_path)
-
-    print(f"Loaded {len(FEATURE_LIBRARIES)} libraries into cache")
+    # FEATURE_LIBRARIES is consulted only by the FlashText path; the aligner
+    # paths go through library_cache.get_feature_library_for_subset(). Eagerly
+    # parsing every local library at startup therefore paid ~20x their XML size
+    # in RAM -- most of the resident baseline -- for something most requests
+    # never touch. Populated lazily by create_feature_library() instead.
     print(f"Available libraries: {library_cache.get_available_library_names()}")
 
 app = Flask(__name__) # app = Quart(__name__)
@@ -239,10 +242,21 @@ def create_feature_library(part_library_file_name, principal: str = None):
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
-    if feature_library_path not in FEATURE_LIBRARIES:
-        raise KeyError(f"Library not found in cache: '{part_library_file_name}'. "
-                       f"Available libraries: {list(FEATURE_LIBRARIES.keys())}")
-    return FEATURE_LIBRARIES[feature_library_path]
+    with _feature_libraries_lock:
+        cached = FEATURE_LIBRARIES.get(feature_library_path)
+    if cached is not None:
+        return cached
+
+    if not os.path.exists(feature_library_path):
+        raise KeyError(f"Library not found: '{part_library_file_name}'. "
+                       f"Available libraries: {library_cache.get_available_library_names()}")
+    # Parsed on first FlashText use rather than at startup. LibraryCache keeps
+    # its own bounded copy, so this is a dict lookup after the first time.
+    library = library_cache.get_feature_library(feature_library_path)
+    with _feature_libraries_lock:
+        FEATURE_LIBRARIES[feature_library_path] = library
+        _remember_remote_library(feature_library_path)
+    return library
 
 def sbh_pull_library(uri):
     feature_doc = sbol2.Document() #reinit
@@ -1014,12 +1028,13 @@ def import_library():
     # Check if the request was successful
     if response.status_code == 200:
         try:
+            # Parse once to confirm it is valid SBOL, then let it go. Building
+            # a FeatureLibrary here would hold ~20x the XML in RAM for a path
+            # only FlashText uses -- create_feature_library() builds it on the
+            # first FlashText run instead.
             feature_doc = sbol2.Document()
             feature_doc.readString(response.text)
-            with _feature_libraries_lock:
-                key = _library_key(collectionURL, principal)
-                FEATURE_LIBRARIES[key] = FeatureLibrary([feature_doc])
-                _remember_remote_library(key)
+            del feature_doc
             # Stage the same SBOL on disk so BLASTN/BWA/Minimap2 can index it
             # without a second (anonymous, possibly failing) fetch. Filed under
             # this caller's partition when the collection is private.
@@ -1047,9 +1062,11 @@ def check_library_cache():
     # Scoped to the caller's own partition. Answering for the global dict turned
     # this into an existence oracle: anyone could probe any URL and learn which
     # private collections other people had imported.
-    with _feature_libraries_lock:
-        cached = _library_key(canonical, principal) in FEATURE_LIBRARIES
-    return {"cached": cached, "url": canonical}
+    # Ask the disk cache, not the FlashText dict: the dict is now populated
+    # lazily, so an imported library is legitimately absent from it until a
+    # FlashText run needs it.
+    _c, cached_path, _shared = library_cache._remote_cache_path(canonical, principal)
+    return {"cached": cached_path.exists(), "url": canonical}
 
 @app.post("/api/deleteUserLibrary")
 def remove_library():
@@ -1065,6 +1082,11 @@ def remove_library():
         if present:
             del FEATURE_LIBRARIES[key]
             _remote_library_order.pop(key, None)
+    # Drop the on-disk copy too. The FlashText dict is populated lazily now, so
+    # it is often empty for a library that is very much still cached on disk --
+    # deleting only the dict entry would leave the library usable.
+    if library_cache.forget_remote_library(collectionURL, principal=principal):
+        present = True
     if present:
         logger.info(f"Deleted library '{collectionURL}'.")
     else:
