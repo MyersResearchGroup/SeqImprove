@@ -280,19 +280,18 @@ Persisting it server-side is a small feature, but it is a feature, not a fix.
 `/profile`'s response shape is now confirmed against a live session (see fix 9),
 so this is no longer an unknown.
 
-### B. Should a private library ever be shareable?
+### ~~B. Should a private library ever be shareable?~~ — decided: no
 
-The partition is implemented (fix 10): private content is now strictly per-owner.
-The remaining question is product, not code — **if A wants to share a private
-collection with B, should that be possible?** Today it is not, by construction.
-Supporting it turns a partition into an ACL, which needs a place to store grants
-and a UI to manage them. Worth deciding before anyone asks for it.
+**Decided: private libraries are never shared.** The partition implemented in
+fix 10 is the final behaviour, not a placeholder. No ACL, no grant storage, no
+sharing UI.
 
-Related: two users who both have legitimate access to the same private collection
-each get their own copy and their own alignment index. That is correct but
-wasteful. Deduplicating it safely would mean keying private content by
-`(content hash, set of principals who proved access)`, which is materially more
-complex — only worth it if that case turns out to be common.
+One consequence to accept knowingly: two users who both legitimately have access
+to the same private collection each get their own cached copy and their own
+alignment index. That is the correct outcome of "never shared" and the cost is
+bounded by the caps below — deduplicating it would require keying private
+content by `(content hash, set of principals who proved access)`, which
+re-introduces exactly the cross-tenant coupling this decision rules out.
 
 ### C. `/api/cache/clear` is still global and unauthenticated
 
@@ -301,13 +300,27 @@ complex — only worth it if that case turns out to be common.
 presumably an operator tool; it should either require an admin credential or be
 removed from the public surface.
 
-### D. Index capacity is 10, globally — now more pressing
+### ~~D. Capacity limits~~ — sized, and now configurable
 
-`DEFAULT_MAX_INDEXES = 10`, shared by all users. Partitioning private libraries
-*increases* the number of distinct indexes (two users with the same private
-collection now have two), so the LRU will thrash sooner than before. Needs sizing
-against expected concurrency, or a per-principal quota. Same for
-`MAX_REMOTE_FEATURE_LIBRARIES = 32`, which I picked without data.
+Both caps were picked without data. Measured:
+
+| Cap | Consumes | Cost per entry | Notes |
+|---|---|---|---|
+| `DEFAULT_MAX_INDEXES` | disk | 0.6–1.2 MB | evicted indexes rebuild automatically |
+| `MAX_REMOTE_FEATURE_LIBRARIES` | **RAM** | **~20× the XML size** | a 1.4 MB library holds ~25 MB resident |
+
+Index cap raised **10 → 150** (~150 MB disk worst case). Indexes are cheap and
+rebuildable, and partitioning private libraries per user multiplies the number of
+distinct index keys, so the cap has to be generous or the LRU thrashes.
+
+The memory cap stays at 32, but note what it means: 32 × ~15 MB ≈ **500 MB**
+resident on top of a ~166 MB baseline. Evicting an entry loses nothing — the file
+stays on disk and is re-parsed on next use — so this is a cheap dial to turn down
+if the container is memory-constrained.
+
+Both are now environment variables: `SEQIMPROVE_MAX_INDEXES` and
+`SEQIMPROVE_MAX_REMOTE_LIBRARIES`, so they can be tuned per deployment without a
+code change. Real sizing still wants load data.
 
 ### E. Prokka is a global singleton
 
@@ -351,6 +364,7 @@ volume plus a real cache-invalidation signal, or a database).
 | Private isolated, public shared | two principals against the same private and the same public URL — separate paths for private, one path for public |
 | Parallel index builds | 8 concurrent requests for 5 distinct indexes, stubbed 0.4 s build: 0.56 s wall vs 2.0 s+ serial, 5 indexes built, no staging left |
 | LRU bound on remote libraries | 8 inserts against a cap of 5, then a hit on the oldest survivor before 2 more inserts — cap held, recently-used entry retained |
+| Capacity costs | measured on the shipped libraries: index dirs 0.6–1.2 MB each; a parsed FeatureLibrary is ~20× its XML (228 K → 4.4 MB, 1.4 M → 25.1 MB) |
 
 Not verified: none of this has been exercised against a running server with real
 concurrent users. The fixes are unit-level and reasoned; a load test with several

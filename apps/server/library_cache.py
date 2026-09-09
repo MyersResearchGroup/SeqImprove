@@ -31,7 +31,12 @@ from sequences_to_features.FeatureExtractor import FeatureExtractor
 
 # configuration
 DEFAULT_CACHE_DIR = "./.cache/seqimprove"
-DEFAULT_MAX_INDEXES = 10
+# Each index is a FASTA plus the aligner's index files: measured at 0.6-1.2 MB
+# for the libraries shipped here, so even a few hundred cost well under a GB of
+# disk -- and an evicted index is rebuilt automatically. Partitioning private
+# libraries per user multiplies the number of distinct index keys, so this needs
+# to be generous. Override with SEQIMPROVE_MAX_INDEXES.
+DEFAULT_MAX_INDEXES = int(os.environ.get("SEQIMPROVE_MAX_INDEXES", "150"))
 METADATA_FILE = "cache_metadata.json"
 
 

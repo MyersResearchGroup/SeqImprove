@@ -77,7 +77,12 @@ _feature_libraries_lock = threading.RLock()
 # preloaded at startup and are a fixed set, but imported SynBioHub collections
 # accumulate one entry per (user, collection) with nothing to evict them -- a
 # slow leak that grows with every user. Bound just the remote ones.
-MAX_REMOTE_FEATURE_LIBRARIES = 32
+# This one costs RAM, not disk: a parsed FeatureLibrary measured ~20x the size
+# of its XML (a 1.4 MB library holds ~25 MB resident), so 32 entries is a ~500 MB
+# worst case on top of the ~166 MB baseline. Evicting an entry loses nothing --
+# the file stays on disk and is re-parsed on next use -- so this trades a little
+# CPU for a lot of memory. Override with SEQIMPROVE_MAX_REMOTE_LIBRARIES.
+MAX_REMOTE_FEATURE_LIBRARIES = int(os.environ.get("SEQIMPROVE_MAX_REMOTE_LIBRARIES", "32"))
 _remote_library_order: "OrderedDict[str, None]" = OrderedDict()
 
 
