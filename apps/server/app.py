@@ -634,12 +634,33 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
         ProkkaAligner(target_doc).align()
         return _parse_prokka_output(Path("PROKKA_SYNBICT"), library_paths, prokka_mode, min_feature_length)
 
+def _gff_has_cds(gff_path):
+    with open(gff_path) as gff:
+        for line in gff:
+            if line.startswith("##FASTA"):
+                break
+            fields = line.split("\t")
+            if len(fields) > 2 and fields[2] == "CDS":
+                return True
+    return False
+
 def _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length):
+    gff_path = outdir / "PROKKA_SYNBICT.gff"
+    if not gff_path.exists():
+        raise RuntimeError("Prokka produced no output (is prokka installed?)")
+
     blast_files = sorted(outdir.glob("PROKKA_SYNBICT.proteins.tmp.*.blast"))
     if not blast_files:
-        raise RuntimeError("Prokka produced no BLAST output (is prokka installed?)")
+        # Prokka BLASTs only the proteins it predicts. A sequence with no CDS
+        # (a short part, a promoter or terminator) has nothing to search, which
+        # means no protein matches -- not a failure. Raising here used to fail
+        # the whole annotation and throw away the DNA aligner's hits with it.
+        if not _gff_has_cds(gff_path):
+            logger.info("Prokka predicted no CDS; no protein matches to add")
+            return [], []
+        raise RuntimeError("Prokka predicted CDS but produced no BLAST output")
 
-    gff_path = str(outdir / "PROKKA_SYNBICT.gff")
+    gff_path = str(gff_path)
     blast_path = str(blast_files[-1])
 
     final_df = ProkkaParser(gff_path, blast_path).parse_gff_and_blast()
