@@ -45,12 +45,12 @@ product or architecture call.
   - [Two pools, not one queue](#two-pools-not-one-queue)
   - [The eviction policy is LRU — recency, not frequency](#the-eviction-policy-is-lru--recency-not-frequency)
 - [Needs a decision](#needs-a-decision)
-  - [A. The imported-library list is still browser-only](#a-the-imported-library-list-is-still-browser-only)
+  - [A. The imported-library list was lost on every reload — now remembered per browser](#a-the-imported-library-list-was-lost-on-every-reload--now-remembered-per-browser)
   - [B. Should a private library ever be shareable? — decided: no](#b-should-a-private-library-ever-be-shareable--decided-no)
   - [C. /api/cache/clear was global and unauthenticated — removed](#c-apicacheclear-was-global-and-unauthenticated--removed)
   - [D. Capacity limits — sized, and now configurable](#d-capacity-limits--sized-and-now-configurable)
-  - [E. Prokka is a global singleton](#e-prokka-is-a-global-singleton)
-  - [F. The server runs 4 threads](#f-the-server-runs-4-threads)
+  - [E. Prokka was a global singleton — each run now has its own directory](#e-prokka-was-a-global-singleton--each-run-now-has-its-own-directory)
+  - [F. The server ran 4 threads — now configurable](#f-the-server-ran-4-threads--now-configurable)
   - [G. All state is per-process, so this does not scale horizontally](#g-all-state-is-per-process-so-this-does-not-scale-horizontally)
 - [What has not been verified](#what-has-not-been-verified)
 
@@ -510,6 +510,7 @@ a server restart.
 | `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs | — |
 | `SEQIMPROVE_REMOTE_FRESHNESS_MINUTES` | 5 | how long a cached copy is reused before re-checking SynBioHub | one request |
 | `SEQIMPROVE_PRUNE_PUBLIC` | 0 | set to 1 to age out public downloads too | — |
+| `SEQIMPROVE_THREADS` | 8 | waitress worker threads — concurrent requests (see F) | memory of one annotation |
 
 Only the two `MAX_CACHED_PUBLIC`/`MAX_CACHED_PRIVATE` pools are real memory
 levers: a `FeatureLibrary` is a thin index over Documents it does not own, so the
@@ -593,15 +594,27 @@ other once nobody is using it. Re-reading it from disk is the only cost.
 
 ## Needs a decision
 
-### A. The imported-library list is still browser-only
+### ~~A. The imported-library list was lost on every reload~~ — now remembered per browser
 
-Identity itself is now implemented (fix 9). What is not: the frontend keeps
-`importedLibraries` in the zustand store, so a user switching browser or device
-loses their list even though the server could now reconstruct it per principal.
-Persisting it server-side is a small feature, but it is a feature, not a fix.
+The list of imported SynBioHub libraries lived only in the zustand store, in
+memory, so it was gone not just on another device but on every page reload.
 
-`/profile`'s response shape is now confirmed against a live session (see fix 9),
-so this is no longer an unknown.
+The frontend now keeps each imported library's URL and label in `localStorage`
+(`seqimprove.importedLibraries`, the 10 most recent) and, on load, lists again
+those the server still has cached **for this user** — asked through
+`/api/checkLibraryCache`, which is scoped by principal (fix 11). Deleting a
+library removes it from the saved list too.
+
+- *Not cached* (the janitor evicted it, or the user has not logged in yet, so a
+  private library is not found under them): the entry stays saved and is checked
+  again after login. It is **not** re-imported in the background — a large
+  collection can take minutes, and nobody asked for it.
+- *Shared browser*: another user sees a saved library only if the server has it
+  cached for them. A private one never appears for anyone but its owner; a
+  public one can, which is harmless. Only URLs and labels are stored.
+- *Still per browser*: a different device starts empty. Making the list follow
+  the user would mean storing it server-side per principal, which runs straight
+  into G.
 
 ### ~~B. Should a private library ever be shareable?~~ — decided: no
 
@@ -666,21 +679,35 @@ an aligner was held twice (+16.4 MB for a 1.3 MB collection). It now goes throug
 `LibraryCache`, sharing the Document and inheriting the same LRU, TTL and update
 detection as everything else.
 
-### E. Prokka is a global singleton
+### ~~E. Prokka was a global singleton~~ — each run now has its own directory
 
-`ProkkaAligner` uses hardcoded paths (`./database_protein.fasta`,
-`./PROKKA_SYNBICT/`) in the process working directory, so concurrent runs would
-overwrite each other. `_prokka_lock` serialises them, which is correct but means
-**one user's Prokka run blocks every other user's** for its full duration — and
-Prokka is the slowest thing in the pipeline. Fixing it properly means running
-each invocation in its own temp directory, which is a change to SYNBICT's
-`ProkkaAligner`, not to SeqImprove.
+`ProkkaAligner` wrote to fixed paths (`./database_protein.fasta`,
+`./PROKKA_SYNBICT/`) in the working directory, so `_prokka_lock` had to
+serialise every run, and one user's Prokka job blocked everyone else's.
 
-### F. The server runs 4 threads
+SYNBICT's `ProkkaAligner` now takes `output_dir` and `database_path` (defaults
+unchanged, so SYNBICT's own CLI is unaffected). `_run_prokka` stages the protein
+database and Prokka's output in a `TemporaryDirectory` per call, so runs proceed
+in parallel. Against a SYNBICT without those parameters — detected from the
+constructor's signature — it falls back to the old fixed paths under the lock.
 
-`serve(app, host="0.0.0.0", port=8080)` — waitress defaults to `threads=4`. That
-is the hard ceiling on concurrent annotations regardless of anything else, and
-long jobs (Prokka, index builds) occupy a thread for minutes.
+Checked with Prokka 1.14.6: the Test_Part sequence and its reverse complement,
+run in two threads at once, each produced its own GFF at the right length and
+its own BLAST output, and nothing was written to the working directory.
+
+**Needs a SYNBICT push.** The Docker image clones `SYNBICT2`, so until that
+change is pushed a rebuilt image still takes the serialised path.
+
+### ~~F. The server ran 4 threads~~ — now configurable
+
+The entry point that matters is the Dockerfile's `waitress-serve --call
+app:create_app`, not the `serve(...)` call under `__main__`; both left waitress
+at its default of 4 threads. That is the ceiling on concurrent requests, and a
+Prokka run or an index build holds its thread for minutes.
+
+Both now read `SEQIMPROVE_THREADS`, default 8. More threads mostly wait on
+subprocesses, so they are cheap in CPU, but each annotation holds parsed
+Documents in memory — raise it together with the container's memory.
 
 ### G. All state is per-process, so this does not scale horizontally
 

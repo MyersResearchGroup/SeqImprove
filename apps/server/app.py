@@ -48,9 +48,12 @@ subprocess.run(["bash", "-lc", "which perl && perl -v | head -n 2"], check=False
 print("\nBioPerl hmmer3 module check:")
 subprocess.run(["bash", "-lc", "perl -MBio::SearchIO::hmmer3 -e 'print \"OK\\n\"'"], check=False)
 
-# Prokka uses hardcoded paths (./database_protein.fasta, ./PROKKA_SYNBICT/) so
-# concurrent invocations would clobber each other. Serialize them.
+# Only for a SYNBICT whose ProkkaAligner predates output_dir: that one always
+# uses ./database_protein.fasta and ./PROKKA_SYNBICT/, so concurrent runs would
+# clobber each other and must be serialized. See _run_prokka.
 _prokka_lock = threading.Lock()
+# True when the installed SYNBICT lets each Prokka run use its own directory.
+_PROKKA_HAS_OUTPUT_DIR = "output_dir" in inspect.signature(ProkkaAligner.__init__).parameters
 
 # import caching system
 import identity
@@ -608,38 +611,48 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
     """
     Run Prokka against the target SBOL doc and extract matches.
 
-    Prokka uses hardcoded paths (./database_protein.fasta, ./PROKKA_SYNBICT/),
-    so calls are serialized via _prokka_lock.
+    Each call stages its protein database and writes Prokka's output in its own
+    temporary directory, so concurrent users run in parallel. A SYNBICT that
+    predates ProkkaAligner's output_dir parameter only knows the fixed paths
+    ./database_protein.fasta and ./PROKKA_SYNBICT/, so there calls fall back to
+    being serialized via _prokka_lock.
 
     Returns (inline_matches, rc_matches) for merging with the main aligner's results.
     """
+    protein_fasta_src = library_cache.get_protein_fasta_path(library_paths)
+    if _PROKKA_HAS_OUTPUT_DIR:
+        with tempfile.TemporaryDirectory(prefix="prokka_") as workdir:
+            database_path = os.path.join(workdir, "database_protein.fasta")
+            shutil.copyfile(protein_fasta_src, database_path)
+            outdir = Path(workdir) / "out"
+            ProkkaAligner(target_doc, output_dir=str(outdir),
+                          database_path=database_path).align()
+            return _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length)
+
     with _prokka_lock:
-        # Stage the protein database at the path Prokka expects
-        protein_fasta_src = library_cache.get_protein_fasta_path(library_paths)
         shutil.copyfile(protein_fasta_src, os.path.abspath("./database_protein.fasta"))
-
-        # Run Prokka — outputs to ./PROKKA_SYNBICT/
         ProkkaAligner(target_doc).align()
+        return _parse_prokka_output(Path("PROKKA_SYNBICT"), library_paths, prokka_mode, min_feature_length)
 
-        outdir = Path("PROKKA_SYNBICT")
-        blast_files = sorted(outdir.glob("PROKKA_SYNBICT.proteins.tmp.*.blast"))
-        if not blast_files:
-            raise RuntimeError("Prokka produced no BLAST output (is prokka installed?)")
+def _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length):
+    blast_files = sorted(outdir.glob("PROKKA_SYNBICT.proteins.tmp.*.blast"))
+    if not blast_files:
+        raise RuntimeError("Prokka produced no BLAST output (is prokka installed?)")
 
-        gff_path = str(outdir / "PROKKA_SYNBICT.gff")
-        blast_path = str(blast_files[-1])
+    gff_path = str(outdir / "PROKKA_SYNBICT.gff")
+    blast_path = str(blast_files[-1])
 
-        final_df = ProkkaParser(gff_path, blast_path).parse_gff_and_blast()
+    final_df = ProkkaParser(gff_path, blast_path).parse_gff_and_blast()
 
-        # Map BLASTP protein IDs (CDS_000001 etc.) back to library component identities
-        extractor = library_cache.get_feature_extractor_for_subset(library_paths)
-        final_df["ids_sequence"] = [
-            extractor.cds_id_map.get(pid) for pid in final_df['protein_id']
-        ]
+    # Map BLASTP protein IDs (CDS_000001 etc.) back to library component identities
+    extractor = library_cache.get_feature_extractor_for_subset(library_paths)
+    final_df["ids_sequence"] = [
+        extractor.cds_id_map.get(pid) for pid in final_df['protein_id']
+    ]
 
-        return ProkkaTableFeatureMapper().extract_matches(
-            final_df, min_feature_length=min_feature_length, mode=prokka_mode
-        )
+    return ProkkaTableFeatureMapper().extract_matches(
+        final_df, min_feature_length=min_feature_length, mode=prokka_mode
+    )
 
 def run_synbict(sbol_content: str, part_library_file_names: list[str],
                 min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH,
@@ -1272,4 +1285,5 @@ def update_document_properties():
 # if __name__ == '__main__':
 #     app.run(debug=True,host='0.0.0.0',port=5000)
 if __name__ == "__main__":    
-    serve(app, host="0.0.0.0", port=8080)
+    serve(app, host="0.0.0.0", port=8080,
+          threads=int(os.environ.get("SEQIMPROVE_THREADS", "8")))

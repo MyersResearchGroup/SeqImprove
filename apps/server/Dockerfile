@@ -66,5 +66,9 @@ RUN npm install sbolgraph
 WORKDIR /docker-flask-api
 
 # `conda run` wrapper ensures waitress launches inside the synbict_conda env.
-CMD ["conda", "run", "--no-capture-output", "-n", "synbict_conda", \
-     "waitress-serve", "--port=5000", "--call", "app:create_app"]
+# waitress defaults to 4 worker threads, which caps concurrent annotations at 4;
+# a Prokka run or an index build holds its thread for minutes. The shell form
+# lets SEQIMPROVE_THREADS override the count at `docker run -e` time.
+ENV SEQIMPROVE_THREADS=8
+CMD ["conda", "run", "--no-capture-output", "-n", "synbict_conda", "sh", "-c", \
+     "exec waitress-serve --port=5000 --threads=${SEQIMPROVE_THREADS:-8} --call app:create_app"]
