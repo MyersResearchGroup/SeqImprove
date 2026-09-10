@@ -47,7 +47,7 @@ product or architecture call.
 - [Needs a decision](#needs-a-decision)
   - [A. The imported-library list is still browser-only](#a-the-imported-library-list-is-still-browser-only)
   - [B. Should a private library ever be shareable? — decided: no](#b-should-a-private-library-ever-be-shareable--decided-no)
-  - [C. /api/cache/clear is still global and unauthenticated](#c-apicacheclear-is-still-global-and-unauthenticated)
+  - [C. /api/cache/clear was global and unauthenticated — removed](#c-apicacheclear-was-global-and-unauthenticated--removed)
   - [D. Capacity limits — sized, and now configurable](#d-capacity-limits--sized-and-now-configurable)
   - [E. Prokka is a global singleton](#e-prokka-is-a-global-singleton)
   - [F. The server runs 4 threads](#f-the-server-runs-4-threads)
@@ -616,12 +616,21 @@ bounded by the caps below — deduplicating it would require keying private
 content by `(content hash, set of principals who proved access)`, which
 re-introduces exactly the cross-tenant coupling this decision rules out.
 
-### C. `/api/cache/clear` is still global and unauthenticated
+### ~~C. `/api/cache/clear` was global and unauthenticated~~ — removed
 
-`deleteUserLibrary` and `checkLibraryCache` are scoped now (fix 11), but
-`/api/cache/clear` still wipes every cache for everyone, with no auth. It is
-presumably an operator tool; it should either require an admin credential or be
-removed from the public surface.
+`deleteUserLibrary` and `checkLibraryCache` are scoped by principal (fix 11), but
+`/api/cache/clear` bypassed all of that: any unauthenticated POST wiped every
+index for every user. Nothing was lost — indexes are derived data — but everyone
+online then waited for a rebuild, which made it a very cheap denial of service.
+
+Nothing in the frontend called it, and the janitor reclaims indexes on its own,
+so the endpoint is gone rather than gated. `IndexManager.clear_cache()` stays as
+a maintenance helper; it is simply no longer reachable over HTTP.
+
+`/api/cache/stats` is also unauthenticated. It exposes the server's cache path,
+the index count and access timestamps — index keys are hashes and library names
+never appear, so no tenant data leaks, but it is still more than an anonymous
+caller needs.
 
 ### ~~D. Capacity limits~~ — sized, and now configurable
 

@@ -876,15 +876,6 @@ def cache_stats():
     stats["libraries_loaded"] = len(library_cache._documents) if library_cache else 0
     return stats
 
-@app.post("/api/cache/clear")
-def clear_cache():
-    """clear all cached indexes (libraries remain in memory)"""
-    if index_manager is None:
-        return {"error": "Cache not initialized"}, 500
-
-    index_manager.clear_cache()
-    return {"message": "Index cache cleared successfully"}
-
 @app.post("/api/convert/genbanktosbol2")
 def genbank_to_sbol2():    
     request_data = request.get_json()
