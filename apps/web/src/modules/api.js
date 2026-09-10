@@ -76,14 +76,19 @@ export async function fetchSBOL(url) {
 // the session token, so every library call has to carry both. Without the
 // instance the same username on two different SynBioHub deployments would
 // collide into one cache partition.
-function synBioHubCredentials() {
+//
+// The one place the frontend reads the SynBioHub session. When SeqImprove runs
+// inside SynBioSuite and shares its token, only this (and the store's login())
+// needs to learn where the token comes from.
+export function synBioHubCredentials() {
   return {
     sessionToken: sessionStorage.getItem("SynBioHubSessionToken") || null,
     synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix") || null,
   };
 }
 
-export async function importLibrary(synBioHubSessionToken, requestURL) {
+// quiet: skip the generic error notification, for callers that show their own.
+export async function importLibrary(synBioHubSessionToken, requestURL, { quiet = false } = {}) {
     try {
         var response = await fetchWithTimeout(`${import.meta.env.VITE_API_LOCATION}/api/importUserLibrary`, {
             method: "POST",
@@ -102,7 +107,7 @@ export async function importLibrary(synBioHubSessionToken, requestURL) {
 
         if (!response.ok || result.error) {
             console.error("Library import failed:", result.error || response.statusText);
-            showServerErrorNotification();
+            if (!quiet) showServerErrorNotification();
             return;
         }
 
@@ -110,7 +115,7 @@ export async function importLibrary(synBioHubSessionToken, requestURL) {
     }
     catch (err) {
         console.error("Library import error:", err);
-        showServerErrorNotification();
+        if (!quiet) showServerErrorNotification();
     }
 }
 

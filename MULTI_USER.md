@@ -622,7 +622,11 @@ library removes it from the saved list too.
 - *Not cached* (the janitor evicted it, or the user has not logged in yet, so a
   private library is not found under them): it is shown greyed out with a
   **Re-import** button, so getting it back is one click instead of finding it in
-  the SynBioHub dialog again, and the check runs again after a login. It is
+  the SynBioHub dialog again, and the check runs again after a login. Logged
+  out, the button reads **Log in** and opens the login dialog instead: the
+  SynBioHub this talks to answers 401 to every anonymous request, `/public/`
+  included, and a private library that looks stale while logged out is usually
+  still cached under the identity the login resolves to. It is
   **not** re-imported in the background — a large collection can take minutes,
   and nobody asked for it. The entry is not dropped on a failed check either,
   because "not cached" can simply mean "not logged in", or a `t_` principal

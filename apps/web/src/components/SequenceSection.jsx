@@ -14,7 +14,7 @@ import "../../src/sequence-edit.css"
 import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { SynBioHubClientLogin } from "./CurationForm";
-import { importLibrary, checkLibraryCache } from "../modules/api";
+import { importLibrary, checkLibraryCache, synBioHubCredentials } from "../modules/api";
 import { loadSavedLibraries, saveLibrary, forgetLibrary } from "../modules/savedLibraries";
 
 const WORDSIZE = 8;
@@ -361,14 +361,23 @@ function Annotations({ colors }) {
 
     const handleClose = (library) => {removeLibrary(library)};
 
+    // Logged out, a re-import can't work: the SynBioHub this talks to answers 401
+    // to every anonymous request, /public/ included. And a private library that
+    // looks stale while logged out is usually still cached, under the identity
+    // the login resolves to. So logging in is what brings it back: the restore
+    // check re-runs on login and lists whatever is still there.
     const reimportLibrary = async (library) => {
+        if (!isLoggedInToSynBioHub) {
+            loadSynBioHubs();
+            setIsInteractingWithSynBioHub(true);
+            return;
+        }
         setReimporting(library.value);
-        const response = await importLibrary(sessionStorage.getItem("SynBioHubSessionToken"), library.value);
+        const response = await importLibrary(synBioHubCredentials().sessionToken, library.value, { quiet: true });
         setReimporting(null);
         if (!response?.success) {
-            showErrorNotification("Import Failed", isLoggedInToSynBioHub
-                ? "Could not re-import " + library.label + " from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again."
-                : "Could not re-import " + library.label + ". If it is a private library, log in to SynBioHub first.");
+            showErrorNotification("Import Failed", "Could not re-import " + library.label +
+                " from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.");
             return;
         }
         setStaleLibraries(prev => prev.filter(lib => lib.value !== library.value));
@@ -726,7 +735,7 @@ function Annotations({ colors }) {
                                 ? <Loader size="xs" variant="dots" />
                                 : <Button size="xs" variant="subtle" disabled={reimporting !== null}
                                           onClick={() => reimportLibrary(library)}>
-                                      Re-import
+                                      {isLoggedInToSynBioHub ? "Re-import" : "Log in"}
                                   </Button>}
                         </Grid.Col>
                         <Grid.Col span={2}>
