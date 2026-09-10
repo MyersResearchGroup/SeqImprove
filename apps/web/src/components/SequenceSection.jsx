@@ -15,6 +15,7 @@ import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { SynBioHubClientLogin } from "./CurationForm";
 import { importLibrary, checkLibraryCache } from "../modules/api";
+import { loadSavedLibraries, saveLibrary } from "../modules/savedLibraries";
 
 const WORDSIZE = 8;
 
@@ -248,6 +249,31 @@ function Annotations({ colors }) {
     const addCachedUrl = (url) => setCachedLibraryUrls(prev => [...prev, url]);
 
     useStore(s => s.libraryImported);
+
+    // Bring back the SynBioHub libraries this user imported before, so a page
+    // reload doesn't mean importing them again. Only those the server still has
+    // cached for this user are listed; the rest stay saved and are checked again
+    // after a login, since a private library is only found under its owner.
+    useEffect(() => {
+        const listed = useStore.getState().importedLibraries.map(lib => lib.value);
+        const saved = loadSavedLibraries().filter(lib => !listed.includes(lib.value));
+        if (saved.length === 0) return;
+        let cancelled = false;
+        (async () => {
+            const cached = await Promise.all(saved.map(lib => checkLibraryCache(lib.value)));
+            const restored = saved.filter((_, i) => cached[i]);
+            if (cancelled || restored.length === 0) return;
+            for (const lib of restored) {
+                addCachedUrl(lib.value);
+                useStore.getState().addImportedLibrary({ ...lib, enabled: false });
+            }
+            mutateDocument(useStore.setState, state => {state.libraryImported = true});
+            showNotificationSuccess("Libraries Restored",
+                restored.map(lib => lib.label).join(", ") + " from your last session " +
+                (restored.length === 1 ? "is" : "are") + " ready. Enable the checkbox next to a library to use it.");
+        })();
+        return () => { cancelled = true };
+    }, [isLoggedInToSynBioHub]);
 
     const loadSynBioHubs = async () => {
         const response = await fetch("https://wor.synbiohub.org/instances");
@@ -808,6 +834,7 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 addCachedUrl(rootCollectionURI);
                                 mutateDocument(useStore.setState, state => {state.libraryImported = true});
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false});
+                                saveLibrary({ value: rootCollectionURI, label: selectedCollectionID });
                                 showNotificationSuccess("Library Ready!", selectedCollectionID + " is already cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
                                 return;
                             }
@@ -822,6 +849,7 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 showNotificationSuccess("Library Ready!", selectedCollectionID + " is cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
                                 mutateDocument(useStore.setState, state => {state.libraryImported = true});
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
+                                saveLibrary({ value: rootCollectionURI, label: selectedCollectionID });
                             } else {
                                 showErrorNotification("Import Failed", "Could not import library from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.");
                             }

@@ -4,6 +4,7 @@ import produce from "immer"
 import { getSearchParams, showErrorNotification } from "./util"
 import { addSequenceAnnotation, addTextAnnotation, createSBOLDocument, getExistingSequenceAnnotations, hasSequenceAnnotation, hasTextAnnotation, parseTextAnnotations, removeAnnotationWithDefinition, removeDuplicateComponentAnnotation, removeSequenceAnnotation, removeTextAnnotation, isfromSynBioHub } from "./sbol"
 import { fetchAnnotateSequence, fetchAnnotateText, fetchSBOL, cleanSBOL, deleteLibrary } from "./api"
+import { forgetLibrary } from "./savedLibraries"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
 import { FILE_TYPES } from "./fileTypes"
@@ -414,6 +415,7 @@ export const useStore = create((set, get) => ({
             state.importedLibraries = state.importedLibraries.filter(lib => lib.value !== library.value);
         }));
         deleteLibrary(library.value)
+        forgetLibrary(library.value)
     },
 
     // Target Organisms
