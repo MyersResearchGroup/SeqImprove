@@ -414,8 +414,20 @@ class LibraryCache:
             # load from disk (one-time cost per library)
             doc = sbol2.Document()
             doc.read(abs_path)
+            # Building a FeatureLibrary is not read-only: the first one over a
+            # Document adds a ComponentDefinition for every Sequence no
+            # definition refers to. Once the Document is shared, that write can
+            # land while another request is inside Document.find -- which
+            # iterates doc.SBOLObjects, e.g. from sbol2's copy() when a similar
+            # match is turned into a variant -- and that request dies with
+            # "dictionary changed size during iteration". So do it here, under
+            # the lock and before the Document is published. Every later
+            # FeatureLibrary over it finds nothing left to add.
+            feature_lib = FeatureLibrary([doc])
             self._documents[abs_path] = doc
             self._document_hashes[abs_path] = current_hash
+            self._feature_libraries[abs_path] = feature_lib
+            self._feature_library_hashes[abs_path] = current_hash
             self._touch_library(abs_path)
 
             # cache the XML string for fast fresh copies later
@@ -472,9 +484,12 @@ class LibraryCache:
                         cached_info.last_accessed = time.time()
                     return self._feature_libraries[abs_path]
 
-            # load fresh
+            # get_document builds it when it loads the Document; build one here
+            # only if that was evicted while the Document stayed cached.
             doc = self.get_document(abs_path, force_reload)
-            feature_lib = FeatureLibrary([doc])
+            feature_lib = self._feature_libraries.get(abs_path)
+            if feature_lib is None or self._feature_library_hashes.get(abs_path) != current_hash:
+                feature_lib = FeatureLibrary([doc])
             self._feature_libraries[abs_path] = feature_lib
             self._feature_library_hashes[abs_path] = current_hash
             self._touch_library(abs_path)

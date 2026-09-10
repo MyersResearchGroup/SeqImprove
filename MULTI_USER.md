@@ -32,6 +32,7 @@ product or architecture call.
   - [13. FEATURE_LIBRARIES is bounded](#13-feature_libraries-is-bounded---was-gap-j)
   - [14. A cached library could be read while it was being rewritten](#14-a-cached-library-could-be-read-while-it-was-being-rewritten---req-1-4)
   - [15. The index was pinned only after it was handed out](#15-the-index-was-pinned-only-after-it-was-handed-out---req-2)
+  - [16. A shared Document was still being written after it was handed out](#16-a-shared-document-was-still-being-written-after-it-was-handed-out---req-1)
   - [Fetching a collection's members](#fetching-a-collections-members)
   - [Keeping up with SynBioHub](#keeping-up-with-synbiohub)
   - [What happens to the old index when a library changes](#what-happens-to-the-old-index-when-a-library-changes)
@@ -298,6 +299,25 @@ only the index *key*, which is derived from the algorithm and the library
 content, so it can name an index that does not exist yet.
 
 ---
+
+### 16. A shared Document was still being written after it was handed out  — *req 1*
+
+Concurrent reads of one index or one cached library are safe: index files are
+only read (and published by an atomic rename, and pinned while in use), and the
+annotators write into the user's own document, never the library's. The one
+exception was hidden in SYNBICT: building a `FeatureLibrary` adds a
+ComponentDefinition to the Document for every Sequence nothing refers to. The
+cache published a Document first and only then built FeatureLibraries over it,
+so that write could land while another request was inside `Document.find` —
+which iterates `doc.SBOLObjects`, and is reached from sbol2's `copy()` when a
+similar match becomes a variant. Reproduced: that request dies with
+`RuntimeError: dictionary changed size during iteration`.
+
+`get_document` now builds the Document's FeatureLibrary under the lock before
+publishing it (and keeps it, so `get_feature_library` does not build it twice).
+The patching is idempotent, so no later build over a published Document writes
+anything. Pinned by a test that a cached Document is unchanged by a subsequent
+FeatureLibrary build.
 
 ### Fetching a collection's members
 

@@ -982,6 +982,37 @@ def test_concurrency_refresh_write_is_atomic():
         ws.close()
 
 
+def test_concurrency_shared_document_is_not_patched_after_publish():
+    """A cached Document must not change when a FeatureLibrary is built over it.
+
+    FeatureLibrary adds a ComponentDefinition for each Sequence nothing refers
+    to. Done to a shared Document, that races Document.find in another request
+    ("dictionary changed size during iteration"), so it has to happen before
+    the Document is handed out.
+    """
+    ws = Workspace()
+    try:
+        sbol2.setHomespace("https://example.org")
+        source = sbol2.Document()
+        cd = sbol2.ComponentDefinition("part", sbol2.BIOPAX_DNA, "1")
+        seq = sbol2.Sequence("part_seq", H.PARTS["promoter_region"], sbol2.SBOL_ENCODING_IUPAC)
+        source.addSequence(seq)
+        cd.sequences = [seq.identity]
+        source.addComponentDefinition(cd)
+        source.addSequence(sbol2.Sequence("orphan_seq", "ACGTACGTACGTACGTACGT",
+                                          sbol2.SBOL_ENCODING_IUPAC))
+        path = os.path.join(ws.assets, "orphan.xml")
+        source.write(path)
+
+        doc = ws.cache.get_document(path)
+        before = len(doc.SBOLObjects)
+        LC.FeatureLibrary([doc])
+        assert len(doc.SBOLObjects) == before, "a FeatureLibrary build mutated the shared Document"
+        assert ws.cache.get_feature_library(path) is not None
+    finally:
+        ws.close()
+
+
 def test_concurrency_index_is_pinned_before_it_is_built():
     """The pin has to be takeable before the index exists.
 
