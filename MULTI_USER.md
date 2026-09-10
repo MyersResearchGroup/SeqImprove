@@ -241,6 +241,12 @@ public   bob   -> .cache/remote/22e6769a.xml             shared
 
 - `/api/deleteUserLibrary` now deletes only the caller's own partition entry.
   Previously any user could evict any library by naming its URL.
+  A public collection is not deleted at all: its cached copy and index are
+  shared, so one user removing it from their list would make everyone else
+  re-download and re-index it. The delete only drops it from that user's list;
+  the file-count cap, the public memory pool and the index TTL reclaim it once
+  it goes unused. (Public downloads are not aged out by time unless
+  `SEQIMPROVE_PRUNE_PUBLIC=1`.)
 - `/api/checkLibraryCache` answers for the caller's partition only. It was an
   existence oracle: anyone could probe any URL and learn which private
   collections other people had imported.

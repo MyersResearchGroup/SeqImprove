@@ -946,9 +946,16 @@ class LibraryCache:
                               index_manager=None) -> bool:
         """Drop a remote library from disk and from every in-memory cache.
 
+        A public collection is left alone: its cached copy and index are shared
+        by every user, so one user removing it from their list must not make
+        everyone else re-download and re-index it. The caps and the janitor
+        reclaim it once nobody uses it.
+
         Returns True if anything was actually removed.
         """
-        _canonical, cached_path, _shared = self._remote_cache_path(url, principal)
+        _canonical, cached_path, shared = self._remote_cache_path(url, principal)
+        if shared:
+            return False
         abs_path = os.path.abspath(str(cached_path))
         removed = False
         with self._lock:

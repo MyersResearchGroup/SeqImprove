@@ -471,6 +471,27 @@ def test_cleanup_prunes_private_but_not_public():
         ws.close()
 
 
+def test_tenancy_deleting_a_public_library_keeps_the_shared_copy():
+    """One user removing a public library must not evict it for everyone."""
+    ws = Workspace()
+    stub_synbiohub({"body": "", "calls": 0})
+    try:
+        pub = ws.cache.cache_remote_library_content(
+            PUBLIC_URL, H.library_text({"pub": H.PARTS["promoter_region"]}),
+            principal="u_alice")
+        priv = ws.cache.cache_remote_library_content(
+            ALICE_URL, H.library_text({"priv": H.PARTS["terminator_region"]}),
+            principal="u_alice")
+        assert not ws.cache.forget_remote_library(PUBLIC_URL, principal="u_alice",
+                                                  index_manager=ws.index)
+        assert os.path.exists(pub), "a user's delete removed the shared public copy"
+        assert ws.cache.forget_remote_library(ALICE_URL, principal="u_alice",
+                                              index_manager=ws.index)
+        assert not os.path.exists(priv), "the owner could not delete a private library"
+    finally:
+        ws.close()
+
+
 def test_cleanup_removes_index_with_its_library():
     """An index must not outlive the library it was built from."""
     ws = Workspace()

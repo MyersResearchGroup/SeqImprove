@@ -667,7 +667,7 @@ function Annotations({ colors }) {
                             />
                         </Grid.Col>
                         <Grid.Col span={2}>
-                            <Tooltip label="Delete from server memory">
+                            <Tooltip label="Remove library (a private one is also deleted from the server)">
                                 <CloseButton
                                     onClick={() => handleClose(library)}
                                 />

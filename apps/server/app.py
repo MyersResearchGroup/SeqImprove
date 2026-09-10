@@ -1113,6 +1113,13 @@ def remove_library():
     collectionURL = request_data['url']
     principal = _principal_from_request(request_data)
 
+    # A public collection is one cached copy and one index shared by every
+    # user. Removing it is only about this user's list, which the frontend
+    # keeps; evicting it here would make everyone else re-download and
+    # re-index it. The caps and the janitor reclaim it once it goes unused.
+    if identity.is_public(identity.canonical_url(collectionURL)):
+        return {"response": "Removed from your list. Public libraries stay cached on the server for other users."}
+
     # Only ever removes the caller's own entry. Previously any user could delete
     # any library by naming its URL, evicting other people's imports.
     key = _library_key(collectionURL, principal)
