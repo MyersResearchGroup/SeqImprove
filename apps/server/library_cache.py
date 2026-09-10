@@ -1426,14 +1426,28 @@ class IndexManager:
                 self._remove_index(key)
             return len(keys)
 
+    def _is_private_index(self, info: IndexInfo) -> bool:
+        """True if any library behind the index is a private download."""
+        private_root = os.path.join(os.path.abspath(self.library_cache.cache_dir / "remote" / "u"), "")
+        return any(os.path.abspath(p).startswith(private_root) for p in info.library_files)
+
     def prune_expired(self, ttl_seconds: int = None) -> int:
-        """Remove indexes not accessed within the TTL. Pinned ones are skipped."""
+        """Remove private indexes not accessed within the TTL. Pinned ones are skipped.
+
+        Only an index built from a private download ages out: it is derived from
+        one user's data and should not outlive their use of it. An index over
+        public or shipped libraries is shared by everyone and cheap on disk, so
+        expiring it only made the next user wait for a rebuild -- a lab that uses
+        a public library weekly would hit one every time. Those are bounded by
+        max_indexes, least-recently-used first, instead.
+        """
         ttl = CACHE_TTL_SECONDS if ttl_seconds is None else ttl_seconds
         cutoff = time.time() - ttl
         count = 0
         with self._lock:
             for key in [k for k, info in list(self._metadata.indexes.items())
-                        if info.last_accessed < cutoff and not self._pinned.get(k)]:
+                        if info.last_accessed < cutoff and not self._pinned.get(k)
+                        and self._is_private_index(info)]:
                 self._remove_index(key)
                 count += 1
         return count

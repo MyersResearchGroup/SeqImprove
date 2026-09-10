@@ -426,7 +426,7 @@ them out: everything is kept for the short term, then released.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long a download or index survives unused |
+| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long a private download or index survives unused |
 | `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs |
 | `SEQIMPROVE_PRUNE_PUBLIC` | 0 | also age out *public* downloads |
 
@@ -448,8 +448,16 @@ leftover metadata made it raise `FileNotFoundError` in the middle of an
 annotation request. Now pruning a library takes its indexes with it, deleting a
 library through `/api/deleteUserLibrary` does the same, and both `has_index()`
 and `_compute_index_key()` tolerate a missing source by treating the index as
-invalid instead of throwing. Indexes with a live source are still TTL-pruned on
-their own — they are derived data and rebuild on demand.
+invalid instead of throwing.
+
+**Only private indexes age out on their own.** An index whose libraries are all
+public or shipped is shared by everyone, and expiring it bought little: the
+`SEQIMPROVE_MAX_INDEXES` cap already bounds the disk, so the TTL only made the
+next user wait for a rebuild — a lab using a public library once a week would
+hit one every time. Those indexes are now reclaimed by the cap alone, least
+recently used first. An index that includes any private download (anything
+under `remote/u/`) keeps the TTL: it is derived from one user's data and should
+not outlive their use of it.
 
 **Age is measured from last use, not from download.** Pruning keyed off the
 file's mtime, which is set once when the library is fetched and never updated, so
@@ -512,7 +520,7 @@ a server restart.
 | `SEQIMPROVE_MAX_CACHED_PER_USER` | 8 | one account's share of the private pool | — |
 | `SEQIMPROVE_MAX_CACHED_SUBSETS` | 12 | merged libraries in RAM | ~0 (see below) |
 | `SEQIMPROVE_MAX_REMOTE_LIBRARIES` | 32 | FlashText dict entries | ~0 (references) |
-| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long an unused download or index survives | — |
+| `SEQIMPROVE_CACHE_TTL_HOURS` | 72 | how long an unused **private** download or index survives (public and shipped ones are bounded by the caps instead) | — |
 | `SEQIMPROVE_JANITOR_INTERVAL_MINUTES` | 60 | how often the sweep runs | — |
 | `SEQIMPROVE_REMOTE_FRESHNESS_MINUTES` | 5 | how long a cached copy is reused before re-checking SynBioHub | one request |
 | `SEQIMPROVE_PRUNE_PUBLIC` | 0 | set to 1 to age out public downloads too | — |

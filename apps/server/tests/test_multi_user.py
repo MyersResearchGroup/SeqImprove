@@ -522,6 +522,42 @@ def test_cleanup_removes_index_with_its_library():
         ws.close()
 
 
+def test_cleanup_ages_out_only_private_indexes():
+    """A stale public or shipped index must survive the TTL; a private one must not."""
+    ws = Workspace()
+    stub_synbiohub({"body": "", "calls": 0})
+    try:
+        stale = time.time() - 1000 * 3600
+
+        def fake_index(path):
+            key = ws.index._compute_index_key("blastn", [path])
+            index_dir = ws.index._get_index_dir(key)
+            index_dir.mkdir(parents=True, exist_ok=True)
+            for ext in LC.IndexManager.INDEX_FILES["blast"]:
+                (index_dir / f"index{ext}").write_text("x")
+            ws.index._metadata.indexes[key] = LC.IndexInfo(
+                "blastn", [ws.cache.get_library_hash(path)], key,
+                str(index_dir / "index"), str(index_dir / "library.fasta"),
+                stale, stale, [path])
+            ws.index._access_order[key] = stale
+            return index_dir
+
+        public = fake_index(ws.cache.cache_remote_library_content(
+            PUBLIC_URL, H.library_text({"pub": H.PARTS["promoter_region"]}),
+            principal="u_alice"))
+        shipped = fake_index(ws.local_library("shipped", {"s": H.PARTS["promoter_region"]}))
+        private = fake_index(ws.cache.cache_remote_library_content(
+            ALICE_URL, H.library_text({"priv": H.PARTS["terminator_region"]}),
+            principal="u_alice"))
+
+        assert ws.index.prune_expired(ttl_seconds=72 * 3600) == 1
+        assert public.exists(), "a stale public index was aged out"
+        assert shipped.exists(), "a stale shipped-library index was aged out"
+        assert not private.exists(), "a stale private index survived the TTL"
+    finally:
+        ws.close()
+
+
 def test_cleanup_missing_library_does_not_raise():
     """A stale index must degrade to 'invalid', not blow up a request."""
     ws = Workspace()
