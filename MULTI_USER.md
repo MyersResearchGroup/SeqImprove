@@ -612,9 +612,13 @@ those the server still has cached **for this user** — asked through
 library removes it from the saved list too.
 
 - *Not cached* (the janitor evicted it, or the user has not logged in yet, so a
-  private library is not found under them): the entry stays saved and is checked
-  again after login. It is **not** re-imported in the background — a large
-  collection can take minutes, and nobody asked for it.
+  private library is not found under them): it is shown greyed out with a
+  **Re-import** button, so getting it back is one click instead of finding it in
+  the SynBioHub dialog again, and the check runs again after a login. It is
+  **not** re-imported in the background — a large collection can take minutes,
+  and nobody asked for it. The entry is not dropped on a failed check either,
+  because "not cached" can simply mean "not logged in", or a `t_` principal
+  from a failed `/profile` lookup.
 - *Shared browser*: another user sees a saved library only if the server has it
   cached for them. A private one never appears for anyone but its owner; a
   public one can, which is harmless. Only URLs and labels are stored.
