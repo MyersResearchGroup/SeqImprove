@@ -10,6 +10,7 @@ import os
 import asyncio
 import shutil
 import threading
+import time
 from collections import OrderedDict
 from pathlib import Path
 
@@ -620,6 +621,13 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
     Returns (inline_matches, rc_matches) for merging with the main aligner's results.
     """
     protein_fasta_src = library_cache.get_protein_fasta_path(library_paths)
+    with open(protein_fasta_src) as fasta:
+        library_proteins = sum(1 for line in fasta if line.startswith(">"))
+    # Prokka runs with --quiet, so without these two lines nothing in the log
+    # says it ran at all, let alone how long it took or what it found.
+    logger.info("Prokka: starting against %d library proteins", library_proteins)
+    started = time.monotonic()
+
     if _PROKKA_HAS_OUTPUT_DIR:
         with tempfile.TemporaryDirectory(prefix="prokka_") as workdir:
             database_path = os.path.join(workdir, "database_protein.fasta")
@@ -627,27 +635,36 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
             outdir = Path(workdir) / "out"
             ProkkaAligner(target_doc, output_dir=str(outdir),
                           database_path=database_path).align()
-            return _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length)
+            inline, rc, cds_predicted = _parse_prokka_output(
+                outdir, library_paths, prokka_mode, min_feature_length)
+    else:
+        with _prokka_lock:
+            shutil.copyfile(protein_fasta_src, os.path.abspath("./database_protein.fasta"))
+            ProkkaAligner(target_doc).align()
+            inline, rc, cds_predicted = _parse_prokka_output(
+                Path("PROKKA_SYNBICT"), library_paths, prokka_mode, min_feature_length)
 
-    with _prokka_lock:
-        shutil.copyfile(protein_fasta_src, os.path.abspath("./database_protein.fasta"))
-        ProkkaAligner(target_doc).align()
-        return _parse_prokka_output(Path("PROKKA_SYNBICT"), library_paths, prokka_mode, min_feature_length)
+    logger.info("Prokka: finished in %.1fs, %d CDS predicted, %d inline / %d rc matches",
+                time.monotonic() - started, cds_predicted, len(inline), len(rc))
+    return inline, rc
 
-def _gff_has_cds(gff_path):
+def _gff_cds_count(gff_path):
+    count = 0
     with open(gff_path) as gff:
         for line in gff:
             if line.startswith("##FASTA"):
                 break
             fields = line.split("\t")
             if len(fields) > 2 and fields[2] == "CDS":
-                return True
-    return False
+                count += 1
+    return count
 
 def _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length):
+    """Returns (inline_matches, rc_matches, number of CDS Prokka predicted)."""
     gff_path = outdir / "PROKKA_SYNBICT.gff"
     if not gff_path.exists():
         raise RuntimeError("Prokka produced no output (is prokka installed?)")
+    cds_predicted = _gff_cds_count(gff_path)
 
     blast_files = sorted(outdir.glob("PROKKA_SYNBICT.proteins.tmp.*.blast"))
     if not blast_files:
@@ -655,9 +672,8 @@ def _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length)
         # (a short part, a promoter or terminator) has nothing to search, which
         # means no protein matches -- not a failure. Raising here used to fail
         # the whole annotation and throw away the DNA aligner's hits with it.
-        if not _gff_has_cds(gff_path):
-            logger.info("Prokka predicted no CDS; no protein matches to add")
-            return [], []
+        if cds_predicted == 0:
+            return [], [], 0
         raise RuntimeError("Prokka predicted CDS but produced no BLAST output")
 
     gff_path = str(gff_path)
@@ -671,9 +687,10 @@ def _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length)
         extractor.cds_id_map.get(pid) for pid in final_df['protein_id']
     ]
 
-    return ProkkaTableFeatureMapper().extract_matches(
+    inline, rc = ProkkaTableFeatureMapper().extract_matches(
         final_df, min_feature_length=min_feature_length, mode=prokka_mode
     )
+    return inline, rc, cds_predicted
 
 def run_synbict(sbol_content: str, part_library_file_names: list[str],
                 min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH,

@@ -16,6 +16,7 @@ import shutil
 import tempfile
 import threading
 import time
+import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict
@@ -27,6 +28,14 @@ import sbol2
 import identity
 from sequences_to_features import FeatureLibrary
 from sequences_to_features.FeatureExtractor import FeatureExtractor
+from Bio import BiopythonWarning
+
+# FeatureExtractor translates every library CDS, and any whose length is not a
+# multiple of three makes Biopython warn "Partial codon" -- several times per
+# request, about the libraries rather than anything the user did. Filter just
+# that message, once, at import: warnings.catch_warnings() around the call sites
+# would swap the process-wide filter list per call, which is not thread-safe.
+warnings.filterwarnings("ignore", message="Partial codon", category=BiopythonWarning)
 
 
 # configuration
