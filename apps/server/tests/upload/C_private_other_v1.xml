@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/">
+  <sbol:Sequence rdf:about="https://seqimprove.org/SeqImprove_TestOther/TP_origin_sequence/1">
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/SeqImprove_TestOther/TP_origin_sequence"/>
+    <sbol:elements>ccggtttctgtggctcacaaaccagcgcgcccgatatggctttcttttcacttatgaatgtaccagtacgggacaattagaacgctcctgtaacaatctctttgcaaatgtggggttacattctaaccatgtcacactgctgacgaaattcaaagtaaaaaaaaatgggaccacgtcttgagaacgatagattttcttta</sbol:elements>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+    <dcterms:title>TP_origin Sequence</dcterms:title>
+    <sbol:displayId>TP_origin_sequence</sbol:displayId>
+    <sbol:version>1</sbol:version>
+  </sbol:Sequence>
+  <sbol:ComponentDefinition rdf:about="https://seqimprove.org/SeqImprove_TestOther/TP_terminator/1">
+    <dcterms:description>TP_terminator -- 60 bp slice of Test_Part</dcterms:description>
+    <sbol:sequence rdf:resource="https://seqimprove.org/SeqImprove_TestOther/TP_terminator_sequence/1"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000141"/>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/SeqImprove_TestOther/TP_terminator"/>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>TP_terminator</dcterms:title>
+    <sbol:displayId>TP_terminator</sbol:displayId>
+  </sbol:ComponentDefinition>
+  <sbol:ComponentDefinition rdf:about="https://seqimprove.org/SeqImprove_TestOther/TP_origin/1">
+    <sbol:version>1</sbol:version>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000296"/>
+    <sbol:sequence rdf:resource="https://seqimprove.org/SeqImprove_TestOther/TP_origin_sequence/1"/>
+    <dcterms:description>TP_origin -- 200 bp slice of Test_Part</dcterms:description>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+    <sbol:displayId>TP_origin</sbol:displayId>
+    <dcterms:title>TP_origin</dcterms:title>
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/SeqImprove_TestOther/TP_origin"/>
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="https://seqimprove.org/SeqImprove_TestOther/TP_terminator_sequence/1">
+    <sbol:displayId>TP_terminator_sequence</sbol:displayId>
+    <sbol:elements>taaggaataaggatacttcaagactagattcccccctgcattcccatcagaaccgtaaac</sbol:elements>
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/SeqImprove_TestOther/TP_terminator_sequence"/>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+    <sbol:version>1</sbol:version>
+    <dcterms:title>TP_terminator Sequence</dcterms:title>
+  </sbol:Sequence>
+</rdf:RDF>

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:sbol="http://sbols.org/v2#" xmlns:dcterms="http://purl.org/dc/terms/">
+  <sbol:ComponentDefinition rdf:about="https://seqimprove.org/SeqImprove_TestPrivate/TP_promoter/1">
+    <sbol:displayId>TP_promoter</sbol:displayId>
+    <sbol:version>1</sbol:version>
+    <sbol:sequence rdf:resource="https://seqimprove.org/SeqImprove_TestPrivate/TP_promoter_sequence/1"/>
+    <dcterms:title>TP_promoter</dcterms:title>
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/SeqImprove_TestPrivate/TP_promoter"/>
+    <sbol:role rdf:resource="http://identifiers.org/so/SO:0000167"/>
+    <dcterms:description>TP_promoter -- 60 bp slice of Test_Part</dcterms:description>
+    <sbol:type rdf:resource="http://www.biopax.org/release/biopax-level3.owl#DnaRegion"/>
+  </sbol:ComponentDefinition>
+  <sbol:Sequence rdf:about="https://seqimprove.org/SeqImprove_TestPrivate/TP_promoter_sequence/1">
+    <sbol:displayId>TP_promoter_sequence</sbol:displayId>
+    <sbol:elements>acttttcatactcccgccacaggtggcacttttcggggaaatgtgcgcggaacccctatt</sbol:elements>
+    <sbol:persistentIdentity rdf:resource="https://seqimprove.org/SeqImprove_TestPrivate/TP_promoter_sequence"/>
+    <dcterms:title>TP_promoter Sequence</dcterms:title>
+    <sbol:encoding rdf:resource="http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html"/>
+    <sbol:version>1</sbol:version>
+  </sbol:Sequence>
+</rdf:RDF>

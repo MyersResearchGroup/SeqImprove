@@ -10,6 +10,8 @@ import os
 import asyncio
 import shutil
 import threading
+import time
+from collections import OrderedDict
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -47,14 +49,18 @@ subprocess.run(["bash", "-lc", "which perl && perl -v | head -n 2"], check=False
 print("\nBioPerl hmmer3 module check:")
 subprocess.run(["bash", "-lc", "perl -MBio::SearchIO::hmmer3 -e 'print \"OK\\n\"'"], check=False)
 
-# Prokka uses hardcoded paths (./database_protein.fasta, ./PROKKA_SYNBICT/) so
-# concurrent invocations would clobber each other. Serialize them.
+# Only for a SYNBICT whose ProkkaAligner predates output_dir: that one always
+# uses ./database_protein.fasta and ./PROKKA_SYNBICT/, so concurrent runs would
+# clobber each other and must be serialized. See _run_prokka.
 _prokka_lock = threading.Lock()
+# True when the installed SYNBICT lets each Prokka run use its own directory.
+_PROKKA_HAS_OUTPUT_DIR = "output_dir" in inspect.signature(ProkkaAligner.__init__).parameters
 
 # import caching system
+import identity
 from library_cache import (
     init_cache, get_library_cache, get_index_manager,
-    LibraryCache, IndexManager
+    start_cache_janitor, LibraryCache, IndexManager
 )
 
 # cache instances — initialized in setup(), used throughout the app
@@ -64,6 +70,62 @@ index_manager: IndexManager = None
 # FlashText FeatureLibrary dict (keyed by path or SynBioHub URL)
 # For alignment algorithms, use library_cache.get_feature_library_for_subset() instead
 FEATURE_LIBRARIES = {}
+# FEATURE_LIBRARIES is mutated by /api/importUserLibrary and /api/deleteUserLibrary
+# while annotation requests read it, on a multi-threaded waitress server. Without
+# this a check-then-read ("is it cached?" -> FEATURE_LIBRARIES[url]) can KeyError
+# when another request deletes the entry in between.
+_feature_libraries_lock = threading.RLock()
+
+
+# Remote libraries held in memory for the FlashText path. Local libraries are
+# preloaded at startup and are a fixed set, but imported SynBioHub collections
+# accumulate one entry per (user, collection) with nothing to evict them -- a
+# slow leak that grows with every user. Bound just the remote ones.
+# Entries here are now references into LibraryCache, not private copies, and a
+# FeatureLibrary is a thin index over its Documents -- measured at +0.1 MB for
+# four libraries. The memory lives in the sbol2.Document (~15-20x the XML), which
+# LibraryCache owns and bounds via SEQIMPROVE_MAX_CACHED_LIBRARIES. So this cap
+# is really about keeping the dict itself tidy, not about RAM.
+# Override with SEQIMPROVE_MAX_REMOTE_LIBRARIES.
+MAX_REMOTE_FEATURE_LIBRARIES = int(os.environ.get("SEQIMPROVE_MAX_REMOTE_LIBRARIES", "32"))
+_remote_library_order: "OrderedDict[str, None]" = OrderedDict()
+
+
+def _remember_remote_library(key: str) -> None:
+    """Record a remote library as most-recently-used, evicting past the cap.
+
+    Caller must hold _feature_libraries_lock.
+    """
+    _remote_library_order.pop(key, None)
+    _remote_library_order[key] = None
+    while len(_remote_library_order) > MAX_REMOTE_FEATURE_LIBRARIES:
+        oldest, _ = _remote_library_order.popitem(last=False)
+        FEATURE_LIBRARIES.pop(oldest, None)
+        logger.info("Evicted least-recently-used remote library from memory")
+
+
+def _library_key(url: str, principal: str = None) -> str:
+    """Cache key for a remote library, partitioned the same way as disk.
+
+    Public collections keep a bare-URL key so all users share one entry. A
+    private one is namespaced by its owner: keying it by URL alone meant the
+    parts one user fetched with their token were returned to anyone else who
+    named the same URL.
+    """
+    canonical = identity.canonical_url(url)
+    partition, shared = identity.partition_for(canonical, principal)
+    return canonical if shared else f"{partition}\x00{canonical}"
+
+
+def _principal_from_request(request_data: dict) -> str:
+    """Resolve the caller from the SynBioHub session they already hold.
+
+    Returns None for an anonymous caller, who may only touch public libraries.
+    """
+    return identity.resolve_principal(
+        request_data.get('sessionToken') or None,
+        request_data.get('synBioHubUrlPrefix') or None,
+    )
 
 # Homespace SeqImprove mints its URIs under. Single source of truth -- it is the
 # pySBOL2 homespace, the SynBio2Easy cleaning namespace, and the URI prefix given
@@ -107,19 +169,31 @@ def setup():
     global library_cache, index_manager
     library_cache, index_manager = init_cache(
         cache_dir="./.cache/seqimprove",
-        max_indexes=10
     )
+    # One-time cleanup of caches written before downloads were partitioned by
+    # owner: private collections then landed in the shared area, where nothing
+    # reads them any more and the janitor does not look.
+    library_cache.migrate_shared_private_downloads()
+
+    # Age out private downloads and indexes on a timer. The count caps only fire
+    # when exceeded, so without this a quiet server keeps one user's private
+    # library and its index forever.
+    start_cache_janitor(library_cache, index_manager)
 
     # preload all feature libraries: XML → SBOL Documents → FeatureLibraries (permanent)
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     print(f"Preloading libraries from {feature_libraries_dir}...")
     library_cache.preload_libraries(feature_libraries_dir)
 
-    # populate FlashText FEATURE_LIBRARIES dict from the permanent cache
-    for name, abs_path in library_cache._library_name_map.items():
-        FEATURE_LIBRARIES[abs_path] = library_cache.get_feature_library(abs_path)
-
-    print(f"Loaded {len(FEATURE_LIBRARIES)} libraries into cache")
+    # The shipped libraries above are now fully parsed and marked protected in
+    # LibraryCache, so they are resident and exempt from the LRU -- that set has
+    # to be servable at any moment.
+    #
+    # FEATURE_LIBRARIES is a separate dict consulted ONLY by the FlashText path;
+    # the aligner paths go through library_cache.get_feature_library_for_subset().
+    # It is filled lazily by create_feature_library(), which for a local library
+    # is just a handoff of the already-parsed object. What stays lazy is the
+    # per-user imported libraries, which are unbounded in number.
     print(f"Available libraries: {library_cache.get_available_library_names()}")
 
 app = Flask(__name__) # app = Quart(__name__)
@@ -141,41 +215,67 @@ def create_app():
 # ===========================================================================================================================
 # ===========================================================================================================================
 
-def create_feature_library(part_library_file_name):
+def create_feature_library(part_library_file_name, principal: str = None,
+                           session_token: str = None):
     if ('synbiohub.org' in part_library_file_name):
-        # Normalize to canonical URI as the consistent dictionary key (strip api. if present)
-        canonical = re.sub(r'^(https?://)api\.', r'\1', part_library_file_name)
+        # The URL identifies the collection; the key identifies the cache slot.
+        # They differ for a private library, whose slot is namespaced by owner --
+        # keep them apart or the partition prefix ends up in the fetch URL.
+        canonical = identity.canonical_url(part_library_file_name)
+        key = _library_key(canonical, principal)
         logger.info(f"Creating feature library for: {canonical}")
 
         # Check if already in cache (user-imported or previous on-demand fetch)
-        if canonical in FEATURE_LIBRARIES:
+        with _feature_libraries_lock:
+            cached = FEATURE_LIBRARIES.get(key)
+            if cached is not None:
+                _remember_remote_library(key)   # refresh LRU position
+        if cached is not None:
             logger.info(f"Library '{canonical}' found in cache.")
-            return FEATURE_LIBRARIES[canonical]
+            return cached
 
-        # Library not in cache — fetch on demand using api.synbiohub.org to bypass Cloudflare
-        fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', canonical)
-        logger.info(f"Library '{canonical}' not in cache, fetching on-demand from {fetch_url}")
+        # Go through LibraryCache rather than parsing a second private copy.
+        # Measured: a FeatureLibrary is a thin index over its Documents and costs
+        # almost nothing (+0.1 MB for four libraries), while the Document itself
+        # is ~15-20x the XML. Parsing our own here meant the same remote library
+        # was held twice whenever both FlashText and an aligner used it -- ~20 MB
+        # of duplicate for a 1.3 MB collection. Sharing also brings remote
+        # libraries under the same LRU, TTL and update-detection as everything
+        # else, instead of pinning a private copy outside all of it.
+        path = library_cache.materialize_remote_library(
+            canonical, session_token=session_token, principal=principal)
+        if not path:
+            raise KeyError(f"Library '{canonical}' could not be fetched from SynBioHub "
+                           f"(it may be private, or you may not have access)")
         try:
-            response = requests.get(fetch_url, headers={"Accept": "text/plain"}, timeout=300)
-        except requests.exceptions.RequestException as e:
-            raise KeyError(f"Library '{canonical}' not in cache and on-demand fetch failed: {e}")
-        if response.status_code != 200:
-            raise KeyError(f"Library '{canonical}' not in cache and SynBioHub returned HTTP {response.status_code}")
-        try:
-            feature_doc = sbol2.Document()
-            feature_doc.readString(response.text)
-            FEATURE_LIBRARIES[canonical] = FeatureLibrary([feature_doc])  # store under canonical key
-            logger.info(f"On-demand cached library '{canonical}'")
-            return FEATURE_LIBRARIES[canonical]
+            library = library_cache.get_feature_library(path)
         except Exception as e:
-            raise KeyError(f"Failed to parse on-demand library '{canonical}': {e}")
+            raise KeyError(f"Failed to parse library '{canonical}': {e}")
+        with _feature_libraries_lock:
+            FEATURE_LIBRARIES[key] = library
+            _remember_remote_library(key)
+        logger.info(f"Loaded remote library '{canonical}' via shared cache")
+        return library
 
     feature_libraries_dir = "./assets/synbict/feature-libraries"
     feature_library_path = os.path.abspath(os.path.join(feature_libraries_dir, part_library_file_name))
-    if feature_library_path not in FEATURE_LIBRARIES:
-        raise KeyError(f"Library not found in cache: '{part_library_file_name}'. "
-                       f"Available libraries: {list(FEATURE_LIBRARIES.keys())}")
-    return FEATURE_LIBRARIES[feature_library_path]
+    with _feature_libraries_lock:
+        cached = FEATURE_LIBRARIES.get(feature_library_path)
+    if cached is not None:
+        return cached
+
+    if not os.path.exists(feature_library_path):
+        raise KeyError(f"Library not found: '{part_library_file_name}'. "
+                       f"Available libraries: {library_cache.get_available_library_names()}")
+    # Parsed on first FlashText use rather than at startup. LibraryCache keeps
+    # its own bounded copy, so this is a dict lookup after the first time.
+    library = library_cache.get_feature_library(feature_library_path)
+    with _feature_libraries_lock:
+        # Not LRU-tracked: the shipped libraries are a fixed set of about ten,
+        # LibraryCache holds them permanently anyway, and letting them compete
+        # with imports for the same slots would evict an import for no gain.
+        FEATURE_LIBRARIES[feature_library_path] = library
+    return library
 
 def sbh_pull_library(uri):
     feature_doc = sbol2.Document() #reinit
@@ -512,41 +612,89 @@ def _run_prokka(target_doc, library_paths, prokka_mode, min_feature_length):
     """
     Run Prokka against the target SBOL doc and extract matches.
 
-    Prokka uses hardcoded paths (./database_protein.fasta, ./PROKKA_SYNBICT/),
-    so calls are serialized via _prokka_lock.
+    Each call stages its protein database and writes Prokka's output in its own
+    temporary directory, so concurrent users run in parallel. A SYNBICT that
+    predates ProkkaAligner's output_dir parameter only knows the fixed paths
+    ./database_protein.fasta and ./PROKKA_SYNBICT/, so there calls fall back to
+    being serialized via _prokka_lock.
 
     Returns (inline_matches, rc_matches) for merging with the main aligner's results.
     """
-    with _prokka_lock:
-        # Stage the protein database at the path Prokka expects
-        protein_fasta_src = library_cache.get_protein_fasta_path(library_paths)
-        shutil.copyfile(protein_fasta_src, os.path.abspath("./database_protein.fasta"))
+    protein_fasta_src = library_cache.get_protein_fasta_path(library_paths)
+    with open(protein_fasta_src) as fasta:
+        library_proteins = sum(1 for line in fasta if line.startswith(">"))
+    # Prokka runs with --quiet, so without these two lines nothing in the log
+    # says it ran at all, let alone how long it took or what it found.
+    logger.info("Prokka: starting against %d library proteins", library_proteins)
+    started = time.monotonic()
 
-        # Run Prokka — outputs to ./PROKKA_SYNBICT/
-        ProkkaAligner(target_doc).align()
+    if _PROKKA_HAS_OUTPUT_DIR:
+        with tempfile.TemporaryDirectory(prefix="prokka_") as workdir:
+            database_path = os.path.join(workdir, "database_protein.fasta")
+            shutil.copyfile(protein_fasta_src, database_path)
+            outdir = Path(workdir) / "out"
+            ProkkaAligner(target_doc, output_dir=str(outdir),
+                          database_path=database_path).align()
+            inline, rc, cds_predicted = _parse_prokka_output(
+                outdir, library_paths, prokka_mode, min_feature_length)
+    else:
+        with _prokka_lock:
+            shutil.copyfile(protein_fasta_src, os.path.abspath("./database_protein.fasta"))
+            ProkkaAligner(target_doc).align()
+            inline, rc, cds_predicted = _parse_prokka_output(
+                Path("PROKKA_SYNBICT"), library_paths, prokka_mode, min_feature_length)
 
-        outdir = Path("PROKKA_SYNBICT")
-        blast_files = sorted(outdir.glob("PROKKA_SYNBICT.proteins.tmp.*.blast"))
-        if not blast_files:
-            raise RuntimeError("Prokka produced no BLAST output (is prokka installed?)")
+    logger.info("Prokka: finished in %.1fs, %d CDS predicted, %d inline / %d rc matches",
+                time.monotonic() - started, cds_predicted, len(inline), len(rc))
+    return inline, rc
 
-        gff_path = str(outdir / "PROKKA_SYNBICT.gff")
-        blast_path = str(blast_files[-1])
+def _gff_cds_count(gff_path):
+    count = 0
+    with open(gff_path) as gff:
+        for line in gff:
+            if line.startswith("##FASTA"):
+                break
+            fields = line.split("\t")
+            if len(fields) > 2 and fields[2] == "CDS":
+                count += 1
+    return count
 
-        final_df = ProkkaParser(gff_path, blast_path).parse_gff_and_blast()
+def _parse_prokka_output(outdir, library_paths, prokka_mode, min_feature_length):
+    """Returns (inline_matches, rc_matches, number of CDS Prokka predicted)."""
+    gff_path = outdir / "PROKKA_SYNBICT.gff"
+    if not gff_path.exists():
+        raise RuntimeError("Prokka produced no output (is prokka installed?)")
+    cds_predicted = _gff_cds_count(gff_path)
 
-        # Map BLASTP protein IDs (CDS_000001 etc.) back to library component identities
-        extractor = library_cache.get_feature_extractor_for_subset(library_paths)
-        final_df["ids_sequence"] = [
-            extractor.cds_id_map.get(pid) for pid in final_df['protein_id']
-        ]
+    blast_files = sorted(outdir.glob("PROKKA_SYNBICT.proteins.tmp.*.blast"))
+    if not blast_files:
+        # Prokka BLASTs only the proteins it predicts. A sequence with no CDS
+        # (a short part, a promoter or terminator) has nothing to search, which
+        # means no protein matches -- not a failure. Raising here used to fail
+        # the whole annotation and throw away the DNA aligner's hits with it.
+        if cds_predicted == 0:
+            return [], [], 0
+        raise RuntimeError("Prokka predicted CDS but produced no BLAST output")
 
-        return ProkkaTableFeatureMapper().extract_matches(
-            final_df, min_feature_length=min_feature_length, mode=prokka_mode
-        )
+    gff_path = str(gff_path)
+    blast_path = str(blast_files[-1])
+
+    final_df = ProkkaParser(gff_path, blast_path).parse_gff_and_blast()
+
+    # Map BLASTP protein IDs (CDS_000001 etc.) back to library component identities
+    extractor = library_cache.get_feature_extractor_for_subset(library_paths)
+    final_df["ids_sequence"] = [
+        extractor.cds_id_map.get(pid) for pid in final_df['protein_id']
+    ]
+
+    inline, rc = ProkkaTableFeatureMapper().extract_matches(
+        final_df, min_feature_length=min_feature_length, mode=prokka_mode
+    )
+    return inline, rc, cds_predicted
 
 def run_synbict(sbol_content: str, part_library_file_names: list[str],
-                min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH) -> tuple[Optional[int], Optional[str], Optional[str]]:
+                min_feature_length: int = DEFAULT_MIN_FEATURE_LENGTH,
+                principal: str = None, session_token: str = None) -> tuple[Optional[int], Optional[str], Optional[str]]:
     anno_lib_assoc = []
 
     for part_lib_f_name in part_library_file_names:            
@@ -569,7 +717,8 @@ def run_synbict(sbol_content: str, part_library_file_names: list[str],
 
                 target_library = FeatureLibrary([target_doc])
                 # feature_library = FEATURE_LIBRARIES[0]
-                feature_library = create_feature_library(part_lib_f_name)
+                feature_library = create_feature_library(part_lib_f_name, principal=principal,
+                                                        session_token=session_token)
                 print(f"The key of feature library is {part_lib_f_name}")
                 annotater = FeatureAnnotater(feature_library, min_feature_length)
                 annotated_identities = annotater.annotate(target_library, MIN_TARGET_LENGTH, in_place=True)
@@ -768,25 +917,6 @@ def boot_app():
     print("hi")
     return "Rise and shine"
 
-@app.get("/api/cache/stats")
-def cache_stats():
-    """get statistics about the library and index cache"""
-    if index_manager is None:
-        return {"error": "Cache not initialized"}, 500
-
-    stats = index_manager.get_cache_stats()
-    stats["libraries_loaded"] = len(library_cache._documents) if library_cache else 0
-    return stats
-
-@app.post("/api/cache/clear")
-def clear_cache():
-    """clear all cached indexes (libraries remain in memory)"""
-    if index_manager is None:
-        return {"error": "Cache not initialized"}, 500
-
-    index_manager.clear_cache()
-    return {"message": "Index cache cleared successfully"}
-
 @app.post("/api/convert/genbanktosbol2")
 def genbank_to_sbol2():    
     request_data = request.get_json()
@@ -825,7 +955,6 @@ def annotate_sequence():
     part_library_file_names = request_data['partLibraries']
     clean_document = request_data['cleanDocument']
     logger.info(f"Annotation request: libraries={part_library_file_names}, clean={clean_document}")
-    logger.info(f"Available FEATURE_LIBRARIES keys: {list(FEATURE_LIBRARIES.keys())}")
 
     # get algorithm and match parameters
     algorithm = request_data.get('algorithm', 'BLASTN')
@@ -842,6 +971,12 @@ def annotate_sequence():
         dna_identity_threshold = 95.0
     dna_identity_threshold = min(100.0, max(0.0, dna_identity_threshold))
     apply_nms = bool(request_data.get('applyNms', False))
+    # Optional: lets a private SynBioHub library be re-fetched when it isn't
+    # already on disk. Never logged, never persisted.
+    session_token = request_data.get('sessionToken') or None
+    # Who is asking. Anonymous callers get None and may only use public
+    # libraries; a private collection is filed under its owner's partition.
+    principal = _principal_from_request(request_data)
     try:
         min_feature_length = int(request_data.get('minFeatureLength', DEFAULT_MIN_FEATURE_LENGTH))
     except (TypeError, ValueError):
@@ -858,12 +993,15 @@ def annotate_sequence():
         if algorithm == 'FlashText':
             # use original flashtext-based method
             error_code, error_message, anno_lib_assoc = run_synbict(sbol_content, part_library_file_names,
-                                                                     min_feature_length=min_feature_length)
+                                                                     min_feature_length=min_feature_length,
+                                                                     principal=principal,
+                                                                     session_token=session_token)
         else:
             # resolve library names to absolute paths via LibraryCache
             feature_libraries_dir = "./assets/synbict/feature-libraries"
             library_paths, skipped = library_cache.resolve_library_paths(
-                part_library_file_names, library_dir=feature_libraries_dir
+                part_library_file_names, library_dir=feature_libraries_dir,
+                session_token=session_token, principal=principal
             )
 
             if not library_paths:
@@ -872,20 +1010,24 @@ def annotate_sequence():
             if skipped:
                 logger.warning(f"Could not resolve libraries (skipping): {skipped}")
 
-            # step 3 — get or create cached index (keyed by algorithm + library subset hash)
-            index_prefix, fasta_path = index_manager.get_or_create_index(algorithm, library_paths)
-
-            # steps 4-5 — align + annotate (with optional Prokka augmentation)
+            # steps 3-5 — build the index, then align + annotate against it.
             # DNA aligner uses similar-DNA flag; Prokka uses similar-protein flag.
             dna_exact_match = not allow_similar_dna_matches
             protein_exact_match = not allow_similar_matches
-            error_code, error_message, anno_lib_assoc = run_synbict_all(
-                sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
-                codon_matches=codon_matches, include_hypothetical=include_hypothetical,
-                protein_exact_match=protein_exact_match, is_circular=is_circular,
-                dna_identity_threshold=dna_identity_threshold, apply_nms=apply_nms,
-                min_feature_length=min_feature_length
-            )
+            # Pin first, then build. pin_index only needs the index *key*, which
+            # is derived from the algorithm and the library paths, so it can be
+            # taken before the index exists -- and taking it first leaves no
+            # window in which another request's create_index could rmtree this
+            # directory between us obtaining the paths and starting to read them.
+            with index_manager.pin_index(algorithm, library_paths):
+                index_prefix, fasta_path = index_manager.get_or_create_index(algorithm, library_paths)
+                error_code, error_message, anno_lib_assoc = run_synbict_all(
+                    sbol_content, library_paths, dna_exact_match, algorithm, index_prefix,
+                    codon_matches=codon_matches, include_hypothetical=include_hypothetical,
+                    protein_exact_match=protein_exact_match, is_circular=is_circular,
+                    dna_identity_threshold=dna_identity_threshold, apply_nms=apply_nms,
+                    min_feature_length=min_feature_length
+                )
 
         if error_code:
             return {"sbol": sbol_content, "error_message": error_message}, error_code
@@ -914,58 +1056,100 @@ def import_library():
     request_data = request.get_json()
     SBHSessionToken = request_data['sessionToken']
     collectionURL = request_data['url']
-    
-    headers = {
-        "Accept": "text/plain",
-        "X-authorization": SBHSessionToken
-    }
+    principal = _principal_from_request(request_data)
 
-    # Use api.synbiohub.org for the HTTP fetch to bypass Cloudflare,
-    # which blocks server-to-server requests to synbiohub.org with 403.
-    fetch_url = re.sub(r'^(https?://)(?!api\.)(synbiohub\.org)', r'\1api.\2', collectionURL)
-    logger.info(f"Importing library from: {fetch_url}")
+    # Shares the fetch path with the annotation side: routes via api.synbiohub.org
+    # (synbiohub.org blocks server-to-server requests with 403) and falls back to
+    # the recursive /sbol endpoint when the bare URI returns a collection with no
+    # parts in it, which is what SynBioHub does for a collection URI.
+    logger.info(f"Importing library from: {collectionURL}")
+    text, http_status = library_cache._fetch_library_sbol(collectionURL, SBHSessionToken)
+    if text is None:
+        logger.error(f"Failed to import '{collectionURL}': HTTP {http_status}")
+        if http_status is None:
+            return {"error": "Could not connect to SynBioHub"}, status.HTTP_502_BAD_GATEWAY
+        return {"error": f"SynBioHub returned HTTP {http_status}"}, http_status
+
+    if not library_cache._has_parts(text):
+        # Say what did come back: a collection of attachments or of designs is
+        # a different fix for the user than one whose members they can't read.
+        found = library_cache.describe_sbol_contents(text)
+        logger.error(f"Import of '{collectionURL}' contained no parts (found: {found})")
+        return {"error": f"That collection has no parts (ComponentDefinitions) in it; "
+                         f"SynBioHub returned {found}. Only parts can be used to "
+                         "annotate. If its members are other people's private "
+                         "objects, you may not have access to them."}, status.HTTP_400_BAD_REQUEST
+
     try:
-        response = requests.get(fetch_url, headers=headers, timeout=300)
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Failed to connect to SynBioHub for '{fetch_url}': {e}")
-        return {"error": f"Could not connect to SynBioHub: {e}"}, status.HTTP_502_BAD_GATEWAY
-
-    # Check if the request was successful
-    if response.status_code == 200:
-        try:
-            feature_doc = sbol2.Document()
-            feature_doc.readString(response.text)
-            FEATURE_LIBRARIES[collectionURL] = FeatureLibrary([feature_doc])
-            # Stage the same SBOL on disk so BLASTN/BWA/Minimap2 can index it
-            # without a second (anonymous, possibly failing) fetch.
-            library_cache.cache_remote_library_content(collectionURL, response.text)
-            logger.info(f"Imported library URI '{collectionURL}'. All libraries: {list(FEATURE_LIBRARIES.keys())}")
-            return {"success": True, "cachedUrl": collectionURL, "librariesInCache": list(FEATURE_LIBRARIES.keys())}
-        except Exception as e:
-            logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
-            return {"error": f"Failed to parse library SBOL: {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR
-    else:
-        logger.error(f"Failed to import library '{collectionURL}': HTTP {response.status_code}")
-        return {"error": f"SynBioHub returned HTTP {response.status_code}"}, response.status_code
+        # Parse once to confirm it is valid SBOL, then let it go. Building a
+        # FeatureLibrary here would hold the whole Document in RAM for a path only
+        # FlashText uses -- create_feature_library() builds it on first use.
+        feature_doc = sbol2.Document()
+        feature_doc.readString(text)
+        del feature_doc
+        # Stage the SBOL on disk so BLASTN/BWA/Minimap2 can index it without a
+        # second (anonymous, possibly failing) fetch. Filed under this caller's
+        # partition when the collection is private.
+        library_cache.cache_remote_library_content(collectionURL, text,
+                                                   principal=principal)
+        logger.info(f"Imported library URI '{collectionURL}'")
+        # Deliberately does NOT return the full cache listing. That enumerated
+        # every library every user had imported, including the URLs of other
+        # people's private SynBioHub collections, to whoever happened to import
+        # something. Nothing in the frontend used it.
+        return {"success": True, "cachedUrl": collectionURL}
+    except Exception as e:
+        logger.error(f"Failed to parse SBOL from '{collectionURL}': {e}", exc_info=True)
+        return {"error": f"Failed to parse library SBOL: {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 @app.post("/api/checkLibraryCache")
 def check_library_cache():
     request_data = request.get_json()
     url = request_data['url']
-    canonical = re.sub(r'^(https?://)api\.', r'\1', url)
-    cached = canonical in FEATURE_LIBRARIES
-    return {"cached": cached, "url": canonical}
+    principal = _principal_from_request(request_data)
+    canonical = identity.canonical_url(url)
+    # Scoped to the caller's own partition. Answering for the global dict turned
+    # this into an existence oracle: anyone could probe any URL and learn which
+    # private collections other people had imported.
+    # Ask the disk cache, not the FlashText dict: the dict is now populated
+    # lazily, so an imported library is legitimately absent from it until a
+    # FlashText run needs it.
+    _c, cached_path, _shared = library_cache._remote_cache_path(canonical, principal)
+    return {"cached": cached_path.exists(), "url": canonical}
 
 @app.post("/api/deleteUserLibrary")
 def remove_library():
     request_data = request.get_json()
     collectionURL = request_data['url']
+    principal = _principal_from_request(request_data)
 
-    if collectionURL in FEATURE_LIBRARIES:
-        del FEATURE_LIBRARIES[collectionURL]
-        logger.info(f"Deleted library '{collectionURL}'. Remaining: {list(FEATURE_LIBRARIES.keys())}")
+    # A public collection is one cached copy and one index shared by every
+    # user. Removing it is only about this user's list, which the frontend
+    # keeps; evicting it here would make everyone else re-download and
+    # re-index it. The caps and the janitor reclaim it once it goes unused.
+    if identity.is_public(identity.canonical_url(collectionURL)):
+        return {"response": "Removed from your list. Public libraries stay cached on the server for other users."}
+
+    # Only ever removes the caller's own entry. Previously any user could delete
+    # any library by naming its URL, evicting other people's imports.
+    key = _library_key(collectionURL, principal)
+    with _feature_libraries_lock:
+        present = key in FEATURE_LIBRARIES
+        if present:
+            del FEATURE_LIBRARIES[key]
+            _remote_library_order.pop(key, None)
+    # Drop the on-disk copy too. The FlashText dict is populated lazily now, so
+    # it is often empty for a library that is very much still cached on disk --
+    # deleting only the dict entry would leave the library usable.
+    if library_cache.forget_remote_library(collectionURL, principal=principal,
+                                           index_manager=index_manager):
+        present = True
+    if present:
+        logger.info(f"Deleted library '{collectionURL}'.")
     else:
-        logger.warning(f"Attempted to delete library not in cache: '{collectionURL}'. Available: {list(FEATURE_LIBRARIES.keys())}")
+        # Don't list FEATURE_LIBRARIES here: its keys include every user's
+        # private collection URLs, which have no business in the log.
+        logger.warning(f"Attempted to delete library not in cache: '{collectionURL}'")
         return {"response": "Library does not exist"}
 
     return {"response": "Library successfully deleted"}
@@ -1141,4 +1325,5 @@ def update_document_properties():
 # if __name__ == '__main__':
 #     app.run(debug=True,host='0.0.0.0',port=5000)
 if __name__ == "__main__":    
-    serve(app, host="0.0.0.0", port=8080)
+    serve(app, host="0.0.0.0", port=8080,
+          threads=int(os.environ.get("SEQIMPROVE_THREADS", "8")))

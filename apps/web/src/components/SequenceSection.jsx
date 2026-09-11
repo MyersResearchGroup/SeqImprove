@@ -14,7 +14,8 @@ import "../../src/sequence-edit.css"
 import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { SynBioHubClientLogin } from "./CurationForm";
-import { importLibrary, checkLibraryCache } from "../modules/api";
+import { importLibrary, checkLibraryCache, synBioHubCredentials } from "../modules/api";
+import { loadSavedLibraries, saveLibrary, forgetLibrary } from "../modules/savedLibraries";
 
 const WORDSIZE = 8;
 
@@ -30,6 +31,14 @@ const DEFAULT_DNA_IDENTITY = 95;
 // by default; raise it to cut short-part noise.
 const DEFAULT_MIN_FEATURE_LENGTH = 9;
 const MIN_FEATURE_LENGTH_FLOOR = 9;
+
+// One message for a failed import, naming the server's reason when it gave one.
+function importFailureMessage(label, response) {
+    const reason = response?.error?.trim();
+    return reason
+        ? "Could not import " + label + ": " + reason + (/[.!?]$/.test(reason) ? "" : ".")
+        : "Could not import " + label + " from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.";
+}
 
 function isValidUrl(string) {
     try {
@@ -246,8 +255,43 @@ function Annotations({ colors }) {
     const [ synBioHubs, setSynBioHubs ] = useState([]);
     const [ cachedLibraryUrls, setCachedLibraryUrls ] = useState([]);
     const addCachedUrl = (url) => setCachedLibraryUrls(prev => [...prev, url]);
+    // Saved libraries the server no longer has cached for this user, offered for re-import.
+    const [ staleLibraries, setStaleLibraries ] = useState([]);
+    const [ reimporting, setReimporting ] = useState(null);
 
     useStore(s => s.libraryImported);
+
+    // Bring back the SynBioHub libraries this user imported before, so a page
+    // reload doesn't mean importing them again. Those the server still has
+    // cached for this user are listed; the rest are shown greyed out with a
+    // re-import button. "Not cached" can also mean "not logged in" (a private
+    // library is only found under its owner), so the check runs again after a
+    // login rather than the entry being dropped.
+    useEffect(() => {
+        const listed = useStore.getState().importedLibraries.map(lib => lib.value);
+        const saved = loadSavedLibraries().filter(lib => !listed.includes(lib.value));
+        if (saved.length === 0) {
+            setStaleLibraries([]);
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            const cached = await Promise.all(saved.map(lib => checkLibraryCache(lib.value)));
+            if (cancelled) return;
+            setStaleLibraries(saved.filter((_, i) => !cached[i]));
+            const restored = saved.filter((_, i) => cached[i]);
+            if (restored.length === 0) return;
+            for (const lib of restored) {
+                addCachedUrl(lib.value);
+                useStore.getState().addImportedLibrary({ ...lib, enabled: false });
+            }
+            mutateDocument(useStore.setState, state => {state.libraryImported = true});
+            showNotificationSuccess("Libraries Restored",
+                restored.map(lib => lib.label).join(", ") + " from your last session " +
+                (restored.length === 1 ? "is" : "are") + " ready. Enable the checkbox next to a library to use it.");
+        })();
+        return () => { cancelled = true };
+    }, [isLoggedInToSynBioHub]);
 
     const loadSynBioHubs = async () => {
         const response = await fetch("https://wor.synbiohub.org/instances");
@@ -324,6 +368,40 @@ function Annotations({ colors }) {
     }
 
     const handleClose = (library) => {removeLibrary(library)};
+
+    // Logged out, a re-import can't work: the SynBioHub this talks to answers 401
+    // to every anonymous request, /public/ included. And a private library that
+    // looks stale while logged out is usually still cached, under the identity
+    // the login resolves to. So logging in is what brings it back: the restore
+    // check re-runs on login and lists whatever is still there.
+    const reimportLibrary = async (library) => {
+        if (!isLoggedInToSynBioHub) {
+            loadSynBioHubs();
+            setIsInteractingWithSynBioHub(true);
+            return;
+        }
+        setReimporting(library.value);
+        const response = await importLibrary(synBioHubCredentials().sessionToken, library.value, { quiet: true });
+        setReimporting(null);
+        if (!response?.success) {
+            showErrorNotification("Import Failed", importFailureMessage(library.label, response));
+            return;
+        }
+        setStaleLibraries(prev => prev.filter(lib => lib.value !== library.value));
+        addCachedUrl(library.value);
+        useStore.getState().addImportedLibrary({ ...library, enabled: false });
+        saveLibrary(library);
+        mutateDocument(useStore.setState, state => {state.libraryImported = true});
+        showNotificationSuccess("Library Ready!", library.label + " is cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
+    };
+
+    const forgetStaleLibrary = (library) => {
+        forgetLibrary(library.value);
+        setStaleLibraries(prev => prev.filter(lib => lib.value !== library.value));
+    };
+
+    // A stale entry the user has since imported through the SynBioHub dialog is no longer stale.
+    const staleShown = staleLibraries.filter(lib => !importedLibraries.some(imported => imported.value === lib.value));
 
     // Removes only what an analysis run produced. Annotations that came with the
     // uploaded file (GenBank features, which reference no Component) are left
@@ -641,7 +719,7 @@ function Annotations({ colors }) {
                             />
                         </Grid.Col>
                         <Grid.Col span={2}>
-                            <Tooltip label="Delete from server memory">
+                            <Tooltip label="Remove library (a private one is also deleted from the server)">
                                 <CloseButton
                                     onClick={() => handleClose(library)}
                                 />
@@ -651,6 +729,37 @@ function Annotations({ colors }) {
                 ))}
                 </Stack>
             }
+
+            {staleShown.length > 0 && <Stack mt="sm" gap="xs">
+                {/* Logged out, "not cached" usually means "not found under an anonymous
+                    caller" -- a private library is filed under its owner -- so don't
+                    claim it is gone; say what brings it back. */}
+                <Text size="xs" color="dimmed">
+                    {isLoggedInToSynBioHub
+                        ? "No longer cached on the server. Re-import to use again:"
+                        : "Log in to SynBioHub to restore these libraries:"}
+                </Text>
+                {staleShown.map(library => (
+                    <Grid key={library.value} align="center">
+                        <Grid.Col span={6}>
+                            <Text size="sm" color="dimmed">{library.label}</Text>
+                        </Grid.Col>
+                        <Grid.Col span={4}>
+                            {reimporting === library.value
+                                ? <Loader size="xs" variant="dots" />
+                                : <Button size="xs" variant="subtle" disabled={reimporting !== null}
+                                          onClick={() => reimportLibrary(library)}>
+                                      {isLoggedInToSynBioHub ? "Re-import" : "Log in"}
+                                  </Button>}
+                        </Grid.Col>
+                        <Grid.Col span={2}>
+                            <Tooltip label="Forget this library">
+                                <CloseButton onClick={() => forgetStaleLibrary(library)} />
+                            </Tooltip>
+                        </Grid.Col>
+                    </Grid>
+                ))}
+            </Stack>}
 
             <NavLink
                 label="Import Library"
@@ -808,11 +917,12 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 addCachedUrl(rootCollectionURI);
                                 mutateDocument(useStore.setState, state => {state.libraryImported = true});
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false});
+                                saveLibrary({ value: rootCollectionURI, label: selectedCollectionID });
                                 showNotificationSuccess("Library Ready!", selectedCollectionID + " is already cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
                                 return;
                             }
 
-                            const response = await importLibrary(synBioHubSessionToken, rootCollectionURI)
+                            const response = await importLibrary(synBioHubSessionToken, rootCollectionURI, { quiet: true })
 
                             setIsInteractingWithSynBioHub(false);
                             setIsImportingLibrary(false);
@@ -822,8 +932,9 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 showNotificationSuccess("Library Ready!", selectedCollectionID + " is cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
                                 mutateDocument(useStore.setState, state => {state.libraryImported = true});
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
+                                saveLibrary({ value: rootCollectionURI, label: selectedCollectionID });
                             } else {
-                                showErrorNotification("Import Failed", "Could not import library from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.");
+                                showErrorNotification("Import Failed", importFailureMessage(selectedCollectionID, response));
                             }
                         }}>
                           Submit
