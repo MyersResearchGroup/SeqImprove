@@ -1082,10 +1082,14 @@ def import_library():
         return {"error": f"SynBioHub returned HTTP {http_status}"}, http_status
 
     if not library_cache._has_parts(text):
-        logger.error(f"Import of '{collectionURL}' contained no parts")
-        return {"error": "That collection came back with no parts in it. If it is "
-                         "a collection of other people's private objects, you may "
-                         "not have access to its members."}, status.HTTP_400_BAD_REQUEST
+        # Say what did come back: a collection of attachments or of designs is
+        # a different fix for the user than one whose members they can't read.
+        found = library_cache.describe_sbol_contents(text)
+        logger.error(f"Import of '{collectionURL}' contained no parts (found: {found})")
+        return {"error": f"That collection has no parts (ComponentDefinitions) in it; "
+                         f"SynBioHub returned {found}. Only parts can be used to "
+                         "annotate. If its members are other people's private "
+                         "objects, you may not have access to them."}, status.HTTP_400_BAD_REQUEST
 
     try:
         # Parse once to confirm it is valid SBOL, then let it go. Building a

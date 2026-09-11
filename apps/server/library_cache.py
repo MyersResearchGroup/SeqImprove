@@ -17,7 +17,7 @@ import tempfile
 import threading
 import time
 import warnings
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
@@ -150,6 +150,19 @@ class CacheMetadata:
             metadata.indexes[k] = IndexInfo(**v)
 
         return metadata
+
+
+# A ComponentDefinition under any prefix -- sbol:, sbol2:, a default namespace --
+# or spelled as an rdf:type on an rdf:Description. Matching the literal
+# "<sbol:ComponentDefinition" called a library with a different prefix empty.
+_COMPONENT_DEFINITION = re.compile(
+    r'<(?:[\w.-]+:)?ComponentDefinition[\s/>]|sbols\.org/v2#ComponentDefinition"')
+_SBOL_ELEMENT = re.compile(r'<(?:[\w.-]+:)?(\w+)\s+rdf:about=')
+_SBOL_TOP_LEVELS = {
+    "Collection", "ComponentDefinition", "ModuleDefinition", "Sequence", "Model",
+    "Attachment", "Implementation", "CombinatorialDerivation", "Activity", "Agent",
+    "Plan", "Experiment", "ExperimentalData",
+}
 
 
 class LibraryCache:
@@ -841,7 +854,20 @@ class LibraryCache:
         object -- no members, no parts -- which yields an empty FASTA and an
         unreadable makeblastdb failure downstream.
         """
-        return "<sbol:ComponentDefinition" in sbol_text
+        return bool(_COMPONENT_DEFINITION.search(sbol_text))
+
+    @staticmethod
+    def describe_sbol_contents(sbol_text: str) -> str:
+        """What a fetched document holds, e.g. "1 Collection, 3 Attachment".
+
+        For telling a user why a collection can't be used as a library: "no
+        parts" alone doesn't say whether it held files, designs, or nothing.
+        """
+        counts = Counter(m.group(1) for m in _SBOL_ELEMENT.finditer(sbol_text)
+                         if m.group(1) in _SBOL_TOP_LEVELS)
+        if not counts:
+            return "no SBOL objects"
+        return ", ".join(f"{n} {kind}" for kind, n in counts.most_common())
 
     def _fetch_library_sbol(self, canonical: str, session_token: str = None,
                             timeout: int = 300):

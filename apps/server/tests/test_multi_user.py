@@ -684,6 +684,26 @@ def test_fetch_reports_a_shell_that_stays_empty():
 
 # ------------------------------- 分区改造之前留下的共享缓存要迁移掉
 
+def test_fetch_recognises_parts_under_any_prefix():
+    """A ComponentDefinition counts as a part whatever prefix it is written with."""
+    for text in ['<sbol2:ComponentDefinition rdf:about="https://x/p/1">',
+                 '<ComponentDefinition rdf:about="https://x/p/1">',
+                 '<rdf:Description rdf:about="https://x/p/1"><rdf:type '
+                 'rdf:resource="http://sbols.org/v2#ComponentDefinition"/></rdf:Description>']:
+        assert LC.LibraryCache._has_parts(text), text
+    assert not LC.LibraryCache._has_parts(COLLECTION_SHELL)
+
+
+def test_fetch_no_parts_says_what_came_back():
+    """The 'no parts' error names what the collection did contain."""
+    attachments = "".join(
+        f'<sbol:Attachment rdf:about="https://x/a{i}/1"><sbol:source rdf:resource="f"/></sbol:Attachment>'
+        for i in range(2))
+    text = COLLECTION_SHELL.replace("</rdf:RDF>", attachments + "</rdf:RDF>")
+    assert LC.LibraryCache.describe_sbol_contents(text) == "2 Attachment, 1 Collection"
+    assert LC.LibraryCache.describe_sbol_contents("<rdf:RDF/>") == "no SBOL objects"
+
+
 def test_migration_removes_private_files_from_shared_area():
     """Private collections cached before partitioning must not linger.
 

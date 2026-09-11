@@ -34,8 +34,9 @@ const MIN_FEATURE_LENGTH_FLOOR = 9;
 
 // One message for a failed import, naming the server's reason when it gave one.
 function importFailureMessage(label, response) {
-    return response?.error
-        ? "Could not import " + label + ": " + response.error + "."
+    const reason = response?.error?.trim();
+    return reason
+        ? "Could not import " + label + ": " + reason + (/[.!?]$/.test(reason) ? "" : ".")
         : "Could not import " + label + " from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.";
 }
 
