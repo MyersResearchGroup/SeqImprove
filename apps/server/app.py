@@ -965,7 +965,6 @@ def annotate_sequence():
     part_library_file_names = request_data['partLibraries']
     clean_document = request_data['cleanDocument']
     logger.info(f"Annotation request: libraries={part_library_file_names}, clean={clean_document}")
-    logger.info(f"Available FEATURE_LIBRARIES keys: {list(FEATURE_LIBRARIES.keys())}")
 
     # get algorithm and match parameters
     algorithm = request_data.get('algorithm', 'BLASTN')
@@ -1158,7 +1157,9 @@ def remove_library():
     if present:
         logger.info(f"Deleted library '{collectionURL}'.")
     else:
-        logger.warning(f"Attempted to delete library not in cache: '{collectionURL}'. Available: {list(FEATURE_LIBRARIES.keys())}")
+        # Don't list FEATURE_LIBRARIES here: its keys include every user's
+        # private collection URLs, which have no business in the log.
+        logger.warning(f"Attempted to delete library not in cache: '{collectionURL}'")
         return {"response": "Library does not exist"}
 
     return {"response": "Library successfully deleted"}
