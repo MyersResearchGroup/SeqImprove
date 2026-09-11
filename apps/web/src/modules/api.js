@@ -103,12 +103,16 @@ export async function importLibrary(synBioHubSessionToken, requestURL, { quiet =
             timeout: 300000,
         });
 
-        var result = await response.json();
+        // A gateway error page is not JSON; don't let that masquerade as
+        // "couldn't reach the server" in the catch below.
+        var result = await response.json().catch(() => ({}));
 
         if (!response.ok || result.error) {
             console.error("Library import failed:", result.error || response.statusText);
             if (!quiet) showServerErrorNotification();
-            return;
+            // The server says why (SynBioHub's HTTP status, "no parts in it",
+            // an SBOL parse error); pass that on instead of dropping it.
+            return { success: false, error: result.error || `the SeqImprove server returned HTTP ${response.status}` };
         }
 
         return result;
@@ -116,6 +120,12 @@ export async function importLibrary(synBioHubSessionToken, requestURL, { quiet =
     catch (err) {
         console.error("Library import error:", err);
         if (!quiet) showServerErrorNotification();
+        return {
+            success: false,
+            error: err.name === "AbortError"
+                ? "the import timed out after 5 minutes (a very large collection can take longer)"
+                : "the SeqImprove server could not be reached",
+        };
     }
 }
 

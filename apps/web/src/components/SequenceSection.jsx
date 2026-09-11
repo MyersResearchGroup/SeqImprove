@@ -32,6 +32,13 @@ const DEFAULT_DNA_IDENTITY = 95;
 const DEFAULT_MIN_FEATURE_LENGTH = 9;
 const MIN_FEATURE_LENGTH_FLOOR = 9;
 
+// One message for a failed import, naming the server's reason when it gave one.
+function importFailureMessage(label, response) {
+    return response?.error
+        ? "Could not import " + label + ": " + response.error + "."
+        : "Could not import " + label + " from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.";
+}
+
 function isValidUrl(string) {
     try {
         new URL(string);
@@ -376,8 +383,7 @@ function Annotations({ colors }) {
         const response = await importLibrary(synBioHubCredentials().sessionToken, library.value, { quiet: true });
         setReimporting(null);
         if (!response?.success) {
-            showErrorNotification("Import Failed", "Could not re-import " + library.label +
-                " from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.");
+            showErrorNotification("Import Failed", importFailureMessage(library.label, response));
             return;
         }
         setStaleLibraries(prev => prev.filter(lib => lib.value !== library.value));
@@ -915,7 +921,7 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 return;
                             }
 
-                            const response = await importLibrary(synBioHubSessionToken, rootCollectionURI)
+                            const response = await importLibrary(synBioHubSessionToken, rootCollectionURI, { quiet: true })
 
                             setIsInteractingWithSynBioHub(false);
                             setIsImportingLibrary(false);
@@ -927,7 +933,7 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
                                 saveLibrary({ value: rootCollectionURI, label: selectedCollectionID });
                             } else {
-                                showErrorNotification("Import Failed", "Could not import library from SynBioHub. The server may be unreachable or your session may have expired. Try logging in again.");
+                                showErrorNotification("Import Failed", importFailureMessage(selectedCollectionID, response));
                             }
                         }}>
                           Submit
