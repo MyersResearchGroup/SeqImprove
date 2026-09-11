@@ -682,10 +682,11 @@ Nothing in the frontend called it, and the janitor reclaims indexes on its own,
 so the endpoint is gone rather than gated. `IndexManager.clear_cache()` stays as
 a maintenance helper; it is simply no longer reachable over HTTP.
 
-`/api/cache/stats` is also unauthenticated. It exposes the server's cache path,
-the index count and access timestamps — index keys are hashes and library names
-never appear, so no tenant data leaks, but it is still more than an anonymous
-caller needs.
+`/api/cache/stats` went the same way. It was also unauthenticated and exposed
+the server's cache path, the index count and access timestamps — no tenant data,
+since index keys are hashes, but more than an anonymous caller needs, and
+nothing in the frontend used it. `IndexManager.get_cache_stats()` stays for
+debugging from a shell.
 
 ### ~~D. Capacity limits~~ — sized, and now configurable
 

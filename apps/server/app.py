@@ -917,16 +917,6 @@ def boot_app():
     print("hi")
     return "Rise and shine"
 
-@app.get("/api/cache/stats")
-def cache_stats():
-    """get statistics about the library and index cache"""
-    if index_manager is None:
-        return {"error": "Cache not initialized"}, 500
-
-    stats = index_manager.get_cache_stats()
-    stats["libraries_loaded"] = len(library_cache._documents) if library_cache else 0
-    return stats
-
 @app.post("/api/convert/genbanktosbol2")
 def genbank_to_sbol2():    
     request_data = request.get_json()
