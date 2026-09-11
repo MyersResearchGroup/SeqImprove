@@ -724,7 +724,14 @@ function Annotations({ colors }) {
             }
 
             {staleShown.length > 0 && <Stack mt="sm" gap="xs">
-                <Text size="xs" color="dimmed">No longer cached on the server. Re-import to use again:</Text>
+                {/* Logged out, "not cached" usually means "not found under an anonymous
+                    caller" -- a private library is filed under its owner -- so don't
+                    claim it is gone; say what brings it back. */}
+                <Text size="xs" color="dimmed">
+                    {isLoggedInToSynBioHub
+                        ? "No longer cached on the server. Re-import to use again:"
+                        : "Log in to SynBioHub to restore these libraries:"}
+                </Text>
                 {staleShown.map(library => (
                     <Grid key={library.value} align="center">
                         <Grid.Col span={6}>
