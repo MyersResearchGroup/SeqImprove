@@ -1,7 +1,7 @@
 import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Header, List, ActionIcon, Tooltip, Textarea, Menu, Modal, TextInput, PasswordInput, Loader, Center, Select, SegmentedControl, Checkbox, TypographyStylesProvider } from '@mantine/core'
 import { useStore, mutateDocument, mutateDocumentForDisplayID } from '../modules/store'
 import { useCyclicalColors, useIsEmbedded } from "../hooks/misc"
-import { postToParent } from "../modules/embedded"
+import { isEmbedded, postToParent, requestFromParent } from "../modules/embedded"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
 import TypeSelection from "./TypeSelection"
@@ -17,8 +17,8 @@ import { TbDownload, TbUpload } from "react-icons/tb"
 import ReactMarkdown from 'react-markdown'
 import References from './References'
 import { FaHome, FaPencilAlt, FaTimes, FaCheck, FaChevronDown } from 'react-icons/fa'
-import { useState, useEffect } from "react"
-import { showErrorNotification, showNotificationSuccess } from "../modules/util"
+import { useState, useEffect, useRef } from "react"
+import { showErrorNotification, showNotificationSuccess, showWarningNotification } from "../modules/util"
 import { Graph, SBOL2GraphView } from "sbolgraph"
 import { createSBOLDocument } from '../modules/sbol'
 import FormSection from './FormSection'
@@ -470,20 +470,92 @@ export default function CurationForm({ }) {
         
     const embedded = useIsEmbedded();
 
-    const handleSaveToSuite = async () => {
+    // save-as prompt, shown when the file name is already taken in the workspace
+    const [ saveAsOpened, setSaveAsOpened ] = useState(false);
+    const [ saveAsName, setSaveAsName ] = useState("");
+    const [ saveAsTakenName, setSaveAsTakenName ] = useState("");
+    const [ saveAsError, setSaveAsError ] = useState(false);
+    const [ isSavingToSuite, setIsSavingToSuite ] = useState(false);
+    // state updates are async, so a ref is what actually blocks a double-click
+    const savingToSuite = useRef(false);
+
+    const openSaveAs = (takenName, suggestion) => {
+        setSaveAsTakenName(takenName);
+        setSaveAsName(suggestion);
+        setSaveAsError(false);
+        setSaveAsOpened(true);
+    };
+
+    // one save in flight at a time, covering the name check as well as the write.
+    // SynBioSuite owns the success and error toasts since it does the write.
+    const runSaveToSuite = async (work) => {
+        if (savingToSuite.current) return;
+        savingToSuite.current = true;
+        setIsSavingToSuite(true);
+        try {
+            await work();
+        } catch (err) {
+            if (err.name === "EmbedTimeout") {
+                showWarningNotification("Save not confirmed", "SynBioSuite did not confirm the save. Check the working directory.");
+            } else {
+                const message = err?.message ?? String(err);
+                // SynBioSuite toasts errors it receives; only toast here if there's no parent to tell
+                if (isEmbedded()) postToParent({ error: { message } });
+                else showErrorNotification("Failed to save", message);
+            }
+        } finally {
+            savingToSuite.current = false;
+            setIsSavingToSuite(false);
+        }
+    };
+
+    const saveToSuite = async (fileName) => {
+        const sbol = useStore.getState().exportDocument(false);
+        const result = await requestFromParent(
+            { sbol, displayID: displayId, fileName, source: "seqimprove" },
+            "saveResult",
+            15000,
+        );
+        if (result.ok) {
+            setSaveAsOpened(false);
+        } else if (result.reason === "exists") {
+            // taken since the check: re-prompt with the next free name
+            openSaveAs(result.fileName, result.suggestion);
+        }
+    };
+
+    const handleSaveToSuite = () => {
+        if (savingToSuite.current) return;
         if (sequence && !isValid(sequence)) {
             showErrorNotification("SeqImprove only accepts DNA sequences with no ambiguities. Please submit a sequence with only ACTG bases.");
             return;
         }
-        try {
-            const sbol = useStore.getState().exportDocument(false);
-            postToParent({ sbol, displayID: displayId, source: "seqimprove" });
-            showNotificationSuccess("Saved to SynBioSuite", "Your SBOL was sent to the host app.");
-        } catch (err) {
-            const message = err?.message ?? String(err);
-            postToParent({ error: { message } });
-            showErrorNotification("Failed to save", message);
+        return runSaveToSuite(async () => {
+            let suggestion;
+            try {
+                suggestion = await requestFromParent({ type: "checkFileName", displayID: displayId }, "fileNameSuggestion");
+            } catch (err) {
+                if (err.name !== "EmbedTimeout") throw err;
+                // older SynBioSuite that can't check names: save the old way
+                const sbol = useStore.getState().exportDocument(false);
+                postToParent({ sbol, displayID: displayId, source: "seqimprove" });
+                showWarningNotification("Save not confirmed", "SynBioSuite did not confirm the save. Check the working directory.");
+                return;
+            }
+
+            if (suggestion.error) return; // SynBioSuite already toasted it
+            if (suggestion.exists) openSaveAs(suggestion.requested, suggestion.fileName);
+            else await saveToSuite(suggestion.fileName);
+        });
+    };
+
+    const handleConfirmSaveAs = () => {
+        const fileName = saveAsName.trim().replace(/\.xml$/i, "");
+        if (!fileName || /[\\/:*?"<>|]/.test(fileName)) {
+            setSaveAsError("Enter a file name without / \\ : * ? \" < > |");
+            return;
         }
+        return runSaveToSuite(() => saveToSuite(fileName));
     };
 
     const logout = useStore(s => s.logout);
@@ -560,10 +632,34 @@ export default function CurationForm({ }) {
                              </Button> :
                              <p></p>
                             }
+                            <Modal
+                                title="Save to Working Directory"
+                                opened={saveAsOpened}
+                                onClose={() => setSaveAsOpened(false)}
+                            >
+                                <Text size="sm" mb="sm">
+                                    {saveAsTakenName}.xml already exists in the working directory. Choose another file name.
+                                </Text>
+                                <TextInput
+                                    label="File name"
+                                    value={saveAsName}
+                                    onChange={e => { setSaveAsName(e.currentTarget.value); setSaveAsError(false); }}
+                                    onKeyDown={e => e.key === "Enter" && handleConfirmSaveAs()}
+                                    error={saveAsError}
+                                    rightSection={<Text size="xs" color="dimmed">.xml</Text>}
+                                    rightSectionWidth={40}
+                                    data-autofocus
+                                />
+                                <Group position="right" mt="md">
+                                    <Button variant="default" onClick={() => setSaveAsOpened(false)}>Cancel</Button>
+                                    <Button onClick={handleConfirmSaveAs} loading={isSavingToSuite}>Save</Button>
+                                </Group>
+                            </Modal>
                             {embedded ? (
                                 <Group spacing={0}>
                                     <Button
                                         onClick={handleSaveToSuite}
+                                        loading={isSavingToSuite && !saveAsOpened}
                                         sx={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
                                     >
                                         Save to Working Directory
