@@ -10,6 +10,9 @@ import fileDownload from "js-file-download"
 import { FILE_TYPES } from "./fileTypes"
 import { CLEANED_URI_PREFIXES } from "./homespace"
 
+// SynBioSuite object type id for its Plasmids panel (sent as panelType in the embed handshake)
+export const PLASMID_PANEL_TYPE = "synbio.object-type.plasmid"
+
 
 // create store
 export const useStore = create((set, get) => ({
@@ -30,6 +33,8 @@ export const useStore = create((set, get) => ({
      * @type {string[]} */
     roles: [],
     types: [],
+    // object type SynBioSuite opened us for (e.g. synbio.object-type.plasmid), null when standalone
+    hostPanelType: null,
 
     /** 
      * Parsed SBOL document
@@ -67,7 +72,11 @@ export const useStore = create((set, get) => ({
             document.root.description = richDescriptionBuffer.originalText;
 
             // set roles to be the same as from document
-            if(document.root.roles.length < 1) document.root.roles = ["http://identifiers.org/so/SO:0000804"] //default to engineered region
+            // opened from SynBioSuite's plasmid panel: default to engineered plasmid + circular
+            const isPlasmid = get().hostPanelType === PLASMID_PANEL_TYPE
+            if(document.root.roles.length < 1) document.root.roles = [isPlasmid ? "http://identifiers.org/so/SO:0000637" : "http://identifiers.org/so/SO:0000804"] //default to engineered plasmid / engineered region
+            if (isPlasmid && !document.root.types.some(t => t.startsWith('http://identifiers.org/so/SO:')))
+                document.root.addType("http://identifiers.org/so/SO:0000988") // circular
             const roles = document.root.roles;
             const types = document.root.types;   
             

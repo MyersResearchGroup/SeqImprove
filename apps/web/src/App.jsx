@@ -35,6 +35,7 @@ export default function App() {
         const consume = (data) => {
             if (handled) return
             handled = true
+            useStore.setState({ hostPanelType: data?.panelType ?? null })
             if (data?.sbol) {
                 loadSBOL(data.sbol, FILE_TYPES.SBOL2).finally(() => {
                     postToParent("graphServiceLoadedSBOL")
