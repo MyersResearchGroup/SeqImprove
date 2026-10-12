@@ -74,7 +74,9 @@ export const useStore = create((set, get) => ({
             // set roles to be the same as from document
             // opened from SynBioSuite's plasmid panel: default to engineered plasmid + circular
             const isPlasmid = get().hostPanelType === PLASMID_PANEL_TYPE
-            if(document.root.roles.length < 1) document.root.roles = [isPlasmid ? "http://identifiers.org/so/SO:0000637" : "http://identifiers.org/so/SO:0000804"] //default to engineered plasmid / engineered region
+            // the GenBank converter tags the root with "sequence source" (SO:0002206) from the source feature, which isn't a real role
+            const hasOnlySourceRole = document.root.roles.length > 0 && document.root.roles.every(r => r === "http://identifiers.org/so/SO:0002206")
+            if (document.root.roles.length < 1 || (isPlasmid && hasOnlySourceRole)) document.root.roles = [isPlasmid ? "http://identifiers.org/so/SO:0000637" : "http://identifiers.org/so/SO:0000804"] //default to engineered plasmid / engineered region
             if (isPlasmid && !document.root.types.some(t => t.startsWith('http://identifiers.org/so/SO:')))
                 document.root.addType("http://identifiers.org/so/SO:0000988") // circular
             const roles = document.root.roles;
