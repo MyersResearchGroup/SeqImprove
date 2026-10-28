@@ -8,6 +8,7 @@
 let parentWindow = null
 let initialPayload = null
 const listeners = new Set()
+const panelTypeListeners = new Set()
 const pendingReplies = new Map()
 
 export function initEmbedListener() {
@@ -15,8 +16,13 @@ export function initEmbedListener() {
         if (source === window) return
         // once captured, the parent is fixed; anything from another window is ignored
         if (parentWindow) {
-            if (source === parentWindow && data?.requestId && pendingReplies.has(data.requestId))
+            if (source !== parentWindow) return
+            if (data?.requestId && pendingReplies.has(data.requestId))
                 pendingReplies.get(data.requestId)(data)
+            // SynBioSuite reuses one SeqImprove tab across its Plasmid and Device panels,
+            // so it re-sends the panel type when the user switches between them
+            else if (data?.type === "panelType")
+                panelTypeListeners.forEach(fn => fn(data.panelType ?? null))
             return
         }
         parentWindow = source
@@ -36,6 +42,11 @@ export function getInitialPayload() {
 export function onEmbedChange(fn) {
     listeners.add(fn)
     return () => listeners.delete(fn)
+}
+
+export function onHostPanelTypeChange(fn) {
+    panelTypeListeners.add(fn)
+    return () => panelTypeListeners.delete(fn)
 }
 
 export function postToParent(message) {
