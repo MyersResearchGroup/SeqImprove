@@ -4,19 +4,23 @@
 // window. window.parent !== window is not reliable — it's also true when a page
 // is opened in a new tab via window.open, where there's an opener but no real
 // embedder. the handshake message is the ground truth.
+//
+// any page can embed SeqImprove and load a design into it, and every message back goes to
+// that page's origin only, never "*".
 
 let parentWindow = null
+let parentOrigin = null
 let initialPayload = null
 const listeners = new Set()
 const panelTypeListeners = new Set()
 const pendingReplies = new Map()
 
 export function initEmbedListener() {
-    window.addEventListener("message", ({ data, source }) => {
+    window.addEventListener("message", ({ data, source, origin }) => {
         if (source === window) return
-        // once captured, the parent is fixed; anything from another window is ignored
+        // once captured, the parent is fixed; anything from another window or origin is ignored
         if (parentWindow) {
-            if (source !== parentWindow) return
+            if (source !== parentWindow || origin !== parentOrigin) return
             if (data?.requestId && pendingReplies.has(data.requestId))
                 pendingReplies.get(data.requestId)(data)
             // SynBioSuite reuses one SeqImprove tab across its Plasmid and Device panels,
@@ -25,7 +29,10 @@ export function initEmbedListener() {
                 panelTypeListeners.forEach(fn => fn(data.panelType ?? null))
             return
         }
+        // an opaque ("null") origin can't be replied to without "*", so it can't embed us
+        if (origin === "null") return
         parentWindow = source
+        parentOrigin = origin
         initialPayload = data
         listeners.forEach(fn => fn(data))
     })
@@ -50,7 +57,7 @@ export function onHostPanelTypeChange(fn) {
 }
 
 export function postToParent(message) {
-    parentWindow?.postMessage(message, "*")
+    parentWindow?.postMessage(message, parentOrigin)
 }
 
 // posts a message tagged with a fresh requestId and resolves with the parent's
@@ -76,6 +83,6 @@ export function requestFromParent(message, replyType, timeoutMs = 5000) {
             pendingReplies.delete(requestId)
             resolve(data)
         })
-        parentWindow.postMessage({ ...message, requestId }, "*")
+        parentWindow.postMessage({ ...message, requestId }, parentOrigin)
     })
 }
