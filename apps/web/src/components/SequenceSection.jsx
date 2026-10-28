@@ -816,6 +816,7 @@ function Annotations({ colors }) {
 
 function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs, setIsImportingLibrary, addCachedUrl}) {
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
+    const synBioHubSessionToken = useStore(s => s.synBioHubSessionToken);
 
     return (
         <Modal
@@ -825,7 +826,7 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
             size={"auto"}
         >
             {isLoggedInToSynBioHub ?
-             <SynBioHubClientSelect setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} setIsImportingLibrary={setIsImportingLibrary} addCachedUrl={addCachedUrl}/> :
+             <SynBioHubClientSelect key={synBioHubSessionToken} setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} setIsImportingLibrary={setIsImportingLibrary} addCachedUrl={addCachedUrl}/> :
              <SynBioHubClientLogin synBioHubs={synBioHubs} />
             }
         </Modal>
@@ -834,7 +835,7 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
 
 function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLibrary, addCachedUrl }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
-    const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
+    const synBioHubSessionToken = useStore(s => s.synBioHubSessionToken);
     const [inputError, setInputError] = useState(false);
     const [ isLoading, setIsLoading ] = useState(false);
     const libraryImported = useStore(s => s.libraryImported);

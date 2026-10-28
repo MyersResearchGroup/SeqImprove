@@ -25,6 +25,7 @@ import FormSection from './FormSection'
 
 function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs}) {     
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
+    const synBioHubSessionToken = useStore(s => s.synBioHubSessionToken);
 
     return (
         <Modal
@@ -35,6 +36,7 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
         >
             {isLoggedInToSynBioHub ?
              <SynBioHubClientUpload 
+                 key={synBioHubSessionToken}
                  setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} 
              /> :
              <SynBioHubClientLogin synBioHubs={synBioHubs} />
@@ -43,7 +45,25 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
     );
 }
 
-export function SynBioHubClientLogin({ synBioHubs }) {       
+// embedded in SynBioSuite, its SynBioHub login is the one to use: its Log in replaces this form
+export function SynBioHubClientLogin({ synBioHubs }) {
+    const loginSource = useStore(s => s.synBioHubLoginSource);
+    const loggingInWithSynBioSuite = useStore(s => s.loggingInWithSynBioSuite);
+    const loginWithSynBioSuite = useStore(s => s.loginWithSynBioSuite);
+
+    if (loginSource === 'pending')
+        return <Text>Checking your SynBioSuite login...</Text>;
+    if (loginSource === 'shared')
+        return (
+            <Group>
+                <Text>SeqImprove uses your SynBioSuite login for SynBioHub.</Text>
+                <Button loading={loggingInWithSynBioSuite} onClick={loginWithSynBioSuite}>Log in with SynBioSuite</Button>
+            </Group>
+        );
+    return <OwnSynBioHubLogin synBioHubs={synBioHubs} />;
+}
+
+function OwnSynBioHubLogin({ synBioHubs }) {       
     const [email, setEmail] = useState('');    
     const [password, setPassword] = useState('');
     const [inputError, setInputError] = useState(false);
@@ -127,7 +147,7 @@ export function SynBioHubClientLogin({ synBioHubs }) {
 
 function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
-    const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
+    const synBioHubSessionToken = useStore(s => s.synBioHubSessionToken);
     const [inputError, setInputError] = useState(false);
     const [ isLoading, setIsLoading ] = useState(false);
     // Placeholders rather than values: a pre-filled field reads as an answer,
@@ -559,6 +579,8 @@ export default function CurationForm({ }) {
     };
 
     const logout = useStore(s => s.logout);
+    const synBioHubLoginSource = useStore(s => s.synBioHubLoginSource);
+    const synBioHubUsername = useStore(s => s.synBioHubUsername);
     const [ synBioHubs, setSynBioHubs ] = useState([]);
 
     const loadSynBioHubs = async () => {
@@ -625,6 +647,10 @@ export default function CurationForm({ }) {
                                 <Tabs.Tab value="proteins">Proteins</Tabs.Tab>
                             </Tabs.List>
                             {isLoggedInToSynBioHub ?
+                             synBioHubLoginSource === 'shared' ?
+                             <Text size="sm" color="dimmed">
+                                 Signed in via SynBioSuite{synBioHubUsername && ` as ${synBioHubUsername}`}
+                             </Text> :
                              <Button variant="subtle"
                                      onClick={logout}
                              >

@@ -1,5 +1,6 @@
 import { showNotificationSuccess, showServerErrorNotification } from "./util";
 import { Graph, SBOL2GraphView } from "sbolgraph";
+import { useStore } from "./store";
 
 export async function bootAPIserver() {
   try {
@@ -77,13 +78,15 @@ export async function fetchSBOL(url) {
 // instance the same username on two different SynBioHub deployments would
 // collide into one cache partition.
 //
-// The one place the frontend reads the SynBioHub session. When SeqImprove runs
-// inside SynBioSuite and shares its token, only this (and the store's login())
-// needs to learn where the token comes from.
+// The one place the frontend reads the SynBioHub session. It comes from the
+// store, which holds SeqImprove's own login or, inside SynBioSuite, the one
+// SynBioSuite shares (never written to sessionStorage).
 export function synBioHubCredentials() {
+  // store.js imports this module too, so the store is only read inside functions
+  const { synBioHubSessionToken, synBioHubUrlPrefix } = useStore.getState();
   return {
-    sessionToken: sessionStorage.getItem("SynBioHubSessionToken") || null,
-    synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix") || null,
+    sessionToken: synBioHubSessionToken || null,
+    synBioHubUrlPrefix: synBioHubUrlPrefix || null,
   };
 }
 
