@@ -385,6 +385,7 @@ function Annotations({ colors }) {
         setReimporting(null);
         if (!response?.success) {
             showErrorNotification("Import Failed", importFailureMessage(library.label, response));
+            if (response?.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubCredentials().sessionToken);
             return;
         }
         setStaleLibraries(prev => prev.filter(lib => lib.value !== library.value));
