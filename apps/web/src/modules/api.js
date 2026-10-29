@@ -133,19 +133,28 @@ export async function importLibrary(synBioHubSessionToken, requestURL, { quiet =
 }
 
 // the root collections the import and upload dialogs list. throws when SynBioHub doesn't answer with
-// them; a 401 on a login SynBioSuite shared asks SynBioSuite for its login again first
+// them within 20 s; a 401 on a login SynBioSuite shared asks SynBioSuite for its login again first
 export async function fetchRootCollections(synBioHubUrlPrefix, synBioHubSessionToken) {
-  // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
-  const response = await fetch(synBioHubUrlPrefix + "/rootCollections", {
-    method: "GET",
-    headers: {
-      "Accept": "text/plain",
-      "X-authorization": synBioHubSessionToken,
-    },
-  });
-  if (response.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
-  if (!response.ok) throw new Error(`SynBioHub returned HTTP ${response.status}`);
-  return response.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+  try {
+    // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
+    const response = await fetch(synBioHubUrlPrefix + "/rootCollections", {
+      method: "GET",
+      headers: {
+        "Accept": "text/plain",
+        "X-authorization": synBioHubSessionToken,
+      },
+      signal: controller.signal,
+    });
+    if (response.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
+    if (!response.ok) throw new Error(`SynBioHub returned HTTP ${response.status}`);
+    const collections = await response.json();
+    if (!Array.isArray(collections)) throw new Error("SynBioHub's root collections aren't a list");
+    return collections;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // where a login's collection URIs live: the registryURL SynBioSuite shares, or else the API address

@@ -381,11 +381,13 @@ function Annotations({ colors }) {
             return;
         }
         setReimporting(library.value);
-        const response = await importLibrary(synBioHubCredentials().sessionToken, library.value, { quiet: true });
+        // the token this import is sent with is the one a 401 turns down, even if the login changes meanwhile
+        const sessionToken = synBioHubCredentials().sessionToken;
+        const response = await importLibrary(sessionToken, library.value, { quiet: true });
         setReimporting(null);
         if (!response?.success) {
             showErrorNotification("Import Failed", importFailureMessage(library.label, response));
-            if (response?.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubCredentials().sessionToken);
+            if (response?.status === 401) useStore.getState().synBioHubTokenRejected(sessionToken);
             return;
         }
         setStaleLibraries(prev => prev.filter(lib => lib.value !== library.value));
@@ -926,9 +928,9 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
 
                             const response = await importLibrary(synBioHubSessionToken, rootCollectionURI, { quiet: true })
 
-                            setIsInteractingWithSynBioHub(false);
                             setIsImportingLibrary(false);
                             if (response && response.success) {
+                                setIsInteractingWithSynBioHub(false);
                                 setInputError(false);
                                 addCachedUrl(response.cachedUrl);
                                 showNotificationSuccess("Library Ready!", selectedCollectionID + " is cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
@@ -936,6 +938,8 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
                                 saveLibrary({ value: rootCollectionURI, label: selectedCollectionID });
                             } else {
+                                // the dialog stays open, so a 401's "Log in with SynBioSuite" shows in it
+                                setIsLoading(false);
                                 showErrorNotification("Import Failed", importFailureMessage(selectedCollectionID, response));
                                 if (response?.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
                             }

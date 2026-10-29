@@ -99,24 +99,34 @@ export function postToParent(message) {
 // posts a message tagged with a fresh requestId and resolves with the parent's
 // reply of replyType that echoes that id, so a late reply to an earlier request
 // can't resolve a newer one. rejects with an EmbedTimeout error if the parent never answers, which is what
-// an older SynBioSuite build that doesn't know the message will do.
-export function requestFromParent(message, replyType, timeoutMs = 5000) {
+// an older SynBioSuite build that doesn't know the message will do. aborting signal drops the request
+// (rejects with an AbortError); a reply that comes later is handled like a push.
+export function requestFromParent(message, replyType, timeoutMs = 5000, signal) {
     return new Promise((resolve, reject) => {
         if (!parentWindow) {
             reject(new Error("Not embedded"))
             return
         }
         const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
-        const timer = setTimeout(() => {
+        const done = () => {
+            clearTimeout(timer)
             pendingReplies.delete(requestId)
+            signal?.removeEventListener("abort", drop)
+        }
+        const timer = setTimeout(() => {
+            done()
             const err = new Error("SynBioSuite did not respond")
             err.name = "EmbedTimeout"
             reject(err)
         }, timeoutMs)
+        const drop = () => {
+            done()
+            reject(new DOMException("Request dropped", "AbortError"))
+        }
+        signal?.addEventListener("abort", drop)
         pendingReplies.set(requestId, data => {
             if (data.type !== replyType) return
-            clearTimeout(timer)
-            pendingReplies.delete(requestId)
+            done()
             resolve(data)
         })
         parentWindow.postMessage({ ...message, requestId }, parentOrigin)

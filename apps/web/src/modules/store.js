@@ -11,9 +11,9 @@ import { FILE_TYPES } from "./fileTypes"
 import { CLEANED_URI_PREFIXES } from "./homespace"
 import { requestFromParent, sharesSynBioHubLogin } from "./embedded"
 
-// SeqImprove's Log in while SynBioSuite's login is in use; a session SynBioSuite applies in the
-// meantime ends the attempt, and the attempt's own late answer is dropped
-let synBioSuiteLoginAttempt = 0
+// SeqImprove's Log in waiting on SynBioSuite's login form. a session SynBioSuite applies in the meantime
+// drops that request; its answer, if it comes later, is handled like any push
+let synBioSuiteLogin = null
 
 // a session from SynBioSuite needs a token and an http(s) SynBioHub address, https only in a production
 // build; anything else counts as logged out. a registryURL that isn't one is left out
@@ -276,7 +276,9 @@ export const useStore = create((set, get) => ({
         if (!sharesSynBioHubLogin()) return;
         if (get().synBioHubLoginSource === 'own' && get().synBioHubLoginMadeHere) return;
         session = validSharedSession(session);
-        synBioSuiteLoginAttempt++;
+        // ends a Log in still waiting on SynBioSuite: its finally stops the spinner
+        synBioSuiteLogin?.abort();
+        synBioSuiteLogin = null;
         set({
             synBioHubLoginSource: 'shared',
             isLoggedInToSomeSynBioHub: !!session,
@@ -284,7 +286,6 @@ export const useStore = create((set, get) => ({
             synBioHubUrlPrefix: session ? session.urlPrefix : '',
             synBioHubUsername: session ? session.username || null : null,
             synBioHubRegistryURL: session ? session.registryURL : null,
-            loggingInWithSynBioSuite: false,
         });
     },
     // SynBioHub turned down (401) the token a request used. a shared one: ask SynBioSuite again, and if
@@ -303,15 +304,16 @@ export const useStore = create((set, get) => ({
     // SeqImprove's Log in while SynBioSuite's login is the one in use: opens SynBioSuite's login
     // form, and SynBioSuite answers with the session once that form closes
     loginWithSynBioSuite: async () => {
-        const attempt = ++synBioSuiteLoginAttempt;
+        const login = new AbortController();
+        synBioSuiteLogin = login;
         set({ loggingInWithSynBioSuite: true });
         try {
-            const reply = await requestFromParent({ type: "openSynBioHubLogin" }, "synBioHubSession", 10 * 60 * 1000);
-            if (attempt === synBioSuiteLoginAttempt) get().applySharedSynBioHubSession(reply.session);
+            const reply = await requestFromParent({ type: "openSynBioHubLogin" }, "synBioHubSession", 10 * 60 * 1000, login.signal);
+            get().applySharedSynBioHubSession(reply.session);
         } catch (err) {
-            console.error("SynBioSuite login failed:", err);
+            if (err.name !== "AbortError") console.error("SynBioSuite login failed:", err);
         } finally {
-            if (attempt === synBioSuiteLoginAttempt) set({ loggingInWithSynBioSuite: false });
+            set({ loggingInWithSynBioSuite: false });
         }
     },
 
