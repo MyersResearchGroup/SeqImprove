@@ -115,7 +115,7 @@ export async function importLibrary(synBioHubSessionToken, requestURL, { quiet =
             if (!quiet) showServerErrorNotification();
             // The server says why (SynBioHub's HTTP status, "no parts in it",
             // an SBOL parse error); pass that on instead of dropping it.
-            return { success: false, error: result.error || `the SeqImprove server returned HTTP ${response.status}` };
+            return { success: false, status: response.status, error: result.error || `the SeqImprove server returned HTTP ${response.status}` };
         }
 
         return result;
@@ -130,6 +130,30 @@ export async function importLibrary(synBioHubSessionToken, requestURL, { quiet =
                 : "the SeqImprove server could not be reached",
         };
     }
+}
+
+// the root collections the import and upload dialogs list. throws when SynBioHub doesn't answer with
+// them; a 401 on a login SynBioSuite shared asks SynBioSuite for its login again first
+export async function fetchRootCollections(synBioHubUrlPrefix, synBioHubSessionToken) {
+  // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
+  const response = await fetch(synBioHubUrlPrefix + "/rootCollections", {
+    method: "GET",
+    headers: {
+      "Accept": "text/plain",
+      "X-authorization": synBioHubSessionToken,
+    },
+  });
+  if (response.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
+  if (!response.ok) throw new Error(`SynBioHub returned HTTP ${response.status}`);
+  return response.json();
+}
+
+// where a login's collection URIs live: the registryURL SynBioSuite shares, or else the API address
+// without its api. subdomain (SynBioHub URIs use the canonical domain, e.g. synbiohub.org, even when
+// the API is accessed via api.synbiohub.org)
+export function synBioHubUriPrefix(synBioHubUrlPrefix, synBioHubRegistryURL) {
+  if (synBioHubRegistryURL) return synBioHubRegistryURL.replace(/\/+$/, "");
+  return synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, "$1");
 }
 
 export async function checkLibraryCache(url) {

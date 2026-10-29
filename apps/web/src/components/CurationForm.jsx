@@ -2,6 +2,7 @@ import { Container, Title, Tabs, Text, Space, LoadingOverlay, Button, Group, Hea
 import { useStore, mutateDocument, mutateDocumentForDisplayID } from '../modules/store'
 import { useCyclicalColors, useIsEmbedded } from "../hooks/misc"
 import { isEmbedded, postToParent, requestFromParent } from "../modules/embedded"
+import { fetchRootCollections, synBioHubUriPrefix } from "../modules/api"
 import SimilarParts from './SimilarParts'
 import RoleSelection from "./RoleSelection"
 import TypeSelection from "./TypeSelection"
@@ -148,6 +149,7 @@ function OwnSynBioHubLogin({ synBioHubs }) {
 function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
     const synBioHubSessionToken = useStore(s => s.synBioHubSessionToken);
+    const synBioHubRegistryURL = useStore(s => s.synBioHubRegistryURL);
     const [inputError, setInputError] = useState(false);
     const [ isLoading, setIsLoading ] = useState(false);
     // Placeholders rather than values: a pre-filled field reads as an answer,
@@ -162,27 +164,24 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
     const [ rootCollectionsIDs, setRootCollectionsIDs ] = useState([]);
     const [ rootCollections, setRootCollections ] = useState([]);
     const [ rootCollectionURI, setRootCollectionURI ] = useState('');
+    const [ rootCollectionsFailed, setRootCollectionsFailed ] = useState(false);
 
         
 
     useEffect(() => {
         if (rootCollectionsLoaded) return;
 
-        // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
         (async () => {
-            const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {
-                method: "GET",
-                headers: {
-                    "Accept": "text/plain",
-                    "X-authorization": synBioHubSessionToken,
-                },
-            });
+            let _rootCollections;
+            try {
+                _rootCollections = await fetchRootCollections(synBioHubUrlPrefix, synBioHubSessionToken);
+            } catch (err) {
+                console.error("Could not load root collections:", err);
+                setRootCollectionsFailed(true);
+                return;
+            }
 
-            const _rootCollections = await response2.json();
-
-            // SynBioHub URIs use the canonical domain (e.g. synbiohub.org) even when the API
-            // is accessed via api.synbiohub.org, so strip the api. subdomain before filtering.
-            const uriPrefix = synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, '$1');
+            const uriPrefix = synBioHubUriPrefix(synBioHubUrlPrefix, synBioHubRegistryURL);
             let regex = RegExp(uriPrefix + "/user/*");
             const userRootCollections = _rootCollections
                 .filter(collection => collection.uri.match(regex))
@@ -193,7 +192,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
             setRootCollectionsLoaded(true);
         })();
-    }, [rootCollectionsLoaded, synBioHubUrlPrefix, synBioHubSessionToken]);
+    }, [rootCollectionsLoaded, synBioHubUrlPrefix, synBioHubSessionToken, synBioHubRegistryURL]);
 
     const [ createNewOption, setCreateNewOption ] = useState('false');
     const [ inputErrorID, setInputErrorID ] = useState(false);
@@ -322,6 +321,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                                          showNotificationSuccess("Success!", "Uploaded to new collection.");
                                      } else if (response.status == 401) {                                             
                                          showErrorNotification("Failure.", "SynBioHub did not accept the request");
+                                         useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
                                      } else {                                             
                                          showErrorNotification("Failure.", "SynBioHub did not accept the request");
                                      }
@@ -331,7 +331,9 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                      </Button>
                  </Group>:
                  <Group>
-                     {!rootCollectionsLoaded ?
+                     {rootCollectionsFailed ?
+                      <Text color="red" size="sm">Could not load your collections from SynBioHub.</Text> :
+                      !rootCollectionsLoaded ?
                       <Center>
                           <Loader my={30} size="sm" variant="dots" />
                       </Center> :
@@ -379,6 +381,7 @@ function SynBioHubClientUpload({ setIsInteractingWithSynBioHub }) {
                                       showNotificationSuccess("Success!", "Uploaded to existing collection.");
                                   } else if (response.status == 401) {                                                                                                                            
                                       showErrorNotification("Failure.", "SynBioHub did not accept the request");
+                                      useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
                                   } else {                                          
                                       showErrorNotification("Failure.", "SynBioHub did not accept the request");
                                   }
