@@ -1,9 +1,8 @@
 // Embedded-mode detection for SeqImprove running inside SynBioSuite.
 //
-// the parent is captured from the first postMessage whose source is not our own
-// window. window.parent !== window is not reliable — it's also true when a page
-// is opened in a new tab via window.open, where there's an opener but no real
-// embedder. the handshake message is the ground truth.
+// the parent is captured from the first handshake window.parent sends.
+// window.parent !== window alone is not reliable — a frame can be embedded by a
+// page that never sends one. the handshake message is the ground truth.
 //
 // any page can embed SeqImprove and load a design into it, and every message back goes to
 // that page's origin only, never "*". only a SynBioSuite origin takes part in the SynBioHub
@@ -28,12 +27,19 @@ const panelTypeListeners = new Set()
 const sessionListeners = new Set()
 const pendingReplies = new Map()
 
+// SynBioSuite's handshake: { sbol?, panelType? }, never a typed message like a session push
+function isHandshake(data) {
+    return !!data && typeof data === "object" && !Array.isArray(data) && !("type" in data)
+        && ("sbol" in data || "panelType" in data)
+}
+
 export function initEmbedListener() {
     window.addEventListener("message", ({ data, source, origin }) => {
         if (source === window) return
-        // once captured, the parent is fixed; anything from another window or origin is ignored
+        // once captured, the parent is fixed; anything from another window is ignored. window.parent
+        // can't change origin without unloading this page, so its origin stays the captured one
         if (parentWindow) {
-            if (source !== parentWindow || origin !== parentOrigin) return
+            if (source !== parentWindow) return
             if (data?.requestId && pendingReplies.has(data.requestId))
                 pendingReplies.get(data.requestId)(data)
             // SynBioSuite reuses one SeqImprove tab across its Plasmid and Device panels,
@@ -46,8 +52,10 @@ export function initEmbedListener() {
                 sessionListeners.forEach(fn => fn(data.session ?? null))
             return
         }
-        // an opaque ("null") origin can't be replied to without "*", so it can't embed us
-        if (origin === "null") return
+        // only the frame that embeds us can, and only with a handshake: an opener, a sibling frame or
+        // a stray message can't take its place. an opaque ("null") origin can't be replied to without
+        // "*", so it can't embed us either
+        if (source !== window.parent || origin === "null" || !isHandshake(data)) return
         parentWindow = source
         parentOrigin = origin
         initialPayload = data

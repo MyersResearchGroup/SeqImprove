@@ -208,6 +208,9 @@ export const useStore = create((set, get) => ({
     // until SynBioSuite answers (neither login shows), then 'shared': SynBioSuite's login, or its
     // logout, is the one in use
     synBioHubLoginSource: 'own',
+    // the user logged in with SeqImprove's own form in this page (not a token an earlier page left
+    // in sessionStorage); a late answer from SynBioSuite doesn't replace that login
+    synBioHubLoginMadeHere: false,
     synBioHubUsername: null,
     loggingInWithSynBioSuite: false,
     logout: () => {
@@ -223,6 +226,9 @@ export const useStore = create((set, get) => ({
             isLoggedInToSomeSynBioHub: true,
             synBioHubSessionToken: token,
             synBioHubUrlPrefix: urlPrefix,
+            synBioHubLoginSource: 'own',
+            synBioHubLoginMadeHere: true,
+            synBioHubUsername: null,
         });        
     },       
     // embedded in SynBioSuite: ask it for its session. if it doesn't answer in time, SeqImprove's
@@ -245,11 +251,12 @@ export const useStore = create((set, get) => ({
         }
     },
     // SynBioSuite's answer, or a session it pushed (null once it logged out). after SynBioSuite
-    // took too long to answer, a late one only signs in a SeqImprove with no login of its own
+    // took too long to answer, a late one still applies, unless the user has logged in with
+    // SeqImprove's own form in this page since
     applySharedSynBioHubSession: session => {
         if (!sharesSynBioHubLogin()) return;
+        if (get().synBioHubLoginSource === 'own' && get().synBioHubLoginMadeHere) return;
         const token = session?.token || null;
-        if (get().synBioHubLoginSource === 'own' && (get().isLoggedInToSomeSynBioHub || !token)) return;
         set({
             synBioHubLoginSource: 'shared',
             isLoggedInToSomeSynBioHub: !!token,
