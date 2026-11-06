@@ -14,7 +14,7 @@ import "../../src/sequence-edit.css"
 import { HighlightWithinTextarea } from 'react-highlight-within-textarea'
 import { openConfirmModal, openContextModal } from "@mantine/modals"
 import { SynBioHubClientLogin } from "./CurationForm";
-import { importLibrary, checkLibraryCache, synBioHubCredentials } from "../modules/api";
+import { importLibrary, checkLibraryCache, synBioHubCredentials, fetchRootCollections, synBioHubUriPrefix } from "../modules/api";
 import { loadSavedLibraries, saveLibrary, forgetLibrary } from "../modules/savedLibraries";
 
 const WORDSIZE = 8;
@@ -381,10 +381,13 @@ function Annotations({ colors }) {
             return;
         }
         setReimporting(library.value);
-        const response = await importLibrary(synBioHubCredentials().sessionToken, library.value, { quiet: true });
+        // the token this import is sent with is the one a 401 turns down, even if the login changes meanwhile
+        const sessionToken = synBioHubCredentials().sessionToken;
+        const response = await importLibrary(sessionToken, library.value, { quiet: true });
         setReimporting(null);
         if (!response?.success) {
             showErrorNotification("Import Failed", importFailureMessage(library.label, response));
+            if (response?.status === 401) useStore.getState().synBioHubTokenRejected(sessionToken);
             return;
         }
         setStaleLibraries(prev => prev.filter(lib => lib.value !== library.value));
@@ -816,6 +819,7 @@ function Annotations({ colors }) {
 
 function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBioHubs, setIsImportingLibrary, addCachedUrl}) {
     const isLoggedInToSynBioHub = useStore(s => s.isLoggedInToSomeSynBioHub);
+    const synBioHubSessionToken = useStore(s => s.synBioHubSessionToken);
 
     return (
         <Modal
@@ -825,7 +829,7 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
             size={"auto"}
         >
             {isLoggedInToSynBioHub ?
-             <SynBioHubClientSelect setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} setIsImportingLibrary={setIsImportingLibrary} addCachedUrl={addCachedUrl}/> :
+             <SynBioHubClientSelect key={synBioHubSessionToken} setIsInteractingWithSynBioHub={setIsInteractingWithSynBioHub} setIsImportingLibrary={setIsImportingLibrary} addCachedUrl={addCachedUrl}/> :
              <SynBioHubClientLogin synBioHubs={synBioHubs} />
             }
         </Modal>
@@ -834,7 +838,8 @@ function SynBioHubClient({opened, onClose, setIsInteractingWithSynBioHub, synBio
 
 function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLibrary, addCachedUrl }) {        
     const synBioHubUrlPrefix = useStore(s => s.synBioHubUrlPrefix);
-    const [ synBioHubSessionToken, _ ] = useState(sessionStorage.getItem('SynBioHubSessionToken'));   
+    const synBioHubSessionToken = useStore(s => s.synBioHubSessionToken);
+    const synBioHubRegistryURL = useStore(s => s.synBioHubRegistryURL);
     const [inputError, setInputError] = useState(false);
     const [ isLoading, setIsLoading ] = useState(false);
     const libraryImported = useStore(s => s.libraryImported);
@@ -844,27 +849,24 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
     const [ rootCollections, setRootCollections ] = useState([]);
     const [ rootCollectionURI, setRootCollectionURI ] = useState('');
     const [ selectedCollectionID, selectCollectionID ] = useState('');
+    const [ rootCollectionsFailed, setRootCollectionsFailed ] = useState(false);
 
     const xml = useStore(s => s.serializeXML());        
 
     useEffect(() => {
         if (rootCollectionsLoaded) return;
 
-        // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
         (async () => {
-            const response2 = await fetch(synBioHubUrlPrefix + "/rootCollections", {
-                method: "GET",
-                headers: {
-                    "Accept": "text/plain",
-                    "X-authorization": synBioHubSessionToken,
-                },
-            });
+            let _rootCollections;
+            try {
+                _rootCollections = await fetchRootCollections(synBioHubUrlPrefix, synBioHubSessionToken);
+            } catch (err) {
+                console.error("Could not load root collections:", err);
+                setRootCollectionsFailed(true);
+                return;
+            }
 
-            const _rootCollections = await response2.json();
-
-            // SynBioHub URIs use the canonical domain (e.g. synbiohub.org) even when the API
-            // is accessed via api.synbiohub.org, so strip the api. subdomain before filtering.
-            const uriPrefix = synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, '$1');
+            const uriPrefix = synBioHubUriPrefix(synBioHubUrlPrefix, synBioHubRegistryURL);
             let regex = RegExp(uriPrefix.replace(/^https?/, 'https?') + "/(?:user|public)/.*");
             const userRootCollections = _rootCollections
                 .filter(collection => collection.uri.match(regex))
@@ -875,7 +877,7 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
             setRootCollectionsIDs(userRootCollections.map(collection => collection.displayId));
             setRootCollectionsLoaded(true);
         })();
-    }, [rootCollectionsLoaded, synBioHubUrlPrefix, synBioHubSessionToken]);
+    }, [rootCollectionsLoaded, synBioHubUrlPrefix, synBioHubSessionToken, synBioHubRegistryURL]);
 
     const [ inputErrorID, setInputErrorID ] = useState(false);
     const importedLibraries = useStore(s => s.importedLibraries)
@@ -886,7 +888,9 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
             <Title order={3}>Download from SynBioHub</Title>
             <Group>
                  <Group>
-                     {!rootCollectionsLoaded ?
+                     {rootCollectionsFailed ?
+                      <Text color="red" size="sm">Could not load your collections from SynBioHub.</Text> :
+                      !rootCollectionsLoaded ?
                       <Center>
                           <Loader my={30} size="sm" variant="dots" />
                       </Center> :
@@ -924,9 +928,9 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
 
                             const response = await importLibrary(synBioHubSessionToken, rootCollectionURI, { quiet: true })
 
-                            setIsInteractingWithSynBioHub(false);
                             setIsImportingLibrary(false);
                             if (response && response.success) {
+                                setIsInteractingWithSynBioHub(false);
                                 setInputError(false);
                                 addCachedUrl(response.cachedUrl);
                                 showNotificationSuccess("Library Ready!", selectedCollectionID + " is cached. Enable the checkbox next to it and click 'Analyze Sequence' to annotate.");
@@ -934,7 +938,10 @@ function SynBioHubClientSelect({ setIsInteractingWithSynBioHub, setIsImportingLi
                                 addLibrary({ value: rootCollectionURI, label: selectedCollectionID, enabled: false})
                                 saveLibrary({ value: rootCollectionURI, label: selectedCollectionID });
                             } else {
+                                // the dialog stays open, so a 401's "Log in with SynBioSuite" shows in it
+                                setIsLoading(false);
                                 showErrorNotification("Import Failed", importFailureMessage(selectedCollectionID, response));
+                                if (response?.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
                             }
                         }}>
                           Submit

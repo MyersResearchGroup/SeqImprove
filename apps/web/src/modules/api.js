@@ -1,5 +1,6 @@
 import { showNotificationSuccess, showServerErrorNotification } from "./util";
 import { Graph, SBOL2GraphView } from "sbolgraph";
+import { useStore } from "./store";
 
 export async function bootAPIserver() {
   try {
@@ -77,13 +78,15 @@ export async function fetchSBOL(url) {
 // instance the same username on two different SynBioHub deployments would
 // collide into one cache partition.
 //
-// The one place the frontend reads the SynBioHub session. When SeqImprove runs
-// inside SynBioSuite and shares its token, only this (and the store's login())
-// needs to learn where the token comes from.
+// The one place the frontend reads the SynBioHub session. It comes from the
+// store, which holds SeqImprove's own login or, inside SynBioSuite, the one
+// SynBioSuite shares (never written to sessionStorage).
 export function synBioHubCredentials() {
+  // store.js imports this module too, so the store is only read inside functions
+  const { synBioHubSessionToken, synBioHubUrlPrefix } = useStore.getState();
   return {
-    sessionToken: sessionStorage.getItem("SynBioHubSessionToken") || null,
-    synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix") || null,
+    sessionToken: synBioHubSessionToken || null,
+    synBioHubUrlPrefix: synBioHubUrlPrefix || null,
   };
 }
 
@@ -112,7 +115,7 @@ export async function importLibrary(synBioHubSessionToken, requestURL, { quiet =
             if (!quiet) showServerErrorNotification();
             // The server says why (SynBioHub's HTTP status, "no parts in it",
             // an SBOL parse error); pass that on instead of dropping it.
-            return { success: false, error: result.error || `the SeqImprove server returned HTTP ${response.status}` };
+            return { success: false, status: response.status, error: result.error || `the SeqImprove server returned HTTP ${response.status}` };
         }
 
         return result;
@@ -127,6 +130,39 @@ export async function importLibrary(synBioHubSessionToken, requestURL, { quiet =
                 : "the SeqImprove server could not be reached",
         };
     }
+}
+
+// the root collections the import and upload dialogs list. throws when SynBioHub doesn't answer with
+// them within 20 s; a 401 on a login SynBioSuite shared asks SynBioSuite for its login again first
+export async function fetchRootCollections(synBioHubUrlPrefix, synBioHubSessionToken) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+  try {
+    // curl -X GET -H "Accept: text/plain" -H "X-authorization: <session token>" https://synbiohub.org/rootCollections
+    const response = await fetch(synBioHubUrlPrefix + "/rootCollections", {
+      method: "GET",
+      headers: {
+        "Accept": "text/plain",
+        "X-authorization": synBioHubSessionToken,
+      },
+      signal: controller.signal,
+    });
+    if (response.status === 401) useStore.getState().synBioHubTokenRejected(synBioHubSessionToken);
+    if (!response.ok) throw new Error(`SynBioHub returned HTTP ${response.status}`);
+    const collections = await response.json();
+    if (!Array.isArray(collections)) throw new Error("SynBioHub's root collections aren't a list");
+    return collections;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// where a login's collection URIs live: the registryURL SynBioSuite shares, or else the API address
+// without its api. subdomain (SynBioHub URIs use the canonical domain, e.g. synbiohub.org, even when
+// the API is accessed via api.synbiohub.org)
+export function synBioHubUriPrefix(synBioHubUrlPrefix, synBioHubRegistryURL) {
+  if (synBioHubRegistryURL) return synBioHubRegistryURL.replace(/\/+$/, "");
+  return synBioHubUrlPrefix.replace(/^(https?:\/\/)api\./, "$1");
 }
 
 export async function checkLibraryCache(url) {

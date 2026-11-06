@@ -9,6 +9,23 @@ import { Graph, SBOL2GraphView } from "sbolgraph"
 import fileDownload from "js-file-download"
 import { FILE_TYPES } from "./fileTypes"
 import { CLEANED_URI_PREFIXES } from "./homespace"
+import { requestFromParent, sharesSynBioHubLogin } from "./embedded"
+
+// SeqImprove's Log in waiting on SynBioSuite's login form. a session SynBioSuite applies in the meantime
+// drops that request; its answer, if it comes later, is handled like any push
+let synBioSuiteLogin = null
+
+// a session from SynBioSuite needs a token and an http(s) SynBioHub address, https only in a production
+// build; anything else counts as logged out. a registryURL that isn't one is left out
+function validSharedSession(session) {
+    const isUrl = (value, protocols) => {
+        if (typeof value !== "string") return false;
+        try { return protocols.includes(new URL(value).protocol); } catch { return false; }
+    };
+    const protocols = import.meta.env.DEV ? ["https:", "http:"] : ["https:"];
+    if (typeof session?.token !== "string" || !session.token || !isUrl(session.urlPrefix, protocols)) return null;
+    return { ...session, registryURL: isUrl(session.registryURL, protocols) ? session.registryURL : null };
+}
 
 // SynBioSuite object type id for its Plasmids panel (sent as panelType in the embed handshake)
 export const PLASMID_PANEL_TYPE = "synbio.object-type.plasmid"
@@ -197,12 +214,27 @@ export const useStore = create((set, get) => ({
     },
 
     // SynbioHubLogin, SessionToken
+    // components and synBioHubCredentials() in api.js read the session from here. sessionStorage
+    // only keeps SeqImprove's own login across a reload; a session SynBioSuite shares stays in memory
     isLoggedInToSomeSynBioHub: !!sessionStorage.getItem("SynBioHubSessionToken"),
+    synBioHubSessionToken: sessionStorage.getItem("SynBioHubSessionToken"),
     synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix"),
+    // whose login is in use. 'own' is SeqImprove's own form: standalone, embedded by a page that
+    // isn't SynBioSuite, or a SynBioSuite too old to answer. embedded in SynBioSuite it's 'pending'
+    // until SynBioSuite answers (neither login shows), then 'shared': SynBioSuite's login, or its
+    // logout, is the one in use
+    synBioHubLoginSource: 'own',
+    // the user logged in with SeqImprove's own form in this page (not a token an earlier page left
+    // in sessionStorage); a late answer from SynBioSuite doesn't replace that login
+    synBioHubLoginMadeHere: false,
+    synBioHubUsername: null,
+    // where the shared login's collection URIs live, when SynBioSuite says; null otherwise
+    synBioHubRegistryURL: null,
+    loggingInWithSynBioSuite: false,
     logout: () => {
         sessionStorage.removeItem("SynBioHubSessionToken");
-        sessionStorage.removeItem("synBioHubSessionUrlPrefix");
-        set({ isLoggedInToSomeSynBioHub: false });
+        sessionStorage.removeItem("synBioHubUrlPrefix");
+        set({ isLoggedInToSomeSynBioHub: false, synBioHubSessionToken: null });
         set({ synBioHubUrlPrefix: '' });        
     },
     login: (token, urlPrefix) => {
@@ -210,9 +242,80 @@ export const useStore = create((set, get) => ({
         sessionStorage.setItem("synBioHubUrlPrefix", urlPrefix);
         set({
             isLoggedInToSomeSynBioHub: true,
+            synBioHubSessionToken: token,
             synBioHubUrlPrefix: urlPrefix,
+            synBioHubLoginSource: 'own',
+            synBioHubLoginMadeHere: true,
+            synBioHubUsername: null,
+            synBioHubRegistryURL: null,
         });        
     },       
+    // embedded in SynBioSuite: ask it for its session. if it doesn't answer in time, SeqImprove's
+    // own login (and any token it left in sessionStorage) comes back
+    startSharedSynBioHubLogin: async () => {
+        if (!sharesSynBioHubLogin()) return;
+        set({ synBioHubLoginSource: 'pending', isLoggedInToSomeSynBioHub: false, synBioHubSessionToken: null, synBioHubUrlPrefix: '', synBioHubRegistryURL: null });
+        try {
+            const reply = await requestFromParent({ type: "getSynBioHubSession" }, "synBioHubSession");
+            get().applySharedSynBioHubSession(reply.session);
+        } catch {
+            if (get().synBioHubLoginSource !== 'pending') return;
+            const token = sessionStorage.getItem("SynBioHubSessionToken");
+            set({
+                synBioHubLoginSource: 'own',
+                isLoggedInToSomeSynBioHub: !!token,
+                synBioHubSessionToken: token,
+                synBioHubUrlPrefix: sessionStorage.getItem("synBioHubUrlPrefix"),
+            });
+        }
+    },
+    // SynBioSuite's answer, or a session it pushed (null once it logged out). after SynBioSuite
+    // took too long to answer, a late one still applies, unless the user has logged in with
+    // SeqImprove's own form in this page since
+    applySharedSynBioHubSession: session => {
+        if (!sharesSynBioHubLogin()) return;
+        if (get().synBioHubLoginSource === 'own' && get().synBioHubLoginMadeHere) return;
+        session = validSharedSession(session);
+        // ends a Log in still waiting on SynBioSuite: its finally stops the spinner
+        synBioSuiteLogin?.abort();
+        synBioSuiteLogin = null;
+        set({
+            synBioHubLoginSource: 'shared',
+            isLoggedInToSomeSynBioHub: !!session,
+            synBioHubSessionToken: session ? session.token : null,
+            synBioHubUrlPrefix: session ? session.urlPrefix : '',
+            synBioHubUsername: session ? session.username || null : null,
+            synBioHubRegistryURL: session ? session.registryURL : null,
+        });
+    },
+    // SynBioHub turned down (401) the token a request used. a shared one: ask SynBioSuite again, and if
+    // it has nothing better (no login, or the same token), it's logged out here and its Log in shows.
+    // SeqImprove's own login stays as it was
+    synBioHubTokenRejected: async token => {
+        if (get().synBioHubLoginSource !== 'shared') return;
+        let session = null;
+        try {
+            session = (await requestFromParent({ type: "getSynBioHubSession" }, "synBioHubSession")).session;
+        } catch {}
+        // a login SynBioSuite pushed meanwhile (or before: a late 401 for an older token) is the newer word
+        if (get().synBioHubSessionToken !== token) return;
+        get().applySharedSynBioHubSession(session?.token === token ? null : session);
+    },
+    // SeqImprove's Log in while SynBioSuite's login is the one in use: opens SynBioSuite's login
+    // form, and SynBioSuite answers with the session once that form closes
+    loginWithSynBioSuite: async () => {
+        const login = new AbortController();
+        synBioSuiteLogin = login;
+        set({ loggingInWithSynBioSuite: true });
+        try {
+            const reply = await requestFromParent({ type: "openSynBioHubLogin" }, "synBioHubSession", 10 * 60 * 1000, login.signal);
+            get().applySharedSynBioHubSession(reply.session);
+        } catch (err) {
+            if (err.name !== "AbortError") console.error("SynBioSuite login failed:", err);
+        } finally {
+            set({ loggingInWithSynBioSuite: false });
+        }
+    },
 
 
     // Sequence Annotations

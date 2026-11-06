@@ -7,7 +7,7 @@ import { MantineProvider, Center, Box, Text, Space } from '@mantine/core'
 import { getSearchParams } from './modules/util'
 import { bootAPIserver } from "./modules/api"
 import { FILE_TYPES } from "./modules/fileTypes"
-import { isEmbedded, getInitialPayload, onEmbedChange, onHostPanelTypeChange, postToParent } from "./modules/embedded"
+import { isEmbedded, getInitialPayload, onEmbedChange, onHostPanelTypeChange, onHostSynBioHubSession, postToParent } from "./modules/embedded"
 
 export default function App() {
 
@@ -41,11 +41,13 @@ export default function App() {
                     postToParent("graphServiceLoadedSBOL")
                 })
             }
+            useStore.getState().startSharedSynBioHubLogin()
         }
         if (isEmbedded()) consume(getInitialPayload())
         const offEmbed = onEmbedChange(consume)
         const offPanelType = onHostPanelTypeChange(panelType => useStore.setState({ hostPanelType: panelType }))
-        return () => { offEmbed(); offPanelType() }
+        const offSession = onHostSynBioHubSession(session => useStore.getState().applySharedSynBioHubSession(session))
+        return () => { offEmbed(); offPanelType(); offSession() }
     }, []);
 
     // name change effect - disabled to prevent displayId from being reset
