@@ -21,4 +21,4 @@ jobs:
     - name: Publish to DockerHub
       run: |
         docker login -u ${{ secrets.SYNBIOSUITE_DOCKER_USERNAME }} -p ${{ secrets.SYNBIOSUITE_DOCKER_PASSWORD }}
-        docker push synbiosuite/seqimprove-api:latest
+        docker push synbiosuite/seqimprove:latest
