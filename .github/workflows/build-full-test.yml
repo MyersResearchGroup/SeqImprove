@@ -1,4 +1,4 @@
-name: Build Latest Docker Image
+name: Build Latest Full Docker Image
 
 defaults:
   run:
