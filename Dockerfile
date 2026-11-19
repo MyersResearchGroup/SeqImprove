@@ -19,7 +19,8 @@ RUN cd apps/web && \
     NODE_OPTIONS="--max-old-space-size=8192" \
     VITE_API_LOCATION="" \
     npm run build
-    
+
+
 # ==========================================
 # Stage 2: Python/Conda backend + Nginx
 # ==========================================
@@ -41,6 +42,23 @@ RUN apt-get update && \
         supervisor \
     && rm -rf /var/lib/apt/lists/*
 
+
+# ==========================================
+# Install NIST internal CA certificates
+# ==========================================
+COPY certs/2036-07-27_NISTIssuingCA03.crt \
+    /usr/local/share/ca-certificates/
+
+COPY certs/2038-08-01_NISTRoot02.crt \
+    /usr/local/share/ca-certificates/
+
+RUN update-ca-certificates
+
+# Ensure Python Requests and SSL use system CA bundle
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
+
 # ==========================================
 # Install SYNBICT
 # ==========================================
@@ -57,6 +75,7 @@ SHELL ["conda", "run", "--no-capture-output", \
 
 RUN pip install .
 
+
 # ==========================================
 # Install SeqImprove backend
 # ==========================================
@@ -65,6 +84,7 @@ WORKDIR /docker-flask-api
 COPY apps/server/ /docker-flask-api/
 
 RUN pip install -r requirements.txt
+
 
 # ==========================================
 # Install Prokka
@@ -80,16 +100,21 @@ ENV PATH="/docker-flask-api/prokka-1.14.6/bin:/opt/conda/envs/synbict_conda/bin:
 
 RUN prokka --setupdb && prokka --listdb
 
+
+# ==========================================
 # Install Node dependencies for annotations
+# ==========================================
 WORKDIR /docker-flask-api/assets/scripts/get_annotations
 
 RUN npm install sbolgraph
+
 
 # ==========================================
 # Install compiled React frontend
 # ==========================================
 COPY --from=frontend /build/apps/web/dist/ \
     /usr/share/nginx/html/
+
 
 # ==========================================
 # Configure Nginx and Supervisor
@@ -99,6 +124,10 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/seqimprove.conf
 
 RUN rm -f /etc/nginx/sites-enabled/default
 
+
+# ==========================================
+# Runtime configuration
+# ==========================================
 WORKDIR /docker-flask-api
 
 ENV SEQIMPROVE_THREADS=8
